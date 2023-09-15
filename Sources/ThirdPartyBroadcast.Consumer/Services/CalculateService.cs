@@ -1,6 +1,4 @@
-﻿using Fanex.Settlement.ScaleOut.Request;
-using Fanex.Settlement.ScaleOut.Services;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using ThirdPartyBroadcast.Consumer.Criteria;
 
 namespace ThirdPartyBroadcast.Consumer.Services;
@@ -10,8 +8,6 @@ public interface CalculateService
     Task<Result> Execute(CalculateCriteria criteria);
 
     Task<Result> ExecuteValidationMultiServer(BaseCriteria criteria);
-
-    Task<Result> ValidationDeployFlag(string spName);
 }
 
 public class CalculateServiceImp : CalculateService
@@ -20,18 +16,12 @@ public class CalculateServiceImp : CalculateService
 
     private readonly AppSettingsKey appSettingsKey;
 
-    private readonly ScaleOutSettleThirdPartyService scaleOutSettleThirdPartyService;
-
-    private const int DeployFlag = 99;
-
     public CalculateServiceImp(
         IDynamicRepository repository,
-        IOptions<AppSettingsKey> appSettingsKey,
-        ScaleOutSettleThirdPartyService scaleOutSettleThirdPartyService)
+        IOptions<AppSettingsKey> appSettingsKey)
     {
         this.repository = repository;
         this.appSettingsKey = appSettingsKey.Value;
-        this.scaleOutSettleThirdPartyService = scaleOutSettleThirdPartyService;
     }
 
     public async Task<Result> Execute(CalculateCriteria criteria)
@@ -44,26 +34,11 @@ public class CalculateServiceImp : CalculateService
             results = ResultMessage(results, server, criteria);
         }
 
-        var errorCode = GetErrorCode(results);
-
         return new Result
         {
-            ErrorCode = errorCode,
+            ErrorCode = results.Count,
             ErrorMessage = string.Join(" | ", results.Select(r => r.ErrorMessage).ToArray())
         };
-    }
-
-    private static int GetErrorCode(IReadOnlyCollection<Result> listResult)
-    {
-        var deployFlagError = listResult.Where(result => result.ErrorCode == DeployFlag);
-        var totalError = listResult.Count;
-
-        if (deployFlagError.Any())
-        {
-            return DeployFlag;
-        }
-
-        return totalError > 0 ? totalError : 0;
     }
 
     private static List<Result> ResultMessage(List<Result> results, string server, CalculateCriteria criteria)
@@ -97,22 +72,7 @@ public class CalculateServiceImp : CalculateService
                 };
             }
         }
+
         return new Result();
-    }
-
-    public async Task<Result> ValidationDeployFlag(string spName)
-    {
-        var getDeploymentInfoRequest = new GetDeploymentInfoRequest
-        {
-            SpName = spName
-        };
-
-        var result = await scaleOutSettleThirdPartyService.GetDeploymentInfo(getDeploymentInfoRequest);
-
-        return new Result
-        {
-            ErrorCode = result.ErrorCode,
-            ErrorMessage = result.ErrorMessage
-        };
     }
 }

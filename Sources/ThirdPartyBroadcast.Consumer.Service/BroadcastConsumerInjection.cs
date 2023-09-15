@@ -1,9 +1,13 @@
-﻿using Fanex.Caching;
+﻿using AutoMapper;
+using Fanex.Caching;
 using Fanex.Caching.Redis;
 using Fanex.Data;
+using Fanex.Data.Repository;
 using Fanex.Data.SqlServer;
 using Fanex.Logging;
 using Fanex.Logging.Sentry.RavenClient;
+using Fanex.Settlement.ScaleOut;
+using Fanex.Settlement.ScaleOut.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,6 +19,7 @@ using ONEbook.UM.Transport;
 using SharpRaven;
 using ThirdPartyBroadcast.Consumer.Services;
 using ThirdPartyBroadcast.Consumer.Services.Consumer;
+using ThirdPartyBroadcast.Consumer.Services.Products;
 
 namespace ThirdPartyBroadcast.Consumer.Service;
 
@@ -23,23 +28,45 @@ public static class BroadcastConsumerInjection
     public static void InitializeServices(this IServiceCollection service, IConfiguration configuration)
     {
         service.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+        service.AddTransient<ScaleOutSettleThirdPartyService, ScaleOutSettleThirdPartyServiceImp>();
+        service.AddTransient<IDynamicRepository, DynamicRepository>();
+        service.AddTransient<CalculateService, CalculateServiceImp>();
+        service.AddTransient<LogDirectlyService, LogDirectlyServiceImp>();
+        service.AddTransient<GeneralService, GeneralServiceImp>();
         service.AddSingleton<ICacheService, CacheService>();
         service.AddSingleton<BroadcastConsumerController, BroadcastConsumerControllerImp>();
         service.AddSingleton<ExchangesService, ExchangesServiceImp>();
         service.AddSingleton<FlagService, FlagServiceImp>();
-        service.AddSingleton<IMaintenanceService, MaintenanceServiceImp>();
+        service.AddSingleton<GenerateConsumerService, GenerateConsumerServiceImp>();
+        service.AddSingleton<BitCoinService, BitCoinServiceImp>();
+        service.AddSingleton<GroupOneService, GroupOneServiceImp>();
+        service.AddSingleton<OutrightService, OutrightServiceImp>();
 
+        service.AddSingleton<IMaintenanceService, MaintenanceServiceImp>();
         service.AddSingleton(new UMClientConfiguration().Initialize(configuration));
         service.AddSingleton<IUMCacheService, UMCacheService>();
         service.AddSingleton<IUMRestClient, UMRestClient>();
         service.AddSingleton<ONEbook.UM.Services.IMaintenanceService, ONEbook.UM.Services.MaintenanceService>();
         service.AddConfigRedisCache(configuration);
-        service.StartUmSetting(configuration);
-        service.StartDataBaseSetting(configuration);
-        service.StartLogSetting(configuration);
+        StartUmSetting(configuration);
+        StartDataBaseSetting(configuration);
+        StartLogSetting(configuration);
+        service.ConfigureAutoMapper();
     }
 
-    private static IServiceCollection AddConfigRedisCache(this IServiceCollection service, IConfiguration configuration)
+    private static void ConfigureAutoMapper(this IServiceCollection service)
+    {
+        var mapperConfig = new MapperConfiguration(mc =>
+        {
+            mc.AddProfile(typeof(ScaleOutMappingProfile));
+            mc.AddProfile(typeof(ThirdPartyBroadcastMappingProfile));
+        });
+
+        var mapper = mapperConfig.CreateMapper();
+        service.AddSingleton(mapper);
+    }
+
+    private static void AddConfigRedisCache(this IServiceCollection service, IConfiguration configuration)
     {
         var redisConfig = configuration.GetSection("AuthSettings:RedisConfig").Value;
         var applicationName = configuration.GetSection("AuthSettings:ChannelPrefix").Value;
@@ -49,11 +76,9 @@ public static class BroadcastConsumerInjection
             ApplicationName = applicationName,
         }));
         service.AddSingleton<ICacheService>(new CacheService());
-
-        return service;
     }
 
-    private static IServiceCollection StartUmSetting(this IServiceCollection service, IConfiguration configuration)
+    private static void StartUmSetting(IConfiguration configuration)
     {
         var umConfig = new UMClientConfiguration().Initialize(configuration);
 
@@ -61,11 +86,9 @@ public static class BroadcastConsumerInjection
             .UseConfig(umConfig)
             .UseCacheService(new UMCacheService(new CacheService()))
             .UseRestClient(new UMRestClient(umConfig));
-
-        return service;
     }
 
-    private static IServiceCollection StartDataBaseSetting(this IServiceCollection service, IConfiguration configuration)
+    private static void StartDataBaseSetting(IConfiguration configuration)
     {
         var connections = configuration.GetSection("ConnectionStrings")
             .GetChildren()
@@ -74,17 +97,16 @@ public static class BroadcastConsumerInjection
                 x => x.GetValue<string>("Name"),
                 y => new ConnectionConfiguration(y.GetValue<string>("Name"), y.GetValue<string>("ConnectionString"), y.GetValue<string>("ProviderName"))
             );
+
         DbSettingProviderManager
             .StartNewSession()
-        .Use(connections)
-        .WithSqlServer()
+            .Use(connections)
+            .WithSqlServer()
             .UseDefaultDbSettingProvider(resourcePath: configuration.GetSection("StoredProcedurePath").Value)
             .Run();
-
-        return service;
     }
 
-    private static IServiceCollection StartLogSetting(this IServiceCollection service, IConfiguration configuration)
+    private static void StartLogSetting(IConfiguration configuration)
     {
         var logEngine = new List<ILogEngine>();
 
@@ -95,7 +117,5 @@ public static class BroadcastConsumerInjection
         logEngine.Add(new SentryLogging(sentryEngineOptions));
 
         LogManager.SetDefaultLogCategory(configuration.GetSection("SiteCategory").Value).Use(logEngine);
-
-        return service;
     }
 }

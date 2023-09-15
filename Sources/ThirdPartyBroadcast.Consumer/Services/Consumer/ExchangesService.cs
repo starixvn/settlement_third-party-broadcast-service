@@ -13,8 +13,13 @@ public class ExchangesServiceImp : ExchangesService
 {
     private readonly AppSettingsKey appSettingsKey;
 
-    public ExchangesServiceImp(IOptions<AppSettingsKey> appSettingsKey)
+    private readonly GenerateConsumerService generateConsumerService;
+
+    public ExchangesServiceImp(
+        GenerateConsumerService generateConsumerService,
+        IOptions<AppSettingsKey> appSettingsKey)
     {
+        this.generateConsumerService = generateConsumerService;
         this.appSettingsKey = appSettingsKey.Value;
     }
 
@@ -31,7 +36,7 @@ public class ExchangesServiceImp : ExchangesService
 
             configure.ReceiveEndpoint(rabbitMq.ProcessingQueue, e =>
             {
-                e.Consumer<ProcessingConsumerService>();
+                e.Consumer(() => new ProcessingConsumerService(generateConsumerService));
             });
         });
 
@@ -61,7 +66,7 @@ public class ExchangesServiceImp : ExchangesService
 
             configure.ReceiveEndpoint(rabbitMq.WaitingQueue, e =>
             {
-                e.Consumer<WaitingConsumerService>();
+                e.Consumer(() => new WaitingConsumerService(generateConsumerService));
             });
         });
 

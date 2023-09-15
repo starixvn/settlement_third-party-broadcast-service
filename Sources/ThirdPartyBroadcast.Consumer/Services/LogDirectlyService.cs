@@ -1,7 +1,7 @@
 ﻿using Fanex.Logging;
 using ThirdPartyBroadcast.Consumer.Criteria;
 
-namespace ThirdPartyBroadcast.Services;
+namespace ThirdPartyBroadcast.Consumer.Services;
 
 public interface LogDirectlyService
 {

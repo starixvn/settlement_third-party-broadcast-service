@@ -1,6 +1,4 @@
-﻿using ThirdPartyBroadcast.Services;
-
-namespace ThirdPartyBroadcast.Consumer.Services.Products;
+﻿namespace ThirdPartyBroadcast.Consumer.Services.Products;
 
 using Criteria.BitCoin;
 
@@ -33,25 +31,22 @@ public class BitCoinServiceImp : BitCoinService
 
     public async Task<Result> Settle(AutoBitCoinRequest request)
     {
-        var validationResult = await calculateService.ValidationDeployFlag(SpName.BitCoin);
-        if (validationResult.ErrorCode == 0)
+        var eventStatus = await GetEventStatus(request.MatchId);
+
+        await UpdateMatchInfo(request);
+
+        var criteria = mapper.Map<AutoBitCoinRequest, BitCoinCriteria>(request);
+
+        await logDirectlyService.WriteLog(criteria.MatchId, string.Empty);
+
+        var result = await calculateService.Execute(criteria);
+
+        if (result.IsSuccessful && !string.IsNullOrWhiteSpace(eventStatus))
         {
-            var eventStatus = await GetEventStatus(request.MatchId);
-
-            await UpdateMatchInfo(request);
-
-            var criteria = mapper.Map<AutoBitCoinRequest, BitCoinCriteria>(request);
-
-            await logDirectlyService.WriteLog(criteria.MatchId, string.Empty);
-
-            var result = await calculateService.Execute(criteria);
-
             await Notification(result, request, eventStatus);
-
-            return result;
         }
 
-        return validationResult;
+        return result;
     }
 
     private async Task<string> GetEventStatus(int matchId)
@@ -63,11 +58,6 @@ public class BitCoinServiceImp : BitCoinService
 
     private async Task Notification(Result result, AutoBitCoinRequest request, string eventStatus)
     {
-        if (result.ErrorCode > 0 || string.IsNullOrWhiteSpace(eventStatus))
-        {
-            return;
-        }
-
         if (eventStatus.ToLowerInvariant().Equals(EventStatus.Completed) || request.Action.ToLowerInvariant() == ActionType.Refund)
         {
             var criteria = new NotifyCriteria

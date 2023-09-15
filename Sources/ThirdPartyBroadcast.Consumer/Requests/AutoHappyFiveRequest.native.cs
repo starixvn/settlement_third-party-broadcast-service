@@ -1,7 +1,4 @@
-﻿using MediatR;
-using ThirdPartyBroadcast.Consumer.Models;
-
-namespace ThirdPartyBroadcast.Consumer.Requests;
+﻿namespace ThirdPartyBroadcast.Consumer.Requests;
 
 public class AutoHappyFiveRequest : IRequest<Result>
 {

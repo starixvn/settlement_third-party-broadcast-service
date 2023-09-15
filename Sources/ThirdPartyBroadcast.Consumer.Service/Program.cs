@@ -27,7 +27,7 @@ app.UseEndpoints(endpoints =>
         async context => { await context.Response.WriteAsync("ThirdPartyBroadcast.Consumer.Service"); });
 });
 #if DEBUG
-app.Run();
+app.Run("http://0.0.0.0:5001");
 #else
 await app.RunAsync("http://0.0.0.0:5000");
 #endif
