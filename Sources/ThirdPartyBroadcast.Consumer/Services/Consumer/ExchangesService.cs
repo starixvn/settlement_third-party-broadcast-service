@@ -36,7 +36,11 @@ public class ExchangesServiceImp : ExchangesService
 
             configure.ReceiveEndpoint(rabbitMq.ProcessingQueue, e =>
             {
-                e.Consumer(() => new ProcessingConsumerService(generateConsumerService));
+                e.UseMessageRetry(retryConfig => retryConfig.Interval(10, TimeSpan.FromMilliseconds(500)));
+                e.Consumer(() => new ProcessingConsumerService(generateConsumerService), c => c.UseMessageRetry(retryConfig =>
+                {
+                    retryConfig.Interval(10, TimeSpan.FromMilliseconds(500));
+                }));
             });
         });
 
@@ -66,7 +70,12 @@ public class ExchangesServiceImp : ExchangesService
 
             configure.ReceiveEndpoint(rabbitMq.WaitingQueue, e =>
             {
-                e.Consumer(() => new WaitingConsumerService(generateConsumerService));
+                e.UseMessageRetry(retryConfig => retryConfig.Interval(10, TimeSpan.FromMilliseconds(500)));
+
+                e.Consumer(() => new WaitingConsumerService(generateConsumerService), c => c.UseMessageRetry(retryConfig =>
+                {
+                    retryConfig.Interval(10, TimeSpan.FromMilliseconds(500));
+                }));
             });
         });
 
