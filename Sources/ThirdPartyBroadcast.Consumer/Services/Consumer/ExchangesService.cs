@@ -46,14 +46,12 @@ public class ExchangesServiceImp : ExchangesService
 
         try
         {
-            Console.WriteLine("Processing - Started");
             await busControl.StartAsync(new CancellationToken());
-            Thread.Sleep(2000);
+            Thread.Sleep(3000);
         }
         finally
         {
             await busControl.StopAsync();
-            Console.WriteLine("Processing - Stopped");
         }
     }
 
@@ -81,14 +79,12 @@ public class ExchangesServiceImp : ExchangesService
 
         try
         {
-            Console.WriteLine("Processing - Started");
             await busControl.StartAsync(new CancellationToken());
-            Thread.Sleep(2000);
+            Thread.Sleep(3000);
         }
         finally
         {
             await busControl.StopAsync();
-            Console.WriteLine("Waiting - Stopped");
         }
     }
 }

@@ -32,6 +32,6 @@ public class GenerateConsumerServiceImp : GenerateConsumerService
                 break;
         }
 
-        Console.WriteLine($"- Processing MatchId: {matchId}");
+        Console.WriteLine($"- MatchId: {matchId}");
     }
 }
