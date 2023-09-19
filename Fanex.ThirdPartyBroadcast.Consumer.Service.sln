@@ -13,10 +13,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{3D790B58
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F291ED5C-E82B-4BED-BCF2-CC136B35A240}"
 	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		.gitlab-ci.yml = .gitlab-ci.yml
 		Dockerfile = Dockerfile
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThirdPartyBroadcast.Consumer.UnitTests", "Tests\ThirdPartyBroadcast.Consumer.UnitTests\ThirdPartyBroadcast.Consumer.UnitTests.csproj", "{EF4FA35F-B9D0-47A0-818C-229490D2D1B2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ThirdPartyBroadcast.Consumer.UnitTests", "Tests\ThirdPartyBroadcast.Consumer.UnitTests\ThirdPartyBroadcast.Consumer.UnitTests.csproj", "{EF4FA35F-B9D0-47A0-818C-229490D2D1B2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

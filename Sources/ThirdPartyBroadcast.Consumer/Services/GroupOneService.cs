@@ -1,18 +1,19 @@
-﻿using Fanex.Logging;
-using ThirdPartyBroadcast.Consumer.Services.Products;
+﻿using ThirdPartyBroadcast.Consumer.Services.Products;
 
 namespace ThirdPartyBroadcast.Consumer.Services;
 
 public interface GroupOneService
 {
-    Task SettleOutright(AutoOutrightRequest request);
+    Task SettleOutright(string productType, string data);
 
-    Task SettleBitCoin(AutoBitCoinRequest request);
+    Task SettleBitCoin(string productType, string data);
 }
 
 public class GroupOneServiceImp : GroupOneService
 {
     private const string ErrorMessage = "Error from Settlement ThirdPartyBroadcast Service";
+
+    private readonly LogDirectlyService logDirectlyService;
 
     private readonly OutrightService outrightService;
 
@@ -20,27 +21,25 @@ public class GroupOneServiceImp : GroupOneService
 
     public GroupOneServiceImp(
         OutrightService outrightService,
-        BitCoinService bitCoinService)
+        BitCoinService bitCoinService,
+        LogDirectlyService logDirectlyService)
     {
         this.outrightService = outrightService;
         this.bitCoinService = bitCoinService;
+        this.logDirectlyService = logDirectlyService;
     }
 
-    public async Task SettleOutright(AutoOutrightRequest request)
+    public async Task SettleOutright(string productType, string data)
     {
+        var request = JsonConvert.DeserializeObject<AutoOutrightRequest>(data);
         var result = await outrightService.Settle(request);
-        if (result.ErrorCode > 0)
-        {
-            await LogService.ErrorAsync($"{ErrorMessage}: {result.ErrorMessage}");
-        }
+        await logDirectlyService.HandleLog(result, productType, data);
     }
 
-    public async Task SettleBitCoin(AutoBitCoinRequest request)
+    public async Task SettleBitCoin(string productType, string data)
     {
+        var request = JsonConvert.DeserializeObject<AutoBitCoinRequest>(data);
         var result = await bitCoinService.Settle(request);
-        if (result.ErrorCode > 0)
-        {
-            await LogService.ErrorAsync($"{ErrorMessage}: {result.ErrorMessage}");
-        }
+        await logDirectlyService.HandleLog(result, productType, data);
     }
 }

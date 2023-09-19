@@ -1,4 +1,5 @@
 ﻿using Fanex.Logging;
+using Fanex.Logging.Extensions;
 using ThirdPartyBroadcast.Consumer.Criteria;
 
 namespace ThirdPartyBroadcast.Consumer.Services;
@@ -6,10 +7,14 @@ namespace ThirdPartyBroadcast.Consumer.Services;
 public interface LogDirectlyService
 {
     Task WriteLog(int matchId, string message);
+
+    Task HandleLog(Result result, string product, string data);
 }
 
 public class LogDirectlyServiceImp : LogDirectlyService
 {
+    private const string ErrorMessage = "Error from Settlement ThirdPartyBroadcast Service";
+
     private readonly IDynamicRepository dynamicRepository;
 
     public LogDirectlyServiceImp(IDynamicRepository dynamicRepository)
@@ -32,7 +37,39 @@ public class LogDirectlyServiceImp : LogDirectlyService
         }
         catch (Exception e)
         {
-            await LogService.ErrorAsync("Settlement.ThirdPartyBroadcastAPI(Write Directly):", e);
+            await LogService.ErrorAsync($"{ErrorMessage} (Write Directly):", e);
         }
+    }
+
+    public async Task HandleLog(Result result, string productType, string data)
+    {
+        if (!result.IsSuccessful)
+        {
+            var info = new Dictionary<string, object>
+            {
+                { "Product Name", GetProductName(productType) },
+                { "Match Info", data },
+                { "Details", result.ErrorMessage },
+            };
+
+            var logMessage = new LogMessage(ErrorMessage)
+                .AddSection("Error Info", info)
+                .ToString();
+
+            await LogService.ErrorAsync(logMessage);
+        }
+    }
+
+    private static string GetProductName(string code)
+    {
+        foreach (var field in typeof(ProductType).GetFields())
+        {
+            if (string.Equals((string)field.GetValue(null), code))
+            {
+                return field.Name;
+            }
+        }
+
+        return string.Empty;
     }
 }

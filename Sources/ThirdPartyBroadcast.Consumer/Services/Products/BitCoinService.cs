@@ -58,12 +58,12 @@ public class BitCoinServiceImp : BitCoinService
 
     private async Task Notification(Result result, AutoBitCoinRequest request, string eventStatus)
     {
-        if (eventStatus.ToLowerInvariant().Equals(EventStatus.Completed) || request.Action.ToLowerInvariant() == ActionType.Refund)
+        if (string.Equals(eventStatus.ToLowerInvariant(), EventStatus.Completed) || string.Equals(request.Action.ToLowerInvariant(), ActionType.Refund))
         {
             var criteria = new NotifyCriteria
             {
                 MatchId = request.MatchId,
-                NotifyAction = request.Action.ToLowerInvariant() == ActionType.Refund ? ActionId.BitCoinRefund : ActionId.BitCoinCalc
+                NotifyAction = string.Equals(request.Action.ToLowerInvariant(), ActionType.Refund) ? ActionId.BitCoinRefund : ActionId.BitCoinCalc
             };
 
             await repository.ExecuteAsync(criteria);

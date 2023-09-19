@@ -16,22 +16,17 @@ public class GenerateConsumerServiceImp : GenerateConsumerService
 
     public async Task SettleByProduct(string productType, string data)
     {
-        var matchId = 0;
         switch (productType)
         {
             case ProductType.Outright:
-                var autoOutrightRequest = JsonConvert.DeserializeObject<AutoOutrightRequest>(data);
-                matchId = autoOutrightRequest.MatchId;
-                await groupOneService.SettleOutright(autoOutrightRequest);
+                await groupOneService.SettleOutright(productType, data);
                 break;
 
             case ProductType.BitCoin:
-                var autoBitCoinRequest = JsonConvert.DeserializeObject<AutoBitCoinRequest>(data);
-                matchId = autoBitCoinRequest.MatchId;
-                await groupOneService.SettleBitCoin(autoBitCoinRequest);
+                await groupOneService.SettleBitCoin(productType, data);
                 break;
         }
 
-        Console.WriteLine($"- MatchId: {matchId}");
+        Console.WriteLine($"- Match info: {data}");
     }
 }
