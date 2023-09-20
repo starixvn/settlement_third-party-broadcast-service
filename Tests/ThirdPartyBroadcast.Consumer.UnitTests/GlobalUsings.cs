@@ -1,1 +1,11 @@
+global using AutoMapper;
+global using Fanex.Data.Repository;
+global using Fanex.Settlement.ScaleOut.Models;
+global using Fanex.Settlement.ScaleOut.Services;
+global using NSubstitute;
+global using ThirdPartyBroadcast.Consumer.Constants;
+global using ThirdPartyBroadcast.Consumer.Models;
+global using ThirdPartyBroadcast.Consumer.Requests;
+global using ThirdPartyBroadcast.Consumer.Services;
+global using ThirdPartyBroadcast.Consumer.Services.Products;
 global using Xunit;

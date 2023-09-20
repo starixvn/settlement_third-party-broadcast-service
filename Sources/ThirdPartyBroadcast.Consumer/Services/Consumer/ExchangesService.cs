@@ -11,6 +11,12 @@ public interface ExchangesService
 
 public class ExchangesServiceImp : ExchangesService
 {
+    private const int DelayTimeStartBus = 3000;
+
+    private const int RetryInterval = 500;
+
+    private const int RetryCount = 10;
+
     private readonly AppSettingsKey appSettingsKey;
 
     private readonly GenerateConsumerService generateConsumerService;
@@ -36,10 +42,10 @@ public class ExchangesServiceImp : ExchangesService
 
             configure.ReceiveEndpoint(rabbitMq.ProcessingQueue, e =>
             {
-                e.UseMessageRetry(retryConfig => retryConfig.Interval(10, TimeSpan.FromMilliseconds(500)));
+                e.UseMessageRetry(retryConfig => retryConfig.Interval(RetryCount, TimeSpan.FromMilliseconds(RetryInterval)));
                 e.Consumer(() => new ProcessingConsumerService(generateConsumerService), c => c.UseMessageRetry(retryConfig =>
                 {
-                    retryConfig.Interval(10, TimeSpan.FromMilliseconds(500));
+                    retryConfig.Interval(RetryCount, TimeSpan.FromMilliseconds(RetryInterval));
                 }));
             });
         });
@@ -47,7 +53,7 @@ public class ExchangesServiceImp : ExchangesService
         try
         {
             await busControl.StartAsync(new CancellationToken());
-            Thread.Sleep(3000);
+            await Task.Delay(DelayTimeStartBus);
         }
         finally
         {
@@ -68,11 +74,11 @@ public class ExchangesServiceImp : ExchangesService
 
             configure.ReceiveEndpoint(rabbitMq.WaitingQueue, e =>
             {
-                e.UseMessageRetry(retryConfig => retryConfig.Interval(10, TimeSpan.FromMilliseconds(500)));
+                e.UseMessageRetry(retryConfig => retryConfig.Interval(RetryCount, TimeSpan.FromMilliseconds(RetryInterval)));
 
                 e.Consumer(() => new WaitingConsumerService(generateConsumerService), c => c.UseMessageRetry(retryConfig =>
                 {
-                    retryConfig.Interval(10, TimeSpan.FromMilliseconds(500));
+                    retryConfig.Interval(RetryCount, TimeSpan.FromMilliseconds(RetryInterval));
                 }));
             });
         });
@@ -80,7 +86,7 @@ public class ExchangesServiceImp : ExchangesService
         try
         {
             await busControl.StartAsync(new CancellationToken());
-            Thread.Sleep(3000);
+            await Task.Delay(DelayTimeStartBus);
         }
         finally
         {

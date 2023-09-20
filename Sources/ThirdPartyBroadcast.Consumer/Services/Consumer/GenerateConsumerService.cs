@@ -1,4 +1,6 @@
-﻿namespace ThirdPartyBroadcast.Consumer.Services.Consumer;
+﻿using Fanex.Logging;
+
+namespace ThirdPartyBroadcast.Consumer.Services.Consumer;
 
 public interface GenerateConsumerService
 {
@@ -27,6 +29,6 @@ public class GenerateConsumerServiceImp : GenerateConsumerService
                 break;
         }
 
-        Console.WriteLine($"- Match info: {data}");
+        await LogService.InfoAsync($"ThirdPartyBroadcast Service - ProductType:{productType} - Match info: {data}");
     }
 }

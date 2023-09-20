@@ -17,7 +17,6 @@
     <Compile Remove="Services\HappyFiveServiceTests.cs" />
     <Compile Remove="Services\LeapGamingServiceTests.cs" />
     <Compile Remove="Services\NumberGameServiceTests.cs" />
-    <Compile Remove="Services\OutRightServiceTests.cs" />
     <Compile Remove="Services\PinGoalServiceTests.cs" />
     <Compile Remove="Services\VirtualBetRadarServiceTests.cs" />
     <Compile Remove="Services\VirtualSoccerServiceTests.cs" />
@@ -25,6 +24,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.1" />
+    <PackageReference Include="NSubstitute" Version="5.1.0" />
     <PackageReference Include="xunit" Version="2.4.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -37,7 +37,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Services\" />
+    <ProjectReference Include="..\..\Sources\ThirdPartyBroadcast.Consumer\ThirdPartyBroadcast.Consumer.csproj" />
   </ItemGroup>
 
 </Project>

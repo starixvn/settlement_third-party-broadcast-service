@@ -33,7 +33,7 @@ public class OutrightServiceImp : OutrightService
 
         if (validation.IsSuccessful)
         {
-            var criteria = mapper.Map<AutoOutrightRequest, OutRightCriteria>(request);
+            var criteria = mapper.Map<AutoOutrightRequest, OutrightCriteria>(request);
             return await calculateService.Execute(criteria);
         }
 

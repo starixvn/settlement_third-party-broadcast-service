@@ -1,6 +1,6 @@
 ﻿namespace ThirdPartyBroadcast.Consumer.Criteria.OutRight;
 
-public class OutRightCriteria : CalculateCriteria
+public class OutrightCriteria : CalculateCriteria
 {
     public float DeadHeat { get; set; }
 

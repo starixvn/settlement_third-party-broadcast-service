@@ -11,8 +11,6 @@ public interface GroupOneService
 
 public class GroupOneServiceImp : GroupOneService
 {
-    private const string ErrorMessage = "Error from Settlement ThirdPartyBroadcast Service";
-
     private readonly LogDirectlyService logDirectlyService;
 
     private readonly OutrightService outrightService;

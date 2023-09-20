@@ -40,15 +40,11 @@ public class BroadcastConsumerControllerImp : BroadcastConsumerController
 
         if (isDeployed)
         {
-            Console.WriteLine("- ProcessingQueue");
             await exchangesService.ProcessingQueueReceiver();
         }
         else
         {
-            Console.WriteLine("1. WaitingQueue:");
             await exchangesService.WaitingQueueReceiver();
-
-            Console.WriteLine("2. ProcessingQueue:");
             await exchangesService.ProcessingQueueReceiver();
         }
     }

@@ -16,6 +16,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.gitignore = .gitignore
 		.gitlab-ci.yml = .gitlab-ci.yml
 		Dockerfile = Dockerfile
+		Fanex.ThirdPartyBroadcast.Consumer.Service.sln.DotSettings = Fanex.ThirdPartyBroadcast.Consumer.Service.sln.DotSettings
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ThirdPartyBroadcast.Consumer.UnitTests", "Tests\ThirdPartyBroadcast.Consumer.UnitTests\ThirdPartyBroadcast.Consumer.UnitTests.csproj", "{EF4FA35F-B9D0-47A0-818C-229490D2D1B2}"

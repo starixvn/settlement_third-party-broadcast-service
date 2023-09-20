@@ -8,7 +8,7 @@ public interface LogDirectlyService
 {
     Task WriteLog(int matchId, string message);
 
-    Task HandleLog(Result result, string product, string data);
+    Task HandleLog(Result result, string productType, string data);
 }
 
 public class LogDirectlyServiceImp : LogDirectlyService

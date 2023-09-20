@@ -1,6 +1,6 @@
-﻿using ThirdPartyBroadcast.Criteria.BitCoin;
+﻿namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products;
 
-namespace ThirdPartyBroadcast.UnitTests.Services;
+using Criteria.BitCoin;
 
 public class BitCoinServiceTests
 {
@@ -26,32 +26,24 @@ public class BitCoinServiceTests
     }
 
     [Fact]
-    public async Task Settle_ExistDeployFlag_StopProcess()
+    public async Task Settle_IsFailed_ReturnResultError()
     {
-        var resultFailed = new Result
-        {
-            ErrorCode = 99,
-        };
-
-        calculateService.ValidationDeployFlag(SpName.BitCoin).Returns(resultFailed);
+        var resultMessage = new Result { ErrorCode = 1, ErrorMessage = "Error Message" };
+        calculateService.Execute(Arg.Any<BitCoinCriteria>()).Returns(resultMessage);
 
         var result = await service.Settle(new AutoBitCoinRequest());
 
-        //Assert
-        Assert.Equal(resultFailed.ErrorCode, result.ErrorCode);
-        await repository.DidNotReceive().GetAsync<string>(Arg.Any<BitCoinEventStatusCriteria>());
+        Assert.False(result.IsSuccessful);
     }
 
     [Fact]
-    public async Task Settle_SettleSuccess_DoNotNotify()
+    public async Task Settle_IsSuccessful_DoNotNotify()
     {
-        calculateService.ValidationDeployFlag(SpName.BitCoin).Returns(new Result());
         calculateService.Execute(Arg.Any<BitCoinCriteria>()).Returns(new Result());
 
         var result = await service.Settle(new AutoBitCoinRequest());
 
-        //Assert
-        Assert.Equal(0, result.ErrorCode);
+        Assert.True(result.IsSuccessful);
         await repository.Received().GetAsync<string>(Arg.Any<BitCoinEventStatusCriteria>());
         await repository.Received().ExecuteAsync(Arg.Any<BitCoinUpdateMatchCriteria>());
         await repository.Received().ExecuteAsync(Arg.Any<UpdateEventStatusCriteria>());
@@ -65,13 +57,11 @@ public class BitCoinServiceTests
     public async Task Settle_ReSettle_ShouldNotify(string eventStatus, string action)
     {
         repository.GetAsync<string>(Arg.Any<BitCoinEventStatusCriteria>()).Returns(eventStatus);
-        calculateService.ValidationDeployFlag(SpName.BitCoin).Returns(new Result());
         calculateService.Execute(Arg.Any<BitCoinCriteria>()).Returns(new Result());
 
         var result = await service.Settle(new AutoBitCoinRequest { Action = action });
 
-        //Assert
-        Assert.Equal(0, result.ErrorCode);
+        Assert.True(result.IsSuccessful);
         await repository.Received().ExecuteAsync(Arg.Any<BitCoinUpdateMatchCriteria>());
         await repository.Received().ExecuteAsync(Arg.Any<UpdateEventStatusCriteria>());
         await calculateService.Received().Execute(Arg.Any<BitCoinCriteria>());

@@ -43,7 +43,7 @@ public class BitCoinServiceImp : BitCoinService
 
         if (result.IsSuccessful && !string.IsNullOrWhiteSpace(eventStatus))
         {
-            await Notification(result, request, eventStatus);
+            await Notification(request, eventStatus);
         }
 
         return result;
@@ -56,7 +56,7 @@ public class BitCoinServiceImp : BitCoinService
         return await repository.GetAsync<string>(criteria);
     }
 
-    private async Task Notification(Result result, AutoBitCoinRequest request, string eventStatus)
+    private async Task Notification(AutoBitCoinRequest request, string eventStatus)
     {
         if (string.Equals(eventStatus.ToLowerInvariant(), EventStatus.Completed) || string.Equals(request.Action.ToLowerInvariant(), ActionType.Refund))
         {
