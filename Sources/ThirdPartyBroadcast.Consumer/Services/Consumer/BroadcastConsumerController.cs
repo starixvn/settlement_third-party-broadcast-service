@@ -25,16 +25,17 @@ public class BroadcastConsumerControllerImp : BroadcastConsumerController
 
     public async Task Process()
     {
-        while (true)
+        var flag = true;
+        while (flag)
         {
             if (!maintenanceService.IsMaintenance)
             {
-                await ProcessOnQueue();
+                flag = await ProcessOnQueue();
             }
         }
     }
 
-    private async Task ProcessOnQueue()
+    private async Task<bool> ProcessOnQueue()
     {
         var isDeployed = await flagService.IsDeployedFromCache(CacheKeys.BroadcastFlagCacheKey);
 
@@ -47,5 +48,7 @@ public class BroadcastConsumerControllerImp : BroadcastConsumerController
             await exchangesService.WaitingQueueReceiver();
             await exchangesService.ProcessingQueueReceiver();
         }
+
+        return true;
     }
 }

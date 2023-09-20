@@ -41,6 +41,7 @@ public static class BroadcastConsumerInjection
         service.AddSingleton<BitCoinService, BitCoinServiceImp>();
         service.AddSingleton<GroupOneService, GroupOneServiceImp>();
         service.AddSingleton<OutrightService, OutrightServiceImp>();
+        service.AddSingleton<HappyFiveService, HappyFiveServiceImp>();
 
         service.AddSingleton<IMaintenanceService, MaintenanceServiceImp>();
         service.AddSingleton(new UMClientConfiguration().Initialize(configuration));

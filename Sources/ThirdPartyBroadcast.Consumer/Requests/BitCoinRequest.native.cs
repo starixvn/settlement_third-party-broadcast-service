@@ -1,6 +1,6 @@
 ﻿namespace ThirdPartyBroadcast.Consumer.Requests;
 
-public class AutoBitCoinRequest
+public class BitCoinRequest
 {
     public int MatchId { get; set; }
 

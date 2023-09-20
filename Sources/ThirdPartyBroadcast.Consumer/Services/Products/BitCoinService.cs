@@ -4,7 +4,7 @@ using Criteria.BitCoin;
 
 public interface BitCoinService
 {
-    Task<Result> Settle(AutoBitCoinRequest request);
+    Task<Result> Settle(BitCoinRequest request);
 }
 
 public class BitCoinServiceImp : BitCoinService
@@ -29,16 +29,15 @@ public class BitCoinServiceImp : BitCoinService
         this.logDirectlyService = logDirectlyService;
     }
 
-    public async Task<Result> Settle(AutoBitCoinRequest request)
+    public async Task<Result> Settle(BitCoinRequest request)
     {
         var eventStatus = await GetEventStatus(request.MatchId);
 
         await UpdateMatchInfo(request);
 
-        var criteria = mapper.Map<AutoBitCoinRequest, BitCoinCriteria>(request);
+        await WriteLog(request.MatchId);
 
-        await logDirectlyService.WriteLog(criteria.MatchId, string.Empty);
-
+        var criteria = mapper.Map<BitCoinRequest, BitCoinCriteria>(request);
         var result = await calculateService.Execute(criteria);
 
         if (result.IsSuccessful && !string.IsNullOrWhiteSpace(eventStatus))
@@ -49,6 +48,12 @@ public class BitCoinServiceImp : BitCoinService
         return result;
     }
 
+    private async Task WriteLog(int matchId)
+    {
+        var logMessage = logDirectlyService.Message(matchId);
+        await logDirectlyService.WriteLog(matchId, logMessage);
+    }
+
     private async Task<string> GetEventStatus(int matchId)
     {
         var criteria = new BitCoinEventStatusCriteria { MatchId = matchId };
@@ -56,7 +61,7 @@ public class BitCoinServiceImp : BitCoinService
         return await repository.GetAsync<string>(criteria);
     }
 
-    private async Task Notification(AutoBitCoinRequest request, string eventStatus)
+    private async Task Notification(BitCoinRequest request, string eventStatus)
     {
         if (string.Equals(eventStatus.ToLowerInvariant(), EventStatus.Completed) || string.Equals(request.Action.ToLowerInvariant(), ActionType.Refund))
         {
@@ -70,9 +75,9 @@ public class BitCoinServiceImp : BitCoinService
         }
     }
 
-    private async Task UpdateMatchInfo(AutoBitCoinRequest request)
+    private async Task UpdateMatchInfo(BitCoinRequest request)
     {
-        var criteria = mapper.Map<AutoBitCoinRequest, BitCoinUpdateMatchCriteria>(request);
+        var criteria = mapper.Map<BitCoinRequest, BitCoinUpdateMatchCriteria>(request);
         await repository.ExecuteAsync(criteria);
 
         var updateEventStatus = new UpdateEventStatusCriteria

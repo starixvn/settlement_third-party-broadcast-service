@@ -6,6 +6,8 @@ namespace ThirdPartyBroadcast.Consumer.Services;
 
 public interface LogDirectlyService
 {
+    string Message(int matchId);
+
     Task WriteLog(int matchId, string message);
 
     Task HandleLog(Result result, string productType, string data);
@@ -22,15 +24,16 @@ public class LogDirectlyServiceImp : LogDirectlyService
         this.dynamicRepository = dynamicRepository;
     }
 
+    public string Message(int matchId) => $"Settlement for matchId: {matchId}";
+
     public async Task WriteLog(int matchId, string message)
     {
         try
         {
-            var messageDoing = string.IsNullOrWhiteSpace(message) ? $"Settlement for matchId: {matchId}" : message;
             var criteria = new LogDirectlyCriteria
             {
                 Extend = matchId,
-                Doing = messageDoing
+                Doing = message
             };
 
             await dynamicRepository.ExecuteAsync(criteria);

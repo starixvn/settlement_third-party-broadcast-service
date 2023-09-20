@@ -1,9 +1,10 @@
 ﻿global using AutoMapper;
 global using Fanex.Caching;
 global using Fanex.Data.Repository;
+global using Fanex.Settlement.ScaleOut.Request;
+global using Fanex.Settlement.ScaleOut.Services;
 global using Fanex.Settlement.ThirdPartyBroadcast.Shared;
 global using MassTransit;
-global using MediatR;
 global using Newtonsoft.Json;
 global using ThirdPartyBroadcast.Consumer.Constants;
 global using ThirdPartyBroadcast.Consumer.Models;

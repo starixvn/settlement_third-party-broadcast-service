@@ -1,6 +1,6 @@
 ﻿namespace ThirdPartyBroadcast.Consumer.Requests;
 
-public class AutoOutrightRequest
+public class OutrightRequest
 {
     public int MatchId { get; set; }
 

@@ -14,9 +14,8 @@ public class BroadcastConsumerService : IHostedService
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        await broadcastConsumerController.Process();
-
         Console.WriteLine($"ThirdPartyBroadcast.Consumer.Service is starting at {DateTime.Now}");
+        await broadcastConsumerController.Process();
     }
 
     public Task StopAsync(CancellationToken cancellationToken)

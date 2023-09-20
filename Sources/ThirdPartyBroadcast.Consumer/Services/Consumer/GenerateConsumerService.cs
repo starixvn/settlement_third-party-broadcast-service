@@ -27,6 +27,10 @@ public class GenerateConsumerServiceImp : GenerateConsumerService
             case ProductType.BitCoin:
                 await groupOneService.SettleBitCoin(productType, data);
                 break;
+
+            default:
+                await groupOneService.SettleHappyFive(productType, data);
+                break;
         }
 
         await LogService.InfoAsync($"ThirdPartyBroadcast Service - ProductType:{productType} - Match info: {data}");

@@ -31,7 +31,7 @@ public class BitCoinServiceTests
         var resultMessage = new Result { ErrorCode = 1, ErrorMessage = "Error Message" };
         calculateService.Execute(Arg.Any<BitCoinCriteria>()).Returns(resultMessage);
 
-        var result = await service.Settle(new AutoBitCoinRequest());
+        var result = await service.Settle(new BitCoinRequest());
 
         Assert.False(result.IsSuccessful);
     }
@@ -41,7 +41,7 @@ public class BitCoinServiceTests
     {
         calculateService.Execute(Arg.Any<BitCoinCriteria>()).Returns(new Result());
 
-        var result = await service.Settle(new AutoBitCoinRequest());
+        var result = await service.Settle(new BitCoinRequest());
 
         Assert.True(result.IsSuccessful);
         await repository.Received().GetAsync<string>(Arg.Any<BitCoinEventStatusCriteria>());
@@ -59,7 +59,7 @@ public class BitCoinServiceTests
         repository.GetAsync<string>(Arg.Any<BitCoinEventStatusCriteria>()).Returns(eventStatus);
         calculateService.Execute(Arg.Any<BitCoinCriteria>()).Returns(new Result());
 
-        var result = await service.Settle(new AutoBitCoinRequest { Action = action });
+        var result = await service.Settle(new BitCoinRequest { Action = action });
 
         Assert.True(result.IsSuccessful);
         await repository.Received().ExecuteAsync(Arg.Any<BitCoinUpdateMatchCriteria>());

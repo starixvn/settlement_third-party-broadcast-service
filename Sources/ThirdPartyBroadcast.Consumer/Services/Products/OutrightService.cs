@@ -1,12 +1,10 @@
-﻿using Fanex.Settlement.ScaleOut.Services;
-
-namespace ThirdPartyBroadcast.Consumer.Services.Products;
+﻿namespace ThirdPartyBroadcast.Consumer.Services.Products;
 
 using Criteria.OutRight;
 
 public interface OutrightService
 {
-    Task<Result> Settle(AutoOutrightRequest request);
+    Task<Result> Settle(OutrightRequest request);
 }
 
 public class OutrightServiceImp : OutrightService
@@ -27,20 +25,20 @@ public class OutrightServiceImp : OutrightService
         this.scaleOutSettleThirdPartyService = scaleOutSettleThirdPartyService;
     }
 
-    public async Task<Result> Settle(AutoOutrightRequest request)
+    public async Task<Result> Settle(OutrightRequest request)
     {
         var validation = await ValidateBeforeSettle(request);
 
         if (validation.IsSuccessful)
         {
-            var criteria = mapper.Map<AutoOutrightRequest, OutrightCriteria>(request);
+            var criteria = mapper.Map<OutrightRequest, OutrightCriteria>(request);
             return await calculateService.Execute(criteria);
         }
 
         return validation;
     }
 
-    private async Task<Result> ValidateBeforeSettle(AutoOutrightRequest request)
+    private async Task<Result> ValidateBeforeSettle(OutrightRequest request)
     {
         const string eventTable = "outright";
         var result = await scaleOutSettleThirdPartyService.ValidateMoveBetDay(request.MatchId.ToString(), eventTable);

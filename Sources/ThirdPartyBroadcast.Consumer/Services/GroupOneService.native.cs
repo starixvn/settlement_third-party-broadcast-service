@@ -7,6 +7,8 @@ public interface GroupOneService
     Task SettleOutright(string productType, string data);
 
     Task SettleBitCoin(string productType, string data);
+
+    Task SettleHappyFive(string productType, string data);
 }
 
 public class GroupOneServiceImp : GroupOneService
@@ -17,27 +19,38 @@ public class GroupOneServiceImp : GroupOneService
 
     private readonly BitCoinService bitCoinService;
 
+    private readonly HappyFiveService happyFiveService;
+
     public GroupOneServiceImp(
         OutrightService outrightService,
         BitCoinService bitCoinService,
-        LogDirectlyService logDirectlyService)
+        LogDirectlyService logDirectlyService,
+        HappyFiveService happyFiveService)
     {
         this.outrightService = outrightService;
         this.bitCoinService = bitCoinService;
         this.logDirectlyService = logDirectlyService;
+        this.happyFiveService = happyFiveService;
     }
 
     public async Task SettleOutright(string productType, string data)
     {
-        var request = JsonConvert.DeserializeObject<AutoOutrightRequest>(data);
+        var request = JsonConvert.DeserializeObject<OutrightRequest>(data);
         var result = await outrightService.Settle(request);
         await logDirectlyService.HandleLog(result, productType, data);
     }
 
     public async Task SettleBitCoin(string productType, string data)
     {
-        var request = JsonConvert.DeserializeObject<AutoBitCoinRequest>(data);
+        var request = JsonConvert.DeserializeObject<BitCoinRequest>(data);
         var result = await bitCoinService.Settle(request);
+        await logDirectlyService.HandleLog(result, productType, data);
+    }
+
+    public async Task SettleHappyFive(string productType, string data)
+    {
+        var request = JsonConvert.DeserializeObject<HappyFiveRequest>(data);
+        var result = await happyFiveService.Settle(request);
         await logDirectlyService.HandleLog(result, productType, data);
     }
 }

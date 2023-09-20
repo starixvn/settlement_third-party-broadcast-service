@@ -12,9 +12,7 @@
   <ItemGroup>
     <Compile Remove="Services\BetBuilderServiceTests.cs" />
     <Compile Remove="Services\BitCoinServiceTests.cs" />
-    <Compile Remove="Services\CalculateServiceTests.cs" />
     <Compile Remove="Services\FastMarketServiceTests.cs" />
-    <Compile Remove="Services\HappyFiveServiceTests.cs" />
     <Compile Remove="Services\LeapGamingServiceTests.cs" />
     <Compile Remove="Services\NumberGameServiceTests.cs" />
     <Compile Remove="Services\PinGoalServiceTests.cs" />
@@ -23,6 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Fanex.Caching" Version="2.2.3" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.1" />
     <PackageReference Include="NSubstitute" Version="5.1.0" />
     <PackageReference Include="xunit" Version="2.4.2" />

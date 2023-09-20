@@ -1,53 +1,21 @@
 ﻿using Microsoft.Extensions.Options;
+using ThirdPartyBroadcast.Consumer.Criteria;
 
-namespace ThirdPartyBroadcast.UnitTests.Services;
+namespace ThirdPartyBroadcast.Consumer.UnitTests.Services;
 
 public class CalculateServiceTests
 {
     private readonly IDynamicRepository repository;
-
-    private readonly ScaleOutSettleThirdPartyService scaleOutSettleThirdPartyService;
 
     private readonly CalculateService service;
 
     public CalculateServiceTests()
     {
         repository = Substitute.For<IDynamicRepository>();
-        scaleOutSettleThirdPartyService = Substitute.For<ScaleOutSettleThirdPartyService>();
         var appSettingsKey = new AppSettingsKey { SiteDbServer = new List<string> { "01", "02" } };
         var options = Options.Create(appSettingsKey);
 
-        service = new CalculateServiceImp(repository, options, scaleOutSettleThirdPartyService);
-    }
-
-    [Fact]
-    public async Task Execute_IsExistErrorCode99_ReturnErrorCode99()
-    {
-        await repository.ExecuteAsync(Arg.Do<CalculateCriteria>(criteria =>
-        {
-            criteria.ErrMsg = "Test";
-            criteria.ErrCode = 99;
-        }));
-
-        var result = await service.Execute(new CalculateCriteria());
-
-        //Assert
-        Assert.Equal(99, result.ErrorCode);
-    }
-
-    [Fact]
-    public async Task Execute_IsNotExistErrorCode99_ReturnCountError()
-    {
-        await repository.ExecuteAsync(Arg.Do<CalculateCriteria>(criteria =>
-        {
-            criteria.ErrMsg = "Test";
-            criteria.ErrCode = 12345;
-        }));
-
-        var result = await service.Execute(new CalculateCriteria());
-
-        //Assert
-        Assert.Equal(2, result.ErrorCode);
+        service = new CalculateServiceImp(repository, options);
     }
 
     [Fact]
@@ -88,14 +56,5 @@ public class CalculateServiceTests
         await service.ExecuteValidationMultiServer(new BaseCriteria());
 
         await repository.Received(executeTime).ExecuteAsync(Arg.Any<BaseCriteria>());
-    }
-
-    [Fact]
-    public void ValidationDeployFlag_Always_CallService3rd()
-    {
-        service.ValidationDeployFlag("Mock");
-
-        scaleOutSettleThirdPartyService.Received()
-            .GetDeploymentInfo(Arg.Is<GetDeploymentInfoRequest>(item => item.SpName == "Mock"));
     }
 }

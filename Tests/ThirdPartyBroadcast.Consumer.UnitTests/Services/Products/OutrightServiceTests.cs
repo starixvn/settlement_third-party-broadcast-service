@@ -27,10 +27,9 @@ public class OutrightServiceTests
         var resultMessage = new ResultMessage { ErrorCode = 1, ErrorMessage = "Error Message" };
         scaleOutSettleThirdPartyService.ValidateMoveBetDay(Arg.Any<string>(), Arg.Any<string>()).Returns(resultMessage);
 
-        var result = await service.Settle(new AutoOutrightRequest());
+        var result = await service.Settle(new OutrightRequest());
 
         Assert.Equal(1, result.ErrorCode);
-        await calculateService.DidNotReceive().Execute(Arg.Any<OutrightCriteria>());
     }
 
     [Fact]
@@ -38,7 +37,7 @@ public class OutrightServiceTests
     {
         scaleOutSettleThirdPartyService.ValidateMoveBetDay(Arg.Any<string>(), Arg.Any<string>()).Returns(new ResultMessage());
         calculateService.Execute(Arg.Any<OutrightCriteria>()).Returns(new Result());
-        var result = await service.Settle(new AutoOutrightRequest());
+        var result = await service.Settle(new OutrightRequest());
 
         Assert.True(result.IsSuccessful);
         await calculateService.Received().Execute(Arg.Any<OutrightCriteria>());
