@@ -28,6 +28,10 @@ public class GenerateConsumerServiceImp : GenerateConsumerService
                 await groupOneService.SettleBitCoin(productType, data);
                 break;
 
+            case ProductType.NumberGame:
+                await groupOneService.SettleNumberGame(productType, data);
+                break;
+
             default:
                 await groupOneService.SettleHappyFive(productType, data);
                 break;

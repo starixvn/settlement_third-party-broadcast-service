@@ -1,5 +1,6 @@
 ﻿using ThirdPartyBroadcast.Consumer.Criteria.BitCoin;
 using ThirdPartyBroadcast.Consumer.Criteria.HappyFive;
+using ThirdPartyBroadcast.Consumer.Criteria.NumberGame;
 using ThirdPartyBroadcast.Consumer.Criteria.OutRight;
 
 namespace ThirdPartyBroadcast.Consumer;
@@ -8,7 +9,7 @@ public class ThirdPartyBroadcastMappingProfile : Profile
 {
     public ThirdPartyBroadcastMappingProfile()
     {
-        //CreateMap<AutoNumberGameRequest, NumberGameCriteria>();
+        CreateMap<NumberGameRequest, NumberGameCriteria>();
         //CreateMap<AutoFastMarketRequest, FastMarketCriteria>();
         CreateMap<HappyFiveRequest, HappyFiveCriteria>();
         //CreateMap<AutoPinGoalRequest, UpdateMatchInfoRequest>();

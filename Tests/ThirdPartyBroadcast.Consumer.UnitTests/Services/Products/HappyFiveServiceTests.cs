@@ -51,7 +51,7 @@ public class HappyFiveServiceTests
             x.ErrMsg = string.Empty;
         }));
 
-        var result = await service.Settle(new HappyFiveRequest());
+        await service.Settle(new HappyFiveRequest());
 
         Received.InOrder(() =>
         {
