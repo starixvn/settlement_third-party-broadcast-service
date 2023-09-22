@@ -1,6 +1,6 @@
 ﻿namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products;
 
-using Criteria.OutRight;
+using Criteria;
 
 public class OutrightServiceTests
 {

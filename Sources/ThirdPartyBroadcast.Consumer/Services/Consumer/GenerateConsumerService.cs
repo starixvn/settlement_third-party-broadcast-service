@@ -32,6 +32,14 @@ public class GenerateConsumerServiceImp : GenerateConsumerService
                 await groupOneService.SettleNumberGame(productType, data);
                 break;
 
+            case ProductType.BetBuilder:
+                await groupOneService.SettleBetBuilder(productType, data);
+                break;
+
+            case ProductType.FastMarket:
+                await groupOneService.SettleFastMarket(productType, data);
+                break;
+
             default:
                 await groupOneService.SettleHappyFive(productType, data);
                 break;

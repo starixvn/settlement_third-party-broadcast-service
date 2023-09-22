@@ -1,6 +1,6 @@
 ﻿namespace ThirdPartyBroadcast.Consumer.Services.Products;
 
-using Criteria.OutRight;
+using Criteria;
 
 public interface OutrightService
 {

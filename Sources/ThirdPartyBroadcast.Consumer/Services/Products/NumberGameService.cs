@@ -1,6 +1,6 @@
 ﻿namespace ThirdPartyBroadcast.Consumer.Services.Products;
 
-using Criteria.NumberGame;
+using Criteria;
 
 public interface NumberGameService
 {

@@ -1,4 +1,4 @@
-﻿namespace ThirdPartyBroadcast.Consumer.Criteria.OutRight;
+﻿namespace ThirdPartyBroadcast.Consumer.Criteria;
 
 public class OutrightCriteria : CalculateCriteria
 {

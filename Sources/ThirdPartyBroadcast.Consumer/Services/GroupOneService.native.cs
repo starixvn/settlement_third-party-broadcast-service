@@ -12,6 +12,10 @@ public interface GroupOneService
     Task SettleHappyFive(string productType, string data);
 
     Task SettleNumberGame(string productType, string data);
+
+    Task SettleBetBuilder(string productType, string data);
+
+    Task SettleFastMarket(string productType, string data);
 }
 
 public class GroupOneServiceImp : GroupOneService
@@ -28,13 +32,16 @@ public class GroupOneServiceImp : GroupOneService
 
     private readonly BetBuilderService betBuilderService;
 
+    private readonly FastMarketService fastMarketService;
+
     public GroupOneServiceImp(
         OutrightService outrightService,
         BitCoinService bitCoinService,
         LogDirectlyService logDirectlyService,
         HappyFiveService happyFiveService,
         NumberGameService numberGameService,
-        BetBuilderService betBuilderService)
+        BetBuilderService betBuilderService,
+        FastMarketService fastMarketService)
     {
         this.outrightService = outrightService;
         this.bitCoinService = bitCoinService;
@@ -42,6 +49,7 @@ public class GroupOneServiceImp : GroupOneService
         this.happyFiveService = happyFiveService;
         this.numberGameService = numberGameService;
         this.betBuilderService = betBuilderService;
+        this.fastMarketService = fastMarketService;
     }
 
     public async Task SettleOutright(string productType, string data)
@@ -76,6 +84,13 @@ public class GroupOneServiceImp : GroupOneService
     {
         var request = JsonConvert.DeserializeObject<BetBuilderRequest>(data);
         var result = await betBuilderService.Settle(request);
+        await logDirectlyService.HandleLog(result, productType, data);
+    }
+
+    public async Task SettleFastMarket(string productType, string data)
+    {
+        var request = JsonConvert.DeserializeObject<FastMarketRequest>(data);
+        var result = await fastMarketService.Settle(request);
         await logDirectlyService.HandleLog(result, productType, data);
     }
 }

@@ -1,6 +1,8 @@
-﻿using Fanex.Settlement.ScaleOut.Models;
+﻿using Fanex.Settlement.ScaleOut.Request;
 
-namespace ThirdPartyBroadcast.UnitTests.Services;
+namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products;
+
+using Criteria;
 
 public class FastMarketServiceTests
 {
@@ -35,9 +37,8 @@ public class FastMarketServiceTests
 
         scaleOutSettleService.ValidateEventAndTicketFastMarket(Arg.Any<EventTicketFastMarketRequest>()).Returns(resultFailed);
 
-        var result = await service.Settle(new AutoFastMarketRequest());
+        var result = await service.Settle(new FastMarketRequest());
 
-        //Assert
         Assert.Equal(resultFailed.ErrorCode, result.ErrorCode);
         await scaleOutSettleService.DidNotReceive().UpdateMatchInfo(Arg.Any<UpdateMatchInfoRequest>());
     }
@@ -47,9 +48,8 @@ public class FastMarketServiceTests
     {
         scaleOutSettleService.ValidateEventAndTicketFastMarket(Arg.Any<EventTicketFastMarketRequest>()).Returns(new ResultMessage());
 
-        await service.Settle(new AutoFastMarketRequest());
+        await service.Settle(new FastMarketRequest());
 
-        //Assert
         await scaleOutSettleService.Received().UpdateMatchInfo(Arg.Any<UpdateMatchInfoRequest>());
         await calculateService.Received().Execute(Arg.Any<FastMarketCriteria>());
         await logDirectlyService.WriteLog(Arg.Any<int>(), Arg.Any<string>());

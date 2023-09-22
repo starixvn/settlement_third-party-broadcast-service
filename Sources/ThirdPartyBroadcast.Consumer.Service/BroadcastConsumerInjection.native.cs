@@ -47,6 +47,7 @@ public static class BroadcastConsumerInjection
         service.AddSingleton<HappyFiveService, HappyFiveServiceImp>();
         service.AddSingleton<NumberGameService, NumberGameServiceImp>();
         service.AddSingleton<BetBuilderService, BetBuilderServiceImp>();
+        service.AddSingleton<FastMarketService, FastMarketServiceImp>();
 
         service.AddSingleton<IMaintenanceService, MaintenanceServiceImp>();
         service.AddSingleton(new UMClientConfiguration().Initialize(configuration));

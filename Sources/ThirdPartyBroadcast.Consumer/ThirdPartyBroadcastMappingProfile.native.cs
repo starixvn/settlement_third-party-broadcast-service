@@ -1,10 +1,9 @@
 ﻿namespace ThirdPartyBroadcast.Consumer;
 
+using Criteria;
 using Criteria.BetBuilder;
 using Criteria.BitCoin;
 using Criteria.HappyFive;
-using Criteria.NumberGame;
-using Criteria.OutRight;
 using Requests;
 
 public class ThirdPartyBroadcastMappingProfile : Profile
@@ -12,13 +11,13 @@ public class ThirdPartyBroadcastMappingProfile : Profile
     public ThirdPartyBroadcastMappingProfile()
     {
         CreateMap<NumberGameRequest, NumberGameCriteria>();
-        //CreateMap<AutoFastMarketRequest, FastMarketCriteria>();
+        CreateMap<FastMarketRequest, FastMarketCriteria>();
         CreateMap<HappyFiveRequest, HappyFiveCriteria>();
         //CreateMap<AutoPinGoalRequest, UpdateMatchInfoRequest>();
         //CreateMap<AutoPinGoalRequest, PinGoalCriteria>();
         CreateMap<BitCoinRequest, BitCoinUpdateMatchCriteria>();
         CreateMap<BitCoinRequest, BitCoinCriteria>();
-        //CreateMap<FastMarketCriteria, EventTicketFastMarketRequest>();
+        CreateMap<FastMarketCriteria, EventTicketFastMarketRequest>();
         //CreateMap<AutoVirtualBetRadarRequest, BetRadarUpdateMatchCriteria>();
         //CreateMap<AutoVirtualBetRadarRequest, VirtualBetRadarCriteria>();
         //CreateMap<AutoVirtualSoccerRequest, VirtualSoccerCriteria>();

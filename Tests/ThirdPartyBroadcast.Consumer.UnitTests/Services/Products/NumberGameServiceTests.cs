@@ -1,5 +1,5 @@
 ﻿using Fanex.Settlement.ScaleOut.Request;
-using ThirdPartyBroadcast.Consumer.Criteria.NumberGame;
+using ThirdPartyBroadcast.Consumer.Criteria;
 
 namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products;
 

@@ -12,7 +12,6 @@
   <ItemGroup>
     <Compile Remove="Services\BetBuilderServiceTests.cs" />
     <Compile Remove="Services\BitCoinServiceTests.cs" />
-    <Compile Remove="Services\FastMarketServiceTests.cs" />
     <Compile Remove="Services\LeapGamingServiceTests.cs" />
     <Compile Remove="Services\NumberGameServiceTests.cs" />
     <Compile Remove="Services\PinGoalServiceTests.cs" />
