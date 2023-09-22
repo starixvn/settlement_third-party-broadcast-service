@@ -1,6 +1,7 @@
-﻿using ThirdPartyBroadcast.Consumer.Services.Products;
+﻿namespace ThirdPartyBroadcast.Consumer.Services;
 
-namespace ThirdPartyBroadcast.Consumer.Services;
+using Products;
+using Requests;
 
 public interface GroupOneService
 {
@@ -25,18 +26,22 @@ public class GroupOneServiceImp : GroupOneService
 
     private readonly NumberGameService numberGameService;
 
+    private readonly BetBuilderService betBuilderService;
+
     public GroupOneServiceImp(
         OutrightService outrightService,
         BitCoinService bitCoinService,
         LogDirectlyService logDirectlyService,
         HappyFiveService happyFiveService,
-        NumberGameService numberGameService)
+        NumberGameService numberGameService,
+        BetBuilderService betBuilderService)
     {
         this.outrightService = outrightService;
         this.bitCoinService = bitCoinService;
         this.logDirectlyService = logDirectlyService;
         this.happyFiveService = happyFiveService;
         this.numberGameService = numberGameService;
+        this.betBuilderService = betBuilderService;
     }
 
     public async Task SettleOutright(string productType, string data)
@@ -64,6 +69,13 @@ public class GroupOneServiceImp : GroupOneService
     {
         var request = JsonConvert.DeserializeObject<NumberGameRequest>(data);
         var result = await numberGameService.Settle(request);
+        await logDirectlyService.HandleLog(result, productType, data);
+    }
+
+    public async Task SettleBetBuilder(string productType, string data)
+    {
+        var request = JsonConvert.DeserializeObject<BetBuilderRequest>(data);
+        var result = await betBuilderService.Settle(request);
         await logDirectlyService.HandleLog(result, productType, data);
     }
 }

@@ -1,9 +1,11 @@
-﻿using ThirdPartyBroadcast.Consumer.Criteria.BitCoin;
-using ThirdPartyBroadcast.Consumer.Criteria.HappyFive;
-using ThirdPartyBroadcast.Consumer.Criteria.NumberGame;
-using ThirdPartyBroadcast.Consumer.Criteria.OutRight;
+﻿namespace ThirdPartyBroadcast.Consumer;
 
-namespace ThirdPartyBroadcast.Consumer;
+using Criteria.BetBuilder;
+using Criteria.BitCoin;
+using Criteria.HappyFive;
+using Criteria.NumberGame;
+using Criteria.OutRight;
+using Requests;
 
 public class ThirdPartyBroadcastMappingProfile : Profile
 {
@@ -21,8 +23,8 @@ public class ThirdPartyBroadcastMappingProfile : Profile
         //CreateMap<AutoVirtualBetRadarRequest, VirtualBetRadarCriteria>();
         //CreateMap<AutoVirtualSoccerRequest, VirtualSoccerCriteria>();
         //CreateMap<AutoVirtualSoccerRequest, VrSoccerUpdateMatchCriteria>();
-        //CreateMap<AutoBetBuilderRequest, UpdateMarketCriteria>();
-        //CreateMap<AutoBetBuilderRequest, BetBuilderCriteria>();
+        CreateMap<BetBuilderRequest, UpdateMarketCriteria>();
+        CreateMap<BetBuilderRequest, BetBuilderCriteria>();
         CreateMap<OutrightRequest, OutrightCriteria>();
         //CreateMap<WriteLogCriteria, SendMailCriteria>().ForMember(dest => dest.AdminId, opt => opt.MapFrom(src => src.UserId));
         //CreateMap<AutoVirtualSoccerRequest, UpdateMatchInfo3RdRequest>().ForMember(dest => dest.Creator, opt => opt.MapFrom(src => src.AdminId));

@@ -6,6 +6,7 @@ using Fanex.Data.Repository;
 using Fanex.Data.SqlServer;
 using Fanex.Logging;
 using Fanex.Logging.Sentry.RavenClient;
+using Fanex.Settlement.Converter.Services;
 using Fanex.Settlement.ScaleOut;
 using Fanex.Settlement.ScaleOut.Services;
 using Microsoft.AspNetCore.Http;
@@ -28,11 +29,13 @@ public static class BroadcastConsumerInjection
     public static void InitializeServices(this IServiceCollection service, IConfiguration configuration)
     {
         service.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+        service.AddSingleton<XmlConvertService, XmlConvertServiceImp>();
         service.AddTransient<ScaleOutSettleThirdPartyService, ScaleOutSettleThirdPartyServiceImp>();
         service.AddTransient<IDynamicRepository, DynamicRepository>();
         service.AddTransient<CalculateService, CalculateServiceImp>();
         service.AddTransient<LogDirectlyService, LogDirectlyServiceImp>();
         service.AddTransient<GeneralService, GeneralServiceImp>();
+        service.AddTransient<ScaleOutSettleService, ScaleOutSettleServiceImp>();
         service.AddSingleton<ICacheService, CacheService>();
         service.AddSingleton<BroadcastConsumerController, BroadcastConsumerControllerImp>();
         service.AddSingleton<ExchangesService, ExchangesServiceImp>();
@@ -43,6 +46,7 @@ public static class BroadcastConsumerInjection
         service.AddSingleton<OutrightService, OutrightServiceImp>();
         service.AddSingleton<HappyFiveService, HappyFiveServiceImp>();
         service.AddSingleton<NumberGameService, NumberGameServiceImp>();
+        service.AddSingleton<BetBuilderService, BetBuilderServiceImp>();
 
         service.AddSingleton<IMaintenanceService, MaintenanceServiceImp>();
         service.AddSingleton(new UMClientConfiguration().Initialize(configuration));

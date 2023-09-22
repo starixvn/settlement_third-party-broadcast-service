@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <PackageReference Include="Fanex.Caching" Version="2.2.3" />
+    <PackageReference Include="Fanex.Settlement.Converter" Version="1.0.0.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.1" />
     <PackageReference Include="NSubstitute" Version="5.1.0" />
     <PackageReference Include="xunit" Version="2.4.2" />

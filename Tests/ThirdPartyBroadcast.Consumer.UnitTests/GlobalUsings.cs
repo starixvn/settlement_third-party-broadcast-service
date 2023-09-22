@@ -1,5 +1,6 @@
 global using AutoMapper;
 global using Fanex.Data.Repository;
+global using Fanex.Settlement.Converter.Services;
 global using Fanex.Settlement.ScaleOut.Models;
 global using Fanex.Settlement.ScaleOut.Services;
 global using NSubstitute;
