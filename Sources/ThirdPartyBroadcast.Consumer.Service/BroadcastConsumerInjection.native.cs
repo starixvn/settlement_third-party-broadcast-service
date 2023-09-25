@@ -1,9 +1,7 @@
 ﻿using AutoMapper;
 using Fanex.Caching;
 using Fanex.Caching.Redis;
-using Fanex.Data;
 using Fanex.Data.Repository;
-using Fanex.Data.SqlServer;
 using Fanex.Logging;
 using Fanex.Logging.Sentry.RavenClient;
 using Fanex.Settlement.Converter.Services;
@@ -56,7 +54,6 @@ public static class BroadcastConsumerInjection
         service.AddSingleton<ONEbook.UM.Services.IMaintenanceService, ONEbook.UM.Services.MaintenanceService>();
         service.AddConfigRedisCache(configuration);
         StartUmSetting(configuration);
-        StartDataBaseSetting(configuration);
         StartLogSetting(configuration);
         service.ConfigureAutoMapper();
     }
@@ -93,24 +90,6 @@ public static class BroadcastConsumerInjection
             .UseConfig(umConfig)
             .UseCacheService(new UMCacheService(new CacheService()))
             .UseRestClient(new UMRestClient(umConfig));
-    }
-
-    private static void StartDataBaseSetting(IConfiguration configuration)
-    {
-        var connections = configuration.GetSection("ConnectionStrings")
-            .GetChildren()
-            .AsEnumerable()
-            .ToDictionary(
-                x => x.GetValue<string>("Name"),
-                y => new ConnectionConfiguration(y.GetValue<string>("Name"), y.GetValue<string>("ConnectionString"), y.GetValue<string>("ProviderName"))
-            );
-
-        DbSettingProviderManager
-            .StartNewSession()
-            .Use(connections)
-            .WithSqlServer()
-            .UseDefaultDbSettingProvider(resourcePath: configuration.GetSection("StoredProcedurePath").Value)
-            .Run();
     }
 
     private static void StartLogSetting(IConfiguration configuration)
