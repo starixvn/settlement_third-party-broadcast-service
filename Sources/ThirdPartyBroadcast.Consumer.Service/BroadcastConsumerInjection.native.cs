@@ -41,11 +41,14 @@ public static class BroadcastConsumerInjection
         service.AddSingleton<GenerateConsumerService, GenerateConsumerServiceImp>();
         service.AddSingleton<BitCoinService, BitCoinServiceImp>();
         service.AddSingleton<GroupOneService, GroupOneServiceImp>();
+        service.AddSingleton<GroupTwoService, GroupTwoServiceImp>();
         service.AddSingleton<OutrightService, OutrightServiceImp>();
         service.AddSingleton<HappyFiveService, HappyFiveServiceImp>();
         service.AddSingleton<NumberGameService, NumberGameServiceImp>();
         service.AddSingleton<BetBuilderService, BetBuilderServiceImp>();
         service.AddSingleton<FastMarketService, FastMarketServiceImp>();
+        service.AddSingleton<VirtualBetRadarService, VirtualBetRadarServiceImp>();
+        service.AddSingleton<VirtualSoccerService, VirtualSoccerServiceImp>();
 
         service.AddSingleton<IMaintenanceService, MaintenanceServiceImp>();
         service.AddSingleton(new UMClientConfiguration().Initialize(configuration));

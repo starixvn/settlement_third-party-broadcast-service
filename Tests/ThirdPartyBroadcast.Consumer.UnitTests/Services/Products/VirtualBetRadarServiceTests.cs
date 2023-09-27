@@ -1,4 +1,6 @@
-﻿namespace ThirdPartyBroadcast.UnitTests.Services;
+﻿using ThirdPartyBroadcast.Consumer.Criteria;
+
+namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products;
 
 using Criteria.VirtualBetRadar;
 
@@ -10,6 +12,7 @@ public class VirtualBetRadarServiceTests
 
     private readonly VirtualBetRadarService service;
     private readonly LogDirectlyService logService;
+
     public VirtualBetRadarServiceTests()
     {
         calculateService = Substitute.For<CalculateService>();
@@ -24,22 +27,6 @@ public class VirtualBetRadarServiceTests
     }
 
     [Theory]
-    [InlineData(1, 0)]
-    [InlineData(0, 1)]
-    public async Task Settle_ValidateFailed_StopProcess(int validateDeployFlag, int validateTicket)
-    {
-        calculateService.ValidationDeployFlag(SpName.VirtualBetRadar)
-            .Returns(new Result { ErrorCode = validateDeployFlag });
-        calculateService.ExecuteValidationMultiServer(Arg.Any<BetRadarValidationCriteria>())
-            .Returns(new Result { ErrorCode = validateTicket });
-
-        var result = await service.Settle(new AutoVirtualBetRadarRequest());
-
-        Assert.Equal(1, result.ErrorCode);
-        await repository.DidNotReceive().ExecuteAsync(Arg.Any<BetRadarUpdateMatchCriteria>());
-    }
-
-    [Theory]
     [InlineData(ActionType.Calculate, false, false, true, true, 0)]
     [InlineData(ActionType.Calculate, true, false, false, false, 2)]
     [InlineData(ActionType.Calculate, false, true, false, false, 2)]
@@ -48,7 +35,7 @@ public class VirtualBetRadarServiceTests
     [InlineData(ActionType.Refund, true, false, false, true, 10)]
     public async Task Settle_ValidatePassed_CallSettleWithCorrectNotifyStatus(string action, bool calculate, bool calRefund, bool multiple, bool refund, int expected)
     {
-        var request = new AutoVirtualBetRadarRequest
+        var request = new VirtualBetRadarRequest
         {
             Action = action,
         };
@@ -62,12 +49,11 @@ public class VirtualBetRadarServiceTests
 
         IMapper mapperMock = Substitute.For<IMapper>();
         var serviceMock = new VirtualBetRadarServiceImp(repository, mapperMock, calculateService, logService);
-        calculateService.ValidationDeployFlag(SpName.VirtualBetRadar).Returns(new Result());
         calculateService.ExecuteValidationMultiServer(Arg.Any<BetRadarValidationCriteria>()).Returns(new Result());
         await repository.ExecuteAsync(Arg.Any<BetRadarUpdateMatchCriteria>());
         calculateService.Execute(Arg.Any<VirtualBetRadarCriteria>()).Returns(new Result());
         repository.GetAsync<MatchStatus>(Arg.Any<GetMatchStatusCriteria>()).Returns(matchStatus);
-        mapperMock.Map<AutoVirtualBetRadarRequest, VirtualBetRadarCriteria>(request).Returns(new VirtualBetRadarCriteria { DbServer = "DBTXN" });
+        mapperMock.Map<VirtualBetRadarRequest, VirtualBetRadarCriteria>(request).Returns(new VirtualBetRadarCriteria { DbServer = "DBTXN" });
 
         //Action
         await serviceMock.Settle(request);
@@ -79,17 +65,15 @@ public class VirtualBetRadarServiceTests
     [Fact]
     public async Task Settle_ValidatePassed_SettleSuccessAndWriteLog()
     {
-        calculateService.ValidationDeployFlag(SpName.VirtualBetRadar)
-            .Returns(new Result());
         calculateService.ExecuteValidationMultiServer(Arg.Any<BetRadarValidationCriteria>())
             .Returns(new Result());
         calculateService.Execute(Arg.Any<VirtualBetRadarCriteria>()).Returns(new Result());
 
-        await service.Settle(new AutoVirtualBetRadarRequest());
+        await service.Settle(new VirtualBetRadarRequest());
 
         await repository.Received().ExecuteAsync(Arg.Any<BetRadarUpdateMatchCriteria>());
         await calculateService.Received().Execute(Arg.Any<VirtualBetRadarCriteria>());
-        repository.Received().Execute(Arg.Any<WriteLogCriteria>());
+        await repository.Received().ExecuteAsync(Arg.Any<WriteLogCriteria>());
     }
 
     [Fact]
@@ -100,19 +84,17 @@ public class VirtualBetRadarServiceTests
             ErrorCode = 1,
             ErrorMessage = "Message"
         };
-        calculateService.ValidationDeployFlag(SpName.VirtualBetRadar)
-            .Returns(new Result());
         calculateService.ExecuteValidationMultiServer(Arg.Any<BetRadarValidationCriteria>())
             .Returns(new Result());
         calculateService.Execute(Arg.Any<VirtualBetRadarCriteria>()).Returns(resultSettle);
 
         //action
-        await service.Settle(new AutoVirtualBetRadarRequest());
-        var message = "NAP: VS BetRadar - Error: API inserted into single queue failed. Message";
+        await service.Settle(new VirtualBetRadarRequest());
+        const string message = "NAP: VS BetRadar - Error: API inserted into single queue failed. Message";
 
         //assert
         await repository.Received().ExecuteAsync(Arg.Any<BetRadarUpdateMatchCriteria>());
         await calculateService.Received().Execute(Arg.Any<VirtualBetRadarCriteria>());
-        repository.Received().Execute(Arg.Is<WriteLogCriteria>(item => item.Remark == message));
+        await repository.Received().ExecuteAsync(Arg.Is<WriteLogCriteria>(item => item.Remark == message));
     }
 }

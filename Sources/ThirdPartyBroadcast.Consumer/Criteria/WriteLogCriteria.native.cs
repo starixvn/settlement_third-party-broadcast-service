@@ -11,6 +11,14 @@ public class WriteLogCriteria : NonQueryCommand
         Ip = ip;
     }
 
+    public WriteLogCriteria(int matchId, int actionId, int userId, string ip)
+    {
+        MatchId = matchId;
+        ActionId = actionId;
+        UserId = userId;
+        Ip = ip;
+    }
+
     public int UserId { get; }
 
     public int MatchId { get; set; }
