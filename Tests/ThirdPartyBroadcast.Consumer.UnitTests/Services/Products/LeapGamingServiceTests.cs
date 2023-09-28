@@ -1,6 +1,7 @@
-﻿using ThirdPartyBroadcast.Criteria.LeapGaming;
+﻿using ThirdPartyBroadcast.Consumer.Criteria;
+using ThirdPartyBroadcast.Consumer.Criteria.LeapGaming;
 
-namespace ThirdPartyBroadcast.UnitTests.Services;
+namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products;
 
 public class LeapGamingServiceTests
 {
@@ -38,25 +39,8 @@ public class LeapGamingServiceTests
     }
 
     [Fact]
-    public async Task Settle_DeployFlagTurnOn_StopProcessAndReturn()
-    {
-        var resultFailed = new Result
-        {
-            ErrorCode = 1
-        };
-
-        calculateService.ValidationDeployFlag(SpName.LeapGaming).Returns(resultFailed);
-
-        var result = await service.Settle(new LeapGamingRequest { SelectedResources = "<Resources> <Resource Id=\"00\" Home=\"1\" Away=\"1\"/> <Resource Id=\"01\" Home=\"1\" Away=\"1\"/></Resources>" });
-
-        Assert.Equal(resultFailed.ErrorCode, result.ErrorCode);
-        await repository.DidNotReceive().ExecuteAsync(Arg.Any<UpdateMatchCriteria>());
-    }
-
-    [Fact]
     public async Task Settle_ValidationPassed_UpdateAndSettleMatch()
     {
-        calculateService.ValidationDeployFlag(SpName.LeapGaming).Returns(new Result());
         repository.GetAsync<MatchInfo>(Arg.Any<LeapGamingGetMatchInfoCriteria>()).Returns(new MatchInfo());
         calculateService.Execute(Arg.Any<LeapGamingCriteria>()).Returns(new Result());
 
@@ -76,7 +60,7 @@ public class LeapGamingServiceTests
         });
 
         await repository.Received().ExecuteAsync(Arg.Any<UpdateMatchCriteria>());
-        await logDirectlyService.Received().WriteLog(1);
+        await logDirectlyService.Received().WriteLog(1, string.Empty);
         await calculateService.Received().Execute(Arg.Any<LeapGamingCriteria>());
     }
 
@@ -86,7 +70,6 @@ public class LeapGamingServiceTests
     [InlineData("REFUND", "Running", "<Resources> <Resource Id=\"00\" Home=\"\" Away=\"\"/> <Resource Id=\"01\" Home=\"\" Away=\"\"/></Resources>", 1)]
     public async Task Settle_ActionReCalOrRefund_SendMail(string action, string eventStatus, string selectedResources, int mailCount)
     {
-        calculateService.ValidationDeployFlag(SpName.LeapGaming).Returns(new Result());
         repository.GetAsync<MatchInfo>(Arg.Any<LeapGamingGetMatchInfoCriteria>()).Returns(new MatchInfo() { EventStatus = eventStatus });
         calculateService.Execute(Arg.Any<LeapGamingCriteria>()).Returns(new Result());
 

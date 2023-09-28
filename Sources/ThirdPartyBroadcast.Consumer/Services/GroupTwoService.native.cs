@@ -7,6 +7,8 @@ public interface GroupTwoService
     Task SettleVirtualSoccer(string productType, string data);
 
     Task SettleVirtualBetRadar(string productType, string data);
+
+    Task SettleLeapGaming(string productType, string data);
 }
 
 public class GroupTwoServiceImp : GroupTwoService
@@ -17,14 +19,18 @@ public class GroupTwoServiceImp : GroupTwoService
 
     private readonly VirtualBetRadarService virtualBetRadarService;
 
+    private readonly LeapGamingService leapGamingService;
+
     public GroupTwoServiceImp(
          LogDirectlyService logDirectlyService,
          VirtualBetRadarService virtualBetRadarService,
-         VirtualSoccerService virtualSoccerService)
+         VirtualSoccerService virtualSoccerService,
+         LeapGamingService leapGamingService)
     {
         this.logDirectlyService = logDirectlyService;
         this.virtualBetRadarService = virtualBetRadarService;
         this.virtualSoccerService = virtualSoccerService;
+        this.leapGamingService = leapGamingService;
     }
 
     public async Task SettleVirtualSoccer(string productType, string data)
@@ -38,6 +44,13 @@ public class GroupTwoServiceImp : GroupTwoService
     {
         var request = JsonConvert.DeserializeObject<VirtualBetRadarRequest>(data);
         var result = await virtualBetRadarService.Settle(request);
+        await logDirectlyService.HandleLog(result, productType, data);
+    }
+
+    public async Task SettleLeapGaming(string productType, string data)
+    {
+        var request = JsonConvert.DeserializeObject<LeapGamingRequest>(data);
+        var result = await leapGamingService.Settle(request);
         await logDirectlyService.HandleLog(result, productType, data);
     }
 }

@@ -4,6 +4,7 @@ using Criteria;
 using Criteria.BetBuilder;
 using Criteria.BitCoin;
 using Criteria.HappyFive;
+using Criteria.LeapGaming;
 using Criteria.VirtualBetRadar;
 using Criteria.VirtualSoccer;
 using Requests;
@@ -30,8 +31,8 @@ public class ThirdPartyBroadcastMappingProfile : Profile
         CreateMap<WriteLogCriteria, SendMailCriteria>().ForMember(dest => dest.AdminId, opt => opt.MapFrom(src => src.UserId));
         CreateMap<VirtualSoccerRequest, UpdateMatchInfo3RdRequest>().ForMember(dest => dest.Creator, opt => opt.MapFrom(src => src.AdminId));
         CreateMap<VirtualBetRadarRequest, BetRadarValidationCriteria>();
-        //CreateMap<LeapGamingRequest, LeapGamingCriteria>();
-        //CreateMap<LeapGamingRequest, UpdateMatchInfoRequest>();
-        //CreateMap<LeapGamingRequest, UpdateMatchCriteria>();
+        CreateMap<LeapGamingRequest, LeapGamingCriteria>();
+        CreateMap<LeapGamingRequest, UpdateMatchInfoRequest>();
+        CreateMap<LeapGamingRequest, UpdateMatchCriteria>();
     }
 }

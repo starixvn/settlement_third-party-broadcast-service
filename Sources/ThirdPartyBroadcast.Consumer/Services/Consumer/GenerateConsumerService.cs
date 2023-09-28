@@ -26,7 +26,8 @@ public class GenerateConsumerServiceImp : GenerateConsumerService
     private static List<string> ProductsGroupTwo => new()
     {
         ProductType.VirtualBetRadar,
-        ProductType.VirtualSports
+        ProductType.VirtualSports,
+        ProductType.LeapGaming
     };
 
     public GenerateConsumerServiceImp(
@@ -43,7 +44,8 @@ public class GenerateConsumerServiceImp : GenerateConsumerService
         {
             await SettleProductByGroupOne(productType, data);
         }
-        else if (ProductsGroupTwo.Contains(productType))
+
+        if (ProductsGroupTwo.Contains(productType))
         {
             await SettleProductByGroupTwo(productType, data);
         }
@@ -87,6 +89,10 @@ public class GenerateConsumerServiceImp : GenerateConsumerService
         {
             case ProductType.VirtualBetRadar:
                 await groupTwoService.SettleVirtualBetRadar(productType, data);
+                break;
+
+            case ProductType.LeapGaming:
+                await groupTwoService.SettleLeapGaming(productType, data);
                 break;
 
             default:
