@@ -3,7 +3,11 @@ using Fanex.Caching;
 using Fanex.Caching.Redis;
 using Fanex.Data.Repository;
 using Fanex.Logging;
+using Fanex.Logging.Extensions;
+using Fanex.Logging.Extensions.AspNetCore;
+using Fanex.Logging.Extensions.Database;
 using Fanex.Logging.Sentry.RavenClient;
+using Fanex.MailDeliver.MailClient;
 using Fanex.Settlement.Converter.Services;
 using Fanex.Settlement.ScaleOut;
 using Fanex.Settlement.ScaleOut.Services;
@@ -41,11 +45,17 @@ public static class BroadcastConsumerInjection
         service.AddSingleton<GenerateConsumerService, GenerateConsumerServiceImp>();
         service.AddSingleton<BitCoinService, BitCoinServiceImp>();
         service.AddSingleton<GroupOneService, GroupOneServiceImp>();
+        service.AddSingleton<GroupTwoService, GroupTwoServiceImp>();
         service.AddSingleton<OutrightService, OutrightServiceImp>();
         service.AddSingleton<HappyFiveService, HappyFiveServiceImp>();
         service.AddSingleton<NumberGameService, NumberGameServiceImp>();
         service.AddSingleton<BetBuilderService, BetBuilderServiceImp>();
         service.AddSingleton<FastMarketService, FastMarketServiceImp>();
+        service.AddSingleton<VirtualBetRadarService, VirtualBetRadarServiceImp>();
+        service.AddSingleton<VirtualSoccerService, VirtualSoccerServiceImp>();
+        service.AddSingleton<LeapGamingService, LeapGamingServiceImp>();
+        service.AddSingleton<SendMailService, SendMailServiceImp>();
+        service.AddSingleton<RecipientTicketsService, RecipientTicketsServiceImp>();
 
         service.AddSingleton<IMaintenanceService, MaintenanceServiceImp>();
         service.AddSingleton(new UMClientConfiguration().Initialize(configuration));
@@ -103,5 +113,12 @@ public static class BroadcastConsumerInjection
         logEngine.Add(new SentryLogging(sentryEngineOptions));
 
         LogManager.SetDefaultLogCategory(configuration.GetSection("SiteCategory").Value).Use(logEngine);
+
+        ExceptionHandler
+            .UseConfig(new LoggingConfiguration())
+            .UseGetDbExceptionInfo(DatabaseInfoGetters.GetDbExceptionInfo);
+
+        AppSettings.AppMailId = configuration.GetSection("MailServer:Id").Value;
+        AppSettings.AppMailAddress = configuration.GetSection("MailServer:Address").Value;
     }
 }

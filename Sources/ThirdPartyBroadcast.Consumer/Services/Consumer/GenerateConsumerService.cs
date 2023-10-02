@@ -11,12 +11,49 @@ public class GenerateConsumerServiceImp : GenerateConsumerService
 {
     private readonly GroupOneService groupOneService;
 
-    public GenerateConsumerServiceImp(GroupOneService groupOneService)
+    private readonly GroupTwoService groupTwoService;
+
+    private static List<string> ProductsGroupOne => new()
+    {
+        ProductType.Outright,
+        ProductType.BitCoin,
+        ProductType.NumberGame,
+        ProductType.BetBuilder,
+        ProductType.FastMarket,
+        ProductType.HappyFive
+    };
+
+    private static List<string> ProductsGroupTwo => new()
+    {
+        ProductType.VirtualBetRadar,
+        ProductType.VirtualSports,
+        ProductType.LeapGaming
+    };
+
+    public GenerateConsumerServiceImp(
+        GroupOneService groupOneService,
+        GroupTwoService groupTwoService)
     {
         this.groupOneService = groupOneService;
+        this.groupTwoService = groupTwoService;
     }
 
     public async Task SettleByProduct(string productType, string data)
+    {
+        if (ProductsGroupOne.Contains(productType))
+        {
+            await SettleProductByGroupOne(productType, data);
+        }
+
+        if (ProductsGroupTwo.Contains(productType))
+        {
+            await SettleProductByGroupTwo(productType, data);
+        }
+
+        await LogService.InfoAsync($"ThirdPartyBroadcast Service - ProductType:{productType} - Match info: {data}");
+    }
+
+    private async Task SettleProductByGroupOne(string productType, string data)
     {
         switch (productType)
         {
@@ -44,7 +81,23 @@ public class GenerateConsumerServiceImp : GenerateConsumerService
                 await groupOneService.SettleHappyFive(productType, data);
                 break;
         }
+    }
 
-        await LogService.InfoAsync($"ThirdPartyBroadcast Service - ProductType:{productType} - Match info: {data}");
+    private async Task SettleProductByGroupTwo(string productType, string data)
+    {
+        switch (productType)
+        {
+            case ProductType.VirtualBetRadar:
+                await groupTwoService.SettleVirtualBetRadar(productType, data);
+                break;
+
+            case ProductType.LeapGaming:
+                await groupTwoService.SettleLeapGaming(productType, data);
+                break;
+
+            default:
+                await groupTwoService.SettleVirtualSoccer(productType, data);
+                break;
+        }
     }
 }
