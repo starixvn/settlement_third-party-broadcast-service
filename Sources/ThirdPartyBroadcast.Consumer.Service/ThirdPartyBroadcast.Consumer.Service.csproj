@@ -11,6 +11,8 @@
     <None Remove="appsettings.PROD.json" />
     <None Remove="appsettings.SIT.json" />
     <None Remove="appsettings.UAT.json" />
+    <None Remove="Templates\credit-template.cshtml" />
+    <None Remove="Templates\deposit-template.cshtml" />
   </ItemGroup>
 	
   <ItemGroup>
@@ -32,6 +34,12 @@
     <Content Include="App_Data\SpNames.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Templates\credit-template.cshtml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Templates\deposit-template.cshtml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 	<ItemGroup>
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
@@ -42,6 +50,7 @@
 		<PackageReference Include="Fanex.Caching" Version="2.2.4" />
 		<PackageReference Include="Fanex.Caching.Redis" Version="2.2.4" />
 		<PackageReference Include="Fanex.Data.SqlServer" Version="4.2.3" />
+		<!-- ReSharper disable once VulnerablePackage -->
 		<PackageReference Include="Fanex.Logging.Extensions.AspNetCore" Version="1.0.0" />
 		<PackageReference Include="Fanex.Logging.Extensions.Database" Version="1.0.8" />
 		<PackageReference Include="Fanex.Logging.Sentry.RavenClient" Version="1.0.1" />

@@ -1,0 +1,81 @@
+﻿<p>
+    <b>
+        1. @Model.Action Match Info:
+    </b>
+</p>
+
+<table>
+    <tr style="background-color:#0095CC;">
+        <th style="width:150px;">Sport Type</th>
+        <th style="width:250px;">Sport Name</th>
+        <th style="width:150px;">Match ID</th>
+        <th style="width:250px;">Event Date</th>
+    </tr>
+    <tr>
+        <td>@Model.MatchInfo.SportType</td>
+        <td>@Model.MatchInfo.SportName</td>
+        <td>@Model.MatchInfo.MatchId</td>
+        <td>@Model.MatchInfo.KickOffTime</td>
+    </tr>
+</table>
+<p>
+    <b>
+        2. @Model.Action Ticket Numbers List:
+    </b>
+</p>
+
+<table>
+    <tr style="background-color:#0095CC">
+        <th style="width:60px">No.</th>
+        <th style="width:150px">Ticket Number</th>
+        <th style="width:150px">Ticket Type</th>
+        <th style="width:150px">Cust ID</th>
+        <th style="width:200px">User Name</th>
+        <th style="width:250px">Trans Date</th>
+    </tr>
+    @{
+    var list = Model.Ticket[0].TicketInfos;
+
+    for (int i = 0; i < list.Count; i++)
+    {
+    <tr>
+        <td>@(i + 1)</td>
+        <td>@list[i].TransId</td>
+        <td>@list[i].TicketType</td>
+        <td>@list[i].CustId</td>
+        <td>@list[i].UserName</td>
+        <td>@list[i].TransDate</td>
+    </tr>
+    }
+    <tr><td colspan="6" style="text-align:left;"><b>Total Tickets: @Model.Ticket[0].TotalTicket</b></td></tr>
+    }
+</table>
+
+<style>
+    body {
+        font-family: tahoma;
+        font-size: 12px;
+    }
+
+    table {
+        border-collapse: collapse;
+    }
+
+    table, td, th {
+        border: 1px solid black;
+        text-align: center;
+    }
+
+    th {
+        padding: 4px;
+        color: white;
+        font-family: tahoma;
+        font-size: 12px;
+    }
+
+    td {
+        padding: 4px;
+        font-family: tahoma;
+        font-size: 12px;
+    }
+</style>
