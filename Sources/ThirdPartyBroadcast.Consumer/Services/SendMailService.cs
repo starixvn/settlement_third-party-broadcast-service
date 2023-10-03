@@ -1,5 +1,4 @@
 ﻿using Fanex.MailDeliver.Model;
-using Microsoft.AspNetCore.Hosting;
 using RazorEngine;
 using RazorEngine.Templating;
 
@@ -12,13 +11,6 @@ public interface SendMailService
 
 public class SendMailServiceImp : SendMailService
 {
-    private readonly IWebHostEnvironment environment;
-
-    public SendMailServiceImp(IWebHostEnvironment environment)
-    {
-        this.environment = environment;
-    }
-
     public void SendMail(NotificationModel item)
     {
         var mailRecord = new MailRecord
@@ -37,22 +29,21 @@ public class SendMailServiceImp : SendMailService
 
     private static string Subject(NotificationModel item)
     {
-        var to = item.Type == EmailType.Credit ? "MBC" : "Licensee";
+        var to = string.Equals(item.Type, EmailType.Credit) ? "MBC" : "Licensee";
         return $"[Virtual Sports 3] {item.Action} Ticket Numbers ({to}) -- {item.Action} MatchID: {item.MatchInfo.MatchId} ({item.MatchInfo.SportName})";
     }
 
-    private string MailBody(NotificationModel item)
+    private static string MailBody(NotificationModel item)
     {
-        var filePath = environment.WebRootPath;
         var templateKey = "deposit-key";
-        var template = $"{Path.Combine(filePath, "email-templates", "deposit-template.html")}";
+        var template = $"{AppDomain.CurrentDomain.BaseDirectory}Templates{Path.DirectorySeparatorChar}deposit-template.cshtml";
 
         if (item.Type.Equals(EmailType.Credit))
         {
             templateKey = "credit-key";
-            template = $"{Path.Combine(filePath, "email-templates", "credit-template.html")}";
+            template = $"{AppDomain.CurrentDomain.BaseDirectory}Templates{Path.DirectorySeparatorChar}credit-template.cshtml";
         }
 
-        return Engine.Razor.RunCompile(File.ReadAllText(template), templateKey, null, item);
+        return Engine.Razor.RunCompile(File.ReadAllText(template), templateKey, model: item);
     }
 }
