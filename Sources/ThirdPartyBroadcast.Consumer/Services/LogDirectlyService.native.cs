@@ -55,7 +55,7 @@ public class LogDirectlyServiceImp : LogDirectlyService
                 { "Details", result.ErrorMessage },
             };
 
-            var logMessage = new LogMessage(ErrorMessage)
+            var logMessage = new LogMessage(result.ErrorMessage)
                 .AddSection("Error Info", info)
                 .ToString();
 
