@@ -56,6 +56,7 @@ public static class BroadcastConsumerInjection
         service.AddSingleton<LeapGamingService, LeapGamingServiceImp>();
         service.AddSingleton<SendMailService, SendMailServiceImp>();
         service.AddSingleton<RecipientTicketsService, RecipientTicketsServiceImp>();
+        service.AddSingleton<PinGoalService, PinGoalServiceImp>();
 
         service.AddSingleton<IMaintenanceService, MaintenanceServiceImp>();
         service.AddSingleton(new UMClientConfiguration().Initialize(configuration));

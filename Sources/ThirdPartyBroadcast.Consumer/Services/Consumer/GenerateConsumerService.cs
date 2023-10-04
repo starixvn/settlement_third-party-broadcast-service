@@ -27,7 +27,8 @@ public class GenerateConsumerServiceImp : GenerateConsumerService
     {
         ProductType.VirtualBetRadar,
         ProductType.VirtualSports,
-        ProductType.LeapGaming
+        ProductType.LeapGaming,
+        ProductType.PinGoal
     };
 
     public GenerateConsumerServiceImp(
@@ -93,6 +94,10 @@ public class GenerateConsumerServiceImp : GenerateConsumerService
 
             case ProductType.LeapGaming:
                 await groupTwoService.SettleLeapGaming(productType, data);
+                break;
+
+            case ProductType.PinGoal:
+                await groupTwoService.SettlePinGoal(productType, data);
                 break;
 
             default:

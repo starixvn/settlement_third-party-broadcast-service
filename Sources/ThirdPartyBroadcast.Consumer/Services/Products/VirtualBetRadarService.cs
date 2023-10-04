@@ -36,13 +36,12 @@ public class VirtualBetRadarServiceImp : VirtualBetRadarService
     {
         var betRadarValidationCriteria = mapper.Map<VirtualBetRadarRequest, BetRadarValidationCriteria>(request);
         var resultValidation = await calculateService.ExecuteValidationMultiServer(betRadarValidationCriteria);
+        var criteria = mapper.Map<VirtualBetRadarRequest, VirtualBetRadarCriteria>(request);
+        criteria.NotifyFlag = await GetNotifyFlag(request.MatchId, request.Action);
 
         if (resultValidation.IsSuccessful)
         {
             await UpdateMatchInfo(request);
-
-            var criteria = mapper.Map<VirtualBetRadarRequest, VirtualBetRadarCriteria>(request);
-            criteria.NotifyFlag = await GetNotifyFlag(request.MatchId, request.Action);
 
             var message = GenerateMessageLog(criteria);
             await logDirectlyService.WriteLog(criteria.MatchId, message);
