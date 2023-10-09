@@ -9,6 +9,8 @@ public interface GroupTwoService
     Task SettleVirtualBetRadar(string productType, string data);
 
     Task SettleLeapGaming(string productType, string data);
+
+    Task SettlePinGoal(string productType, string data);
 }
 
 public class GroupTwoServiceImp : GroupTwoService
@@ -21,16 +23,20 @@ public class GroupTwoServiceImp : GroupTwoService
 
     private readonly LeapGamingService leapGamingService;
 
+    private readonly PinGoalService pinGoalService;
+
     public GroupTwoServiceImp(
          LogDirectlyService logDirectlyService,
          VirtualBetRadarService virtualBetRadarService,
          VirtualSoccerService virtualSoccerService,
-         LeapGamingService leapGamingService)
+         LeapGamingService leapGamingService,
+         PinGoalService pinGoalService)
     {
         this.logDirectlyService = logDirectlyService;
         this.virtualBetRadarService = virtualBetRadarService;
         this.virtualSoccerService = virtualSoccerService;
         this.leapGamingService = leapGamingService;
+        this.pinGoalService = pinGoalService;
     }
 
     public async Task SettleVirtualSoccer(string productType, string data)
@@ -51,6 +57,13 @@ public class GroupTwoServiceImp : GroupTwoService
     {
         var request = JsonConvert.DeserializeObject<LeapGamingRequest>(data);
         var result = await leapGamingService.Settle(request);
+        await logDirectlyService.HandleLog(result, productType, data);
+    }
+
+    public async Task SettlePinGoal(string productType, string data)
+    {
+        var request = JsonConvert.DeserializeObject<PinGoalRequest>(data);
+        var result = await pinGoalService.Settle(request);
         await logDirectlyService.HandleLog(result, productType, data);
     }
 }

@@ -12,6 +12,4 @@ public static class ActionName
     public const string ReSettle = "ReSettle";
 
     public const string Refund = "Refund";
-
-    public const string MoveTicket = "MoveTicket";
 }

@@ -16,8 +16,8 @@ public class ThirdPartyBroadcastMappingProfile : Profile
         CreateMap<NumberGameRequest, NumberGameCriteria>();
         CreateMap<FastMarketRequest, FastMarketCriteria>();
         CreateMap<HappyFiveRequest, HappyFiveCriteria>();
-        //CreateMap<AutoPinGoalRequest, UpdateMatchInfoRequest>();
-        //CreateMap<AutoPinGoalRequest, PinGoalCriteria>();
+        CreateMap<PinGoalRequest, UpdateMatchInfoRequest>();
+        CreateMap<PinGoalRequest, PinGoalCriteria>();
         CreateMap<BitCoinRequest, BitCoinUpdateMatchCriteria>();
         CreateMap<BitCoinRequest, BitCoinCriteria>();
         CreateMap<FastMarketCriteria, EventTicketFastMarketRequest>();
