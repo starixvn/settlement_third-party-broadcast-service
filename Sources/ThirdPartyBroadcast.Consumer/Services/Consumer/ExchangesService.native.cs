@@ -21,11 +21,15 @@ public class ExchangesServiceImp : ExchangesService
 
     private readonly GenerateConsumerService generateConsumerService;
 
+    private readonly LogDirectlyService logDirectlyService;
+
     public ExchangesServiceImp(
         GenerateConsumerService generateConsumerService,
+        LogDirectlyService logDirectlyService,
         IOptions<AppSettingsKey> appSettingsKey)
     {
         this.generateConsumerService = generateConsumerService;
+        this.logDirectlyService = logDirectlyService;
         this.appSettingsKey = appSettingsKey.Value;
     }
 
@@ -47,6 +51,8 @@ public class ExchangesServiceImp : ExchangesService
                 {
                     retryConfig.Interval(RetryCount, TimeSpan.FromMilliseconds(RetryInterval));
                 }));
+
+                e.Consumer(() => new ProcessingFaultConsumerService(logDirectlyService));
             });
         });
 
@@ -80,6 +86,8 @@ public class ExchangesServiceImp : ExchangesService
                 {
                     retryConfig.Interval(RetryCount, TimeSpan.FromMilliseconds(RetryInterval));
                 }));
+
+                e.Consumer(() => new WaitingFaultConsumerService(logDirectlyService));
             });
         });
 

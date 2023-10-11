@@ -1,6 +1,4 @@
-﻿using Fanex.Logging;
-
-namespace ThirdPartyBroadcast.Consumer.Services.Consumer;
+﻿namespace ThirdPartyBroadcast.Consumer.Services.Consumer;
 
 public interface GenerateConsumerService
 {
@@ -12,6 +10,8 @@ public class GenerateConsumerServiceImp : GenerateConsumerService
     private readonly GroupOneService groupOneService;
 
     private readonly GroupTwoService groupTwoService;
+
+    private readonly LogDirectlyService logDirectlyService;
 
     private static List<string> ProductsGroupOne => new()
     {
@@ -33,10 +33,12 @@ public class GenerateConsumerServiceImp : GenerateConsumerService
 
     public GenerateConsumerServiceImp(
         GroupOneService groupOneService,
-        GroupTwoService groupTwoService)
+        GroupTwoService groupTwoService,
+        LogDirectlyService logDirectlyService)
     {
         this.groupOneService = groupOneService;
         this.groupTwoService = groupTwoService;
+        this.logDirectlyService = logDirectlyService;
     }
 
     public async Task SettleByProduct(string productType, string data)
@@ -51,7 +53,7 @@ public class GenerateConsumerServiceImp : GenerateConsumerService
             await SettleProductByGroupTwo(productType, data);
         }
 
-        await LogService.InfoAsync($"ThirdPartyBroadcast Service - ProductType:{productType} - Match info: {data}");
+        await logDirectlyService.WriteInfo(productType, data);
     }
 
     private async Task SettleProductByGroupOne(string productType, string data)

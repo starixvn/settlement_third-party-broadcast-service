@@ -8,6 +8,8 @@ public interface LogDirectlyService
 {
     string Message(int matchId);
 
+    Task WriteInfo(string productType, string data);
+
     Task WriteLog(int matchId, string message);
 
     Task HandleLog(Result result, string productType, string data);
@@ -25,6 +27,12 @@ public class LogDirectlyServiceImp : LogDirectlyService
     }
 
     public string Message(int matchId) => $"Settlement for matchId: {matchId}";
+
+    public async Task WriteInfo(string productType, string data)
+    {
+        var productName = GetProductName(productType);
+        await LogService.InfoAsync($"ThirdPartyBroadcast Service - Product Name:{productName} - Match info: {data}");
+    }
 
     public async Task WriteLog(int matchId, string message)
     {
