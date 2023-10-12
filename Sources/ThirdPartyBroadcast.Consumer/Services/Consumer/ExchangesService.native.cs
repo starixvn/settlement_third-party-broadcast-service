@@ -17,6 +17,8 @@ public class ExchangesServiceImp : ExchangesService
 
     private const int RetryCount = 10;
 
+    private const int FetchCount = 1;
+
     private readonly AppSettingsKey appSettingsKey;
 
     private readonly GenerateConsumerService generateConsumerService;
@@ -47,6 +49,7 @@ public class ExchangesServiceImp : ExchangesService
             configure.ReceiveEndpoint(rabbitMq.ProcessingQueue, e =>
             {
                 e.UseMessageRetry(retryConfig => retryConfig.Interval(RetryCount, TimeSpan.FromMilliseconds(RetryInterval)));
+                e.PrefetchCount = FetchCount;
                 e.Consumer(() => new ProcessingConsumerService(generateConsumerService), c => c.UseMessageRetry(retryConfig =>
                 {
                     retryConfig.Interval(RetryCount, TimeSpan.FromMilliseconds(RetryInterval));
@@ -81,7 +84,7 @@ public class ExchangesServiceImp : ExchangesService
             configure.ReceiveEndpoint(rabbitMq.WaitingQueue, e =>
             {
                 e.UseMessageRetry(retryConfig => retryConfig.Interval(RetryCount, TimeSpan.FromMilliseconds(RetryInterval)));
-
+                e.PrefetchCount = FetchCount;
                 e.Consumer(() => new WaitingConsumerService(generateConsumerService), c => c.UseMessageRetry(retryConfig =>
                 {
                     retryConfig.Interval(RetryCount, TimeSpan.FromMilliseconds(RetryInterval));
