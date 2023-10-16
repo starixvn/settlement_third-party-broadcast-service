@@ -15,7 +15,7 @@ public class ExchangesServiceImp : ExchangesService
 
     private const int RetryInterval = 500;
 
-    private const int RetryCount = 3;
+    private const int RetryCount = 1;
 
     private const int FetchCount = 4;
 
