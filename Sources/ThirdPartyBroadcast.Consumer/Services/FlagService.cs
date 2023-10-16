@@ -43,16 +43,17 @@ public class FlagServiceImp : FlagService
 
     public uint GetMessageWaitingCount()
     {
-        var connectionFactory = new ConnectionFactory()
+        var rabbitMq = appSettingsKey.RabbitMq;
+        var connectionFactory = new ConnectionFactory
         {
-            UserName = appSettingsKey.RabbitMq.Username,
-            Password = appSettingsKey.RabbitMq.Password,
-            HostName = appSettingsKey.RabbitMq.Hosting,
-            VirtualHost = appSettingsKey.RabbitMq.VirtualHost
+            UserName = rabbitMq.Username,
+            Password = rabbitMq.Password,
+            HostName = rabbitMq.Hosting,
+            VirtualHost = rabbitMq.VirtualHost
         };
 
         using var connection = connectionFactory.CreateConnection();
         using var channel = connection.CreateModel();
-        return channel.MessageCount(appSettingsKey.RabbitMq.WaitingQueue);
+        return channel.MessageCount(rabbitMq.WaitingQueue);
     }
 }
