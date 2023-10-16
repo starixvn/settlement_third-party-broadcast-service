@@ -17,7 +17,7 @@ public class ExchangesServiceImp : ExchangesService
 
     private const int RetryCount = 1;
 
-    private const int FetchCount = 4;
+    private const int FetchCount = 1;
 
     private readonly AppSettingsKey appSettingsKey;
 
