@@ -39,14 +39,15 @@ public class BroadcastConsumerControllerImp : BroadcastConsumerController
     {
         var isDeployed = await flagService.IsDeployedFromCache(CacheKeys.BroadcastFlagCacheKey);
 
-        if (isDeployed)
+        var messageWaitingCount = flagService.GetMessageWaitingCount();
+
+        if (isDeployed || messageWaitingCount == 0)
         {
             await exchangesService.ProcessingQueueReceiver();
         }
         else
         {
             await exchangesService.WaitingQueueReceiver();
-            await exchangesService.ProcessingQueueReceiver();
         }
 
         return true;
