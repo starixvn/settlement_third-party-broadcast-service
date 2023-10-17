@@ -9,4 +9,9 @@ public class MatchStatus
     public bool CalRefund { get; set; }
 
     public bool Multiple { get; set; }
+
+    public string EventStatus { get; set; }
+    public DateOnly KickOffTime { get; set; }
+
+    public string LeagueName { get; set; }
 }

@@ -42,6 +42,13 @@ public class VirtualSoccerServiceImp : VirtualSoccerService
         return await calculateService.Execute(criteria);
     }
 
+    public async Task<MatchInfo> GetMatchInfo(int matchId)
+    {
+        var matchInfo = await repository.GetAsync<MatchInfo>(new VisualSoccerGetMatchInfoCriteria { MatchId = matchId });
+
+        return matchInfo;
+    }
+
     private static string GenerateMessageLog(VirtualSoccerCriteria criteria)
         => $"NAP: Calculate {criteria.Action} for matchId: {criteria.MatchId} score: {criteria.Fth}-{criteria.Fta}";
 

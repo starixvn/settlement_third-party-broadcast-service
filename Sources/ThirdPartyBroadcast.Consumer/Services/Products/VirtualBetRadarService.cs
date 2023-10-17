@@ -49,6 +49,8 @@ public class VirtualBetRadarServiceImp : VirtualBetRadarService
             var result = await calculateService.Execute(criteria);
 
             await HandleAfterSettle(request, result);
+
+            // TODO
             return result;
         }
 
@@ -73,7 +75,7 @@ public class VirtualBetRadarServiceImp : VirtualBetRadarService
 
         if (settleResult.IsSuccessful)
         {
-            criteria.Remark = "NAP: VS BetRadar - API inserted into single queue successfully.";
+            criteria.Remark = "NAP: VS BetRadar - API inserted into single queue successfully."; // TODO
             await repository.ExecuteAsync(criteria);
         }
         else
