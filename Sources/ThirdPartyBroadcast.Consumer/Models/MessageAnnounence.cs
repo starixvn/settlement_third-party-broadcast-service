@@ -7,13 +7,14 @@ using System.Xml.Serialization;
 
 namespace ThirdPartyBroadcast.Consumer.Models;
 
-public class Message
+[XmlRoot("Messages")]
+public class MessageAnnounence
 {
     [XmlElement("Item")]
-    public List<MessageAnnounence> Items { get; set; }
+    public List<MessageAnnounenceItem> Items { get; set; }
 }
 
-public class MessageAnnounence
+public class MessageAnnounenceItem
 {
     [XmlAttribute]
     public int MessageId { get; set; }
@@ -22,7 +23,7 @@ public class MessageAnnounence
     public int TargetId { get; set; }
 
     [XmlAttribute]
-    public int TargetName { get; set; }
+    public string TargetName { get; set; }
 
     [XmlAttribute]
     public string BetTransId { get; set; }

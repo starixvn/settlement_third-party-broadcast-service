@@ -22,11 +22,11 @@
 		<Setting Key="NAP_UserLog_WriteLogPreSettlement" SpName="NAP_UserLog_WriteLogPreSettlement" DbName="DBUserLog.LogTDB.bodbAdminNet" />
 		<Setting Key="NAP_Admin_SendNotify_s178" SpName="NAP_Admin_SendNotify_s178" DbName="DBTXN.bodb02.bodbAdminNet" />
 		<Setting Key="NAP_Set_MatchSelInfo" SpName="NAP_Set_MatchSelInfo" DbName="DBPRO.bodb02.bodbAdminNet" />
-		<Setting Key="NAP_Set_Match_s178_Sel" SpName="NAP_Set_Match_s178_Sel" DbName="DBPRO.bodb02.bodbAdminNet" />
+		<Setting Key="NAP_Set_Match_s178_Sel" SpName="NAP_Set_Match_s178_Sel_UAT4" DbName="DBPRO.bodb02.bodbAdminNet" />
 		<Setting Key="NAP_Set_Match_s180_Sel" SpName="NAP_Set_Match_s180_Sel" DbName="DBPRO.bodb02.bodbAdminNet" />
 		<Setting Key="NAP_Admin_MailingList_Sel" SpName="NAP_Admin_MailingList_Sel" DbName="DBTXN.bodb02.bodbAdminNet" />
-		<Setting Key="NAP_SpecialDelete_Message_Insert" SpName="NAP_SpecialDelete_Message_Insert" DbName="TESTDB061.dodb_Message.bodbAdminNet" />
-		<Setting Key="NAP_SpecialDelete_BatchMessage_Upload" SpName="NAP_SpecialDelete_BatchMessage_Upload" DbName="TESTDB061.dodb_Message.bodbAdminNet" />
+		<Setting Key="NAP_SpecialDelete_Message_Insert" SpName="NAP_SpecialDelete_Message_Insert" DbName="DB061.dodb_Message.bodbAdminNet" />
+		<Setting Key="NAP_SpecialDelete_BatchMessage_Upload" SpName="NAP_SpecialDelete_BatchMessage_Upload" DbName="DB061.dodb_Message.bodbAdminNet" />
 	</Function>
 
 	<Function Name="Scale Out DB">
@@ -173,9 +173,9 @@
 		</Function>
 
 		<Function Name="TicketInfo">
-			<Setting Key="NAP_Set_TicketSettleSel_DBSID01" SpName="NAP_Set_TicketSettleSel" DbName="DBSID01.bodb02.bodbAdminNet" />
-			<Setting Key="NAP_Set_TicketSettleSel_DBSID02" SpName="NAP_Set_TicketSettleSel" DbName="DBSID02.bodb02.bodbAdminNet" />
-			<Setting Key="NAP_Set_TicketSettleSel_DBSID03" SpName="NAP_Set_TicketSettleSel" DbName="DBSID03.bodb02.bodbAdminNet" />
+			<Setting Key="NAP_Set_VS_TicketInfo_Sel_DBSID01" SpName="NAP_Set_VS_TicketInfo_Sel_UAT4" DbName="DBSID01.bodb02.bodbAdminNet" />
+			<Setting Key="NAP_Set_VS_TicketInfo_Sel_DBSID02" SpName="NAP_Set_VS_TicketInfo_Sel_UAT4" DbName="DBSID02.bodb02.bodbAdminNet" />
+			<Setting Key="NAP_Set_VS_TicketInfo_Sel_DBSID03" SpName="NAP_Set_VS_TicketInfo_Sel_UAT4" DbName="DBSID03.bodb02.bodbAdminNet" />
 		</Function>
 	</Function>
 </Functions>

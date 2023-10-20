@@ -4,6 +4,9 @@ namespace ThirdPartyBroadcast.Consumer.Services.Products;
 
 using Criteria;
 using Criteria.LeapGaming;
+using Fanex.Data.Repository;
+using Fanex.Settlement.Converter.Services;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 public interface LeapGamingService
 {
@@ -22,6 +25,10 @@ public class LeapGamingServiceImp : LeapGamingService
 
     private readonly RecipientTicketsService recipientTicketsService;
 
+    private readonly TicketSettleService ticketSettleService;
+
+    private readonly AnnouncementService announcementService;
+
     private const int ErrorCodeNotExistValue = 1_000_003;
 
     private const string ErrorMsgNotExistValue = "The input score values are not valid!";
@@ -31,18 +38,21 @@ public class LeapGamingServiceImp : LeapGamingService
         CalculateService calculateService,
         LogDirectlyService logDirectlyService,
         IDynamicRepository repository,
-        RecipientTicketsService recipientTicketsService)
+        RecipientTicketsService recipientTicketsService,
+        TicketSettleService ticketSettleService,
+        AnnouncementService announcementService)
     {
         this.mapper = mapper;
         this.calculateService = calculateService;
         this.logDirectlyService = logDirectlyService;
         this.repository = repository;
         this.recipientTicketsService = recipientTicketsService;
+        this.ticketSettleService = ticketSettleService;
+        this.announcementService = announcementService;
     }
 
     public async Task<Result> Settle(LeapGamingRequest request)
     {
-        var criteria = mapper.Map<LeapGamingRequest, LeapGamingCriteria>(request);
         var validationResult = ValidateMatchScore(request);
         if (validationResult.ErrorCode > 0)
         {
@@ -50,18 +60,77 @@ public class LeapGamingServiceImp : LeapGamingService
         }
 
         var currentMatchInfo = await MatchStatus(request.MatchId);
+        var currentTickets = await GetCurrentTickets(request);
 
         await UpdateMatchInfo(request);
+
         var message = logDirectlyService.Message(request.MatchId);
         await logDirectlyService.WriteLog(request.MatchId, message);
 
-        var result = await calculateService.Execute(criteria);
-
-        await HandleAfterSettle(request, currentMatchInfo, result);
-
-        // TODO
+        var result = await HandleSettle(currentTickets, currentMatchInfo, request);
 
         return result;
+    }
+
+    private async Task<Result> HandleSettle(List<TicketSettleInfo> currentTickets, MatchInfo matchInfo, LeapGamingRequest request)
+    {
+        Exception currentEx = null;
+        var settleResult = new Result();
+
+        try
+        {
+            var criteria = mapper.Map<LeapGamingRequest, LeapGamingCriteria>(request);
+            settleResult = await calculateService.Execute(criteria);
+        }
+        catch (Exception ex)
+        {
+            currentEx = ex;
+        }
+
+        await HandleAfterSettle(request, matchInfo, settleResult);
+        await HandleAnnounce(currentTickets, matchInfo, request);
+
+        if (currentEx is not null)
+        {
+            throw currentEx;
+        }
+
+        return settleResult;
+    }
+
+    private async Task HandleAnnounce(List<TicketSettleInfo> currentTickets, MatchInfo matchInfo, LeapGamingRequest request)
+    {
+        var settledTickets = await GetSettledTickets(currentTickets);
+
+        if (currentTickets.Count == 0 || settledTickets.Count == 0)
+        {
+            return;
+        }
+
+        var groupTickets = announcementService.CreateGroupsStatus(currentTickets, settledTickets);
+
+        await announcementService.Handle(matchInfo, groupTickets, request.AdminId);
+    }
+
+    private async Task<List<TicketSettleInfo>> GetCurrentTickets(LeapGamingRequest request)
+    {
+        if (request.Action.ToLowerInvariant().Equals(ActionType.Refund))
+        {
+            return await ticketSettleService.GetAllTickets(new TicketSettleCriteria { MatchId = request.MatchId });
+        }
+
+        return new List<TicketSettleInfo>();
+    }
+
+    private async Task<List<TicketSettleInfo>> GetSettledTickets(List<TicketSettleInfo> tickets)
+    {
+        if (tickets.Count != 0)
+        {
+            var transIDs = string.Join(',', tickets.Select(x => x.TransId).ToArray());
+            return await ticketSettleService.GetAllTickets(new TicketSettleCriteria { TransIDs = transIDs });
+        }
+
+        return new List<TicketSettleInfo>();
     }
 
     private async Task HandleAfterSettle(LeapGamingRequest request, MatchInfo matchInfo, Result resultSettle)
@@ -135,7 +204,7 @@ public class LeapGamingServiceImp : LeapGamingService
     private async Task<MatchInfo> MatchStatus(int matchId)
     {
         var criteria = new LeapGamingGetMatchInfoCriteria { MatchId = matchId };
-        var match = await repository.GetAsync<MatchInfo>(criteria);
+        var match = await repository.GetAsync<MatchInfo>(criteria) ?? new MatchInfo();
         match.MatchId = matchId;
 
         return match;

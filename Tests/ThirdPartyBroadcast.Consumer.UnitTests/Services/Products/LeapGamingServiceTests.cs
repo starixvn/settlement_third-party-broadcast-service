@@ -14,6 +14,8 @@ public class LeapGamingServiceTests
     private readonly LeapGamingService service;
 
     private readonly RecipientTicketsService recipientTicketsService;
+    private readonly TicketSettleService ticketSettleService;
+    private readonly AnnouncementService announcementService;
 
     public LeapGamingServiceTests()
     {
@@ -26,7 +28,7 @@ public class LeapGamingServiceTests
         var config = new MapperConfiguration(mapperConfig);
         var mapper = new Mapper(config);
 
-        service = new LeapGamingServiceImp(mapper, calculateService, logDirectlyService, repository, recipientTicketsService);
+        service = new LeapGamingServiceImp(mapper, calculateService, logDirectlyService, repository, recipientTicketsService, ticketSettleService, announcementService);
     }
 
     [Fact]

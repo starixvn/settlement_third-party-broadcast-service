@@ -10,7 +10,7 @@ public class MatchInfo
 
     public string SportName { get; set; }
 
-    public DateOnly KickOffTime { get; set; }
+    public DateTime KickOffTime { get; set; }
 
     public string LeagueName { get; set; }
 

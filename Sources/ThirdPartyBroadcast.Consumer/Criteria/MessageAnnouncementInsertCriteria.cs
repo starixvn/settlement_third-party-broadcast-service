@@ -24,17 +24,18 @@ public class MessageAnnouncementInsertCriteria : NonQueryCommand
 
     public bool IsSticky { get; set; }
 
-    public int MsgType { get; set; }
+    public short MsgType { get; set; } = 1;
 
     public bool IsBatch { get; set; } = true;
 
     public short MsgContentsType { get; set; }
+    public int Creator { get; set; }
 
     public int ErrCode { get; set; }
 
     public string ErrMsg { get; set; }
 
-    public override string GetSettingKey() => "";
+    public override string GetSettingKey() => "NAP_SpecialDelete_Message_Insert";
 
     public override bool IsValid() => true;
 }
