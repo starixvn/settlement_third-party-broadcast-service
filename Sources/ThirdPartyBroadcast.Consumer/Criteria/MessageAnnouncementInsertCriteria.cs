@@ -30,11 +30,7 @@ public class MessageAnnouncementInsertCriteria : NonQueryCommand
 
     public short MsgContentsType { get; set; }
     public int Creator { get; set; }
-
-    public int ErrCode { get; set; }
-
-    public string ErrMsg { get; set; }
-
+    public string CreatorName { get; set; } = string.Empty;
     public override string GetSettingKey() => "NAP_SpecialDelete_Message_Insert";
 
     public override bool IsValid() => true;

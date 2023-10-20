@@ -36,15 +36,15 @@ public class AnnouncementServiceImp : AnnouncementService
             pst => pst.TransId,
             (st, pst) => new TicketSettleInfo
             {
-                TransId = pst.TransId,
-                MemberId = pst.MemberId,
-                MemberUserName = pst.MemberUserName,
-                AgentId = pst.AgentId,
-                AgentUserName = pst.AgentUserName,
-                MasterId = pst.MasterId,
-                MasterUserName = pst.MasterUserName,
-                SuperId = pst.SuperId,
-                SuperUserName = pst.SuperUserName,
+                TransId = st.TransId,
+                MemberId = st.MemberId,
+                MemberUserName = st.MemberUserName,
+                AgentId = st.AgentId,
+                AgentUserName = st.AgentUserName,
+                MasterId = st.MasterId,
+                MasterUserName = st.MasterUserName,
+                SuperId = st.SuperId,
+                SuperUserName = st.SuperUserName,
             });
 
         var groupStatus = result.GroupBy(x => x.Status);
@@ -104,7 +104,7 @@ public class AnnouncementServiceImp : AnnouncementService
     {
         return template
                .Replace("@league_name", matchInfo.LeagueName)
-               .Replace("＠KO_day_month", $"{matchInfo.KickOffTime.Day}/{matchInfo.KickOffTime.Month}");
+               .Replace("@KO_day_month", $"{matchInfo.KickOffTime.Day}/{matchInfo.KickOffTime.Month}");
     }
 
     private List<MessageAnnounenceItem> CreateMessageAnnounenceItems(IEnumerable<TicketSettleInfo> settledTickets, int messageId)
@@ -117,7 +117,7 @@ public class AnnouncementServiceImp : AnnouncementService
                 TargetName = x.FirstOrDefault()?.MemberUserName,
                 BetTransId = string.Join(",", x.Select(x => x.TransId).ToArray()),
                 MessageId = messageId
-            });
+            }).ToList();
 
         //var groupPunter = settledTickets.GroupBy(x => x.MemberId).Select(x => new MessageAnnounenceItem
         //{
@@ -135,7 +135,7 @@ public class AnnouncementServiceImp : AnnouncementService
                 TargetName = x.FirstOrDefault()?.AgentUserName,
                 BetTransId = string.Join(",", x.Select(x => x.TransId).ToArray()),
                 MessageId = messageId
-            });
+            }).ToList();
 
         var groupMaster = settledTickets
             .Where(x => x.MasterId is not null)
@@ -145,7 +145,7 @@ public class AnnouncementServiceImp : AnnouncementService
                 TargetName = x.FirstOrDefault()?.MasterUserName,
                 BetTransId = string.Join(",", x.Select(x => x.TransId).ToArray()),
                 MessageId = messageId
-            });
+            }).ToList();
 
         var groupSuper = settledTickets
             .Where(x => x.SuperId is not null)
@@ -155,7 +155,7 @@ public class AnnouncementServiceImp : AnnouncementService
                 TargetName = x.FirstOrDefault()?.SuperUserName,
                 BetTransId = string.Join(",", x.Select(x => x.TransId).ToArray()),
                 MessageId = messageId
-            });
+            }).ToList();
 
         return groupCus
             //.Concat(groupPunter)
@@ -166,19 +166,33 @@ public class AnnouncementServiceImp : AnnouncementService
 
     private async Task<int> Insert(MessageAnnouncementInsertCriteria criteria)
     {
-        var messageId = await repository.GetAsync<int>(criteria);
+        try
+        {
+            var messageId = await repository.GetAsync<int>(criteria);
 
-        return messageId;
+            return messageId;
+        }
+        catch (Exception ex)
+        {
+            throw;
+        }
     }
 
     private async Task<Result> Upload(MessageUploadCriteria criteria)
     {
-        await repository.ExecuteAsync(criteria);
-
-        return new Result
+        try
         {
-            ErrorCode = criteria.ErrorCode,
-            ErrorMessage = criteria.ErrorMsg
-        };
+            await repository.ExecuteAsync(criteria);
+
+            return new Result
+            {
+                ErrorCode = criteria.ErrorCode,
+                ErrorMessage = criteria.ErrorMsg
+            };
+        }
+        catch (Exception)
+        {
+            throw;
+        }
     }
 }

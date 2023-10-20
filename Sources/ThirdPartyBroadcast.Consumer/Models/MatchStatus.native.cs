@@ -11,7 +11,8 @@ public class MatchStatus
     public bool Multiple { get; set; }
 
     public string EventStatus { get; set; }
-    public DateOnly KickOffTime { get; set; }
+    public DateTime KickOffTime { get; set; }
 
     public string LeagueName { get; set; }
+    public int MatchId { get; set; }
 }

@@ -12,6 +12,8 @@ public class VirtualBetRadarServiceTests
 
     private readonly VirtualBetRadarService service;
     private readonly LogDirectlyService logService;
+    private readonly TicketSettleService ticketSettleService;
+    private readonly AnnouncementService announcementService;
 
     public VirtualBetRadarServiceTests()
     {
@@ -23,7 +25,7 @@ public class VirtualBetRadarServiceTests
         mapperConfig.AddProfile<ThirdPartyBroadcastMappingProfile>();
         var config = new MapperConfiguration(mapperConfig);
         var mapper = new Mapper(config);
-        service = new VirtualBetRadarServiceImp(repository, mapper, calculateService, logService);
+        service = new VirtualBetRadarServiceImp(repository, mapper, calculateService, logService, ticketSettleService, announcementService);
     }
 
     [Theory]

@@ -1,11 +1,14 @@
-﻿using Microsoft.Extensions.Options;
+﻿using System.Security.Permissions;
+using Microsoft.Extensions.Options;
 using ThirdPartyBroadcast.Consumer.Criteria;
 
 namespace ThirdPartyBroadcast.Consumer.Services;
 
 public interface TicketSettleService
 {
-    Task<List<TicketSettleInfo>> GetAllTickets(TicketSettleCriteria criteria);
+    Task<List<TicketSettleInfo>> GetTicketsByAction(int matchId, string action);
+
+    Task<List<TicketSettleInfo>> GetTicketsByTransIds(List<TicketSettleInfo> tickets);
 }
 
 public class TicketSettleServiceImp : TicketSettleService
@@ -19,7 +22,28 @@ public class TicketSettleServiceImp : TicketSettleService
         this.appSettings = appSettingsKey.Value;
     }
 
-    public async Task<List<TicketSettleInfo>> GetAllTickets(TicketSettleCriteria criteria)
+    public async Task<List<TicketSettleInfo>> GetTicketsByAction(int matchId, string action)
+    {
+        if (action.ToLowerInvariant().Equals(ActionType.Refund))
+        {
+            return await GetAllTickets(new TicketSettleCriteria { MatchId = matchId });
+        }
+
+        return new List<TicketSettleInfo>();
+    }
+
+    public async Task<List<TicketSettleInfo>> GetTicketsByTransIds(List<TicketSettleInfo> tickets)
+    {
+        if (tickets.Count != 0)
+        {
+            var transIDs = string.Join(',', tickets.Select(x => x.TransId).ToArray());
+            return await GetAllTickets(new TicketSettleCriteria { TransIDs = transIDs });
+        }
+
+        return new List<TicketSettleInfo>();
+    }
+
+    private async Task<List<TicketSettleInfo>> GetAllTickets(TicketSettleCriteria criteria)
     {
         try
         {

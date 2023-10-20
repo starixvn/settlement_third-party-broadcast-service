@@ -2,8 +2,11 @@
 
 namespace ThirdPartyBroadcast.Consumer.Services.Products;
 
+using System.Xml.Serialization;
 using Constants;
 using Criteria.VirtualBetRadar;
+using ThirdPartyBroadcast.Consumer.Criteria.LeapGaming;
+using ThirdPartyBroadcast.Consumer.Models;
 
 public interface VirtualBetRadarService
 {
@@ -20,16 +23,24 @@ public class VirtualBetRadarServiceImp : VirtualBetRadarService
 
     private readonly LogDirectlyService logDirectlyService;
 
+    private readonly TicketSettleService ticketSettleService;
+
+    private readonly AnnouncementService announcementService;
+
     public VirtualBetRadarServiceImp(
         IDynamicRepository repository,
         IMapper mapper,
         CalculateService calculateService,
-        LogDirectlyService logDirectlyService)
+        LogDirectlyService logDirectlyService,
+        TicketSettleService ticketSettleService,
+        AnnouncementService announcementService)
     {
         this.repository = repository;
         this.mapper = mapper;
         this.calculateService = calculateService;
         this.logDirectlyService = logDirectlyService;
+        this.ticketSettleService = ticketSettleService;
+        this.announcementService = announcementService;
     }
 
     public async Task<Result> Settle(VirtualBetRadarRequest request)
@@ -37,24 +48,72 @@ public class VirtualBetRadarServiceImp : VirtualBetRadarService
         var betRadarValidationCriteria = mapper.Map<VirtualBetRadarRequest, BetRadarValidationCriteria>(request);
         var resultValidation = await calculateService.ExecuteValidationMultiServer(betRadarValidationCriteria);
         var criteria = mapper.Map<VirtualBetRadarRequest, VirtualBetRadarCriteria>(request);
-        criteria.NotifyFlag = await GetNotifyFlag(request.MatchId, request.Action);
+        //criteria.NotifyFlag = await GetNotifyFlag(request.MatchId, request.Action);
 
-        if (resultValidation.IsSuccessful)
+        if (!resultValidation.IsSuccessful)
         {
-            await UpdateMatchInfo(request);
-
-            var message = GenerateMessageLog(criteria);
-            await logDirectlyService.WriteLog(criteria.MatchId, message);
-
-            var result = await calculateService.Execute(criteria);
-
-            await HandleAfterSettle(request, result);
-
-            // TODO
-            return result;
+            return resultValidation;
         }
 
-        return resultValidation;
+        // TODO
+        var currentMatchInfo = await GetMatchStatus(request.MatchId);
+        var currentTickets = await ticketSettleService.GetTicketsByAction(request.MatchId, request.Action);
+
+        await UpdateMatchInfo(request);
+
+        var message = GenerateMessageLog(criteria);
+        await logDirectlyService.WriteLog(criteria.MatchId, message);
+
+        var result = await HandleSettle(currentTickets, currentMatchInfo, request);
+
+        return result;
+    }
+
+    private async Task<Result> HandleSettle(List<TicketSettleInfo> currentTickets, MatchStatus matchInfo, VirtualBetRadarRequest request)
+    {
+        Exception currentEx = null;
+        var settleResult = new Result();
+
+        try
+        {
+            var criteria = mapper.Map<VirtualBetRadarRequest, VirtualBetRadarCriteria>(request);
+            settleResult = await calculateService.Execute(criteria);
+
+            await HandleAfterSettle(request, settleResult);
+        }
+        catch (Exception ex)
+        {
+            currentEx = ex;
+        }
+
+        await HandleAnnounce(currentTickets, matchInfo, request);
+
+        if (currentEx is not null)
+        {
+            throw currentEx;
+        }
+
+        return settleResult;
+    }
+
+    private async Task HandleAnnounce(List<TicketSettleInfo> currentTickets, MatchStatus matchStatus, VirtualBetRadarRequest request)
+    {
+        var settledTickets = await ticketSettleService.GetTicketsByTransIds(currentTickets);
+
+        if (settledTickets.Count == 0)
+        {
+            return;
+        }
+
+        var groupTickets = announcementService.CreateGroupsStatus(currentTickets, settledTickets).ToList();
+
+        var matchInfo = new MatchInfo
+        {
+            KickOffTime = matchStatus.KickOffTime,
+            LeagueName = matchStatus.LeagueName,
+            MatchId = matchStatus.MatchId,
+        };
+        await announcementService.Handle(matchInfo, groupTickets, request.AdminId);
     }
 
     private static string GenerateMessageLog(VirtualBetRadarCriteria criteria)
@@ -64,30 +123,39 @@ public class VirtualBetRadarServiceImp : VirtualBetRadarService
 
     private async Task HandleAfterSettle(VirtualBetRadarRequest request, Result settleResult)
     {
+        var logCriteria = CreateWriteLogCriteria(request, settleResult);
+        await repository.ExecuteAsync(logCriteria);
+
+        await SendMail(logCriteria, settleResult);
+    }
+
+    private async Task SendMail(WriteLogCriteria logCriteria, Result settleResult)
+    {
+        if (!settleResult.IsSuccessful)
+        {
+            var sendMailCriteria = mapper.Map<WriteLogCriteria, SendMailCriteria>(logCriteria);
+            sendMailCriteria.Message = logCriteria.Remark;
+            await repository.ExecuteAsync(sendMailCriteria);
+        }
+    }
+
+    private async Task SendNotify()
+    {
+    }
+
+    private static WriteLogCriteria CreateWriteLogCriteria(VirtualBetRadarRequest request, Result settleResult)
+    {
         var actionId = ActionIdValue(request.Action);
+
         var criteria = new WriteLogCriteria(request.MatchId, actionId, request.AdminId, request.Ip)
         {
             FinalAwayScore = request.Fta,
             FinalHomeScore = request.Fth,
             HtAwayScore = request.Hta,
-            HtHomeScore = request.Hth
+            HtHomeScore = request.Hth,
+            Remark = $"VS BetRadar - Calculate ({request.Action}) {(settleResult.ErrorCode > 0 ? settleResult.ErrorMessage : string.Empty)}" //check
         };
-
-        if (settleResult.IsSuccessful)
-        {
-            criteria.Remark = "NAP: VS BetRadar - API inserted into single queue successfully."; // TODO
-            await repository.ExecuteAsync(criteria);
-        }
-        else
-        {
-            var message = $"NAP: VS BetRadar - Error: API inserted into single queue failed. {settleResult.ErrorMessage}";
-            criteria.Remark = message;
-            await repository.ExecuteAsync(criteria);
-
-            var sendMailCriteria = mapper.Map<WriteLogCriteria, SendMailCriteria>(criteria);
-            sendMailCriteria.Message = message;
-            await repository.ExecuteAsync(sendMailCriteria);
-        }
+        return criteria;
     }
 
     private static int ActionIdValue(string actionName) => actionName.ToLowerInvariant().Equals(ActionType.Calculate) ? ActionId.VirtualBetRadarCalc : ActionId.VirtualBetRadarRefund;
@@ -98,19 +166,33 @@ public class VirtualBetRadarServiceImp : VirtualBetRadarService
         await repository.ExecuteAsync(criteria);
     }
 
+    //private bool IsReSettleOrRefund(string action, string matchStatus)
+    //{
+    //    return action.ToLowerInvariant().Equals(ActionType.Refund) || ;
+    //}
+
     private async Task<int> GetNotifyFlag(int matchId, string action)
     {
         const int notifyRefund = 10;
         const int notifySingleValue = 2;
-        if (!action.ToLowerInvariant().Equals(ActionType.Calculate))
+        if (!action.ToLowerInvariant().Equals(ActionType.Calculate)) // action: REFUND
         {
             return notifyRefund;
         }
 
-        var criteria = new GetMatchStatusCriteria { MatchId = matchId };
-        var matchStatus = await repository.GetAsync<MatchStatus>(criteria);
+        // action RESETTLE
+        var matchStatus = await GetMatchStatus(matchId);
         var hasNotify = matchStatus != null && (matchStatus.Calculate || matchStatus.CalRefund);
         return hasNotify ? notifySingleValue + ParlayNotify(matchStatus) : 0;
+    }
+
+    private async Task<MatchStatus> GetMatchStatus(int matchId)
+    {
+        var criteria = new GetMatchStatusCriteria { MatchId = matchId };
+        var matchStatus = await repository.GetAsync<MatchStatus>(criteria);
+        matchStatus.MatchId = matchId;
+
+        return matchStatus;
     }
 
     private static int ParlayNotify(MatchStatus matchStatus)

@@ -8,7 +8,7 @@ namespace ThirdPartyBroadcast.Consumer.Models;
 
 public class TicketSettleInfo
 {
-    public int TransId { get; set; }
+    public long TransId { get; set; }
     public short StatusId { get; set; }
     public int? MemberId { get; set; }
     public string MemberUserName { get; set; }

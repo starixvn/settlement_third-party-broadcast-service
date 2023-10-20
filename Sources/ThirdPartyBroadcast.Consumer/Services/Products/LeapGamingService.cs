@@ -60,7 +60,7 @@ public class LeapGamingServiceImp : LeapGamingService
         }
 
         var currentMatchInfo = await MatchStatus(request.MatchId);
-        var currentTickets = await GetCurrentTickets(request);
+        var currentTickets = await ticketSettleService.GetTicketsByAction(request.MatchId, request.Action);
 
         await UpdateMatchInfo(request);
 
@@ -81,14 +81,17 @@ public class LeapGamingServiceImp : LeapGamingService
         {
             var criteria = mapper.Map<LeapGamingRequest, LeapGamingCriteria>(request);
             settleResult = await calculateService.Execute(criteria);
+
+            await WriteLogSettled(request, settleResult);
+
+            await SendMail(request.Action, matchInfo);
         }
         catch (Exception ex)
         {
             currentEx = ex;
         }
 
-        await HandleAfterSettle(request, matchInfo, settleResult);
-        await HandleAnnounce(currentTickets, matchInfo, request);
+        await HandleAnnounce(currentTickets, matchInfo, request.AdminId);
 
         if (currentEx is not null)
         {
@@ -98,48 +101,25 @@ public class LeapGamingServiceImp : LeapGamingService
         return settleResult;
     }
 
-    private async Task HandleAnnounce(List<TicketSettleInfo> currentTickets, MatchInfo matchInfo, LeapGamingRequest request)
+    private async Task HandleAnnounce(List<TicketSettleInfo> currentTickets, MatchInfo matchInfo, int adminId)
     {
-        var settledTickets = await GetSettledTickets(currentTickets);
+        var settledTickets = await ticketSettleService.GetTicketsByTransIds(currentTickets);
 
-        if (currentTickets.Count == 0 || settledTickets.Count == 0)
+        if (settledTickets.Count == 0)
         {
             return;
         }
 
-        var groupTickets = announcementService.CreateGroupsStatus(currentTickets, settledTickets);
+        var groupTickets = announcementService.CreateGroupsStatus(currentTickets, settledTickets).ToList();
 
-        await announcementService.Handle(matchInfo, groupTickets, request.AdminId);
+        await announcementService.Handle(matchInfo, groupTickets, adminId);
     }
 
-    private async Task<List<TicketSettleInfo>> GetCurrentTickets(LeapGamingRequest request)
-    {
-        if (request.Action.ToLowerInvariant().Equals(ActionType.Refund))
-        {
-            return await ticketSettleService.GetAllTickets(new TicketSettleCriteria { MatchId = request.MatchId });
-        }
-
-        return new List<TicketSettleInfo>();
-    }
-
-    private async Task<List<TicketSettleInfo>> GetSettledTickets(List<TicketSettleInfo> tickets)
-    {
-        if (tickets.Count != 0)
-        {
-            var transIDs = string.Join(',', tickets.Select(x => x.TransId).ToArray());
-            return await ticketSettleService.GetAllTickets(new TicketSettleCriteria { TransIDs = transIDs });
-        }
-
-        return new List<TicketSettleInfo>();
-    }
-
-    private async Task HandleAfterSettle(LeapGamingRequest request, MatchInfo matchInfo, Result resultSettle)
+    private async Task WriteLogSettled(LeapGamingRequest request, Result resultSettle)
     {
         var criteria = CreateWriteLogCriteria(request, resultSettle);
 
         await repository.ExecuteAsync(criteria);
-
-        await SendMail(request.Action, matchInfo);
     }
 
     private static WriteLogCriteria CreateWriteLogCriteria(LeapGamingRequest request, Result resultSettle)
