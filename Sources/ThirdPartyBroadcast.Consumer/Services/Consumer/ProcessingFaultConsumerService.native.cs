@@ -1,14 +1,10 @@
-﻿namespace ThirdPartyBroadcast.Consumer.Services.Consumer;
+﻿using Fanex.Logging;
+using Fanex.Logging.Extensions;
+
+namespace ThirdPartyBroadcast.Consumer.Services.Consumer;
 
 public class ProcessingFaultConsumerService : IConsumer<Fault<IBroadcastApiProcessing>>
 {
-    private readonly LogDirectlyService logDirectlyService;
-
-    public ProcessingFaultConsumerService(LogDirectlyService logDirectlyService)
-    {
-        this.logDirectlyService = logDirectlyService;
-    }
-
     public async Task Consume(ConsumeContext<Fault<IBroadcastApiProcessing>> context)
     {
         var originalMessage = context.Message;
@@ -22,9 +18,41 @@ public class ProcessingFaultConsumerService : IConsumer<Fault<IBroadcastApiProce
             {
                 ErrorMessage = errorMessage
             };
-            await logDirectlyService.HandleLog(result, message.ProductType, message.Data);
+            await HandleLog(result, message.ProductType, message.Data);
         }
 
         await Task.CompletedTask;
+    }
+
+    private static async Task HandleLog(Result result, string productType, string data)
+    {
+        if (!result.IsSuccessful)
+        {
+            var info = new Dictionary<string, object>
+            {
+                { "Product Name", GetProductName(productType) },
+                { "Match Info", data },
+                { "Details", result.ErrorMessage },
+            };
+
+            var logMessage = new LogMessage(result.ErrorMessage)
+                .AddSection("Error Info", info)
+                .ToString();
+
+            await LogService.ErrorAsync(logMessage);
+        }
+    }
+
+    private static string GetProductName(string code)
+    {
+        foreach (var field in typeof(ProductType).GetFields())
+        {
+            if (string.Equals((string)field.GetValue(null), code))
+            {
+                return field.Name;
+            }
+        }
+
+        return string.Empty;
     }
 }
