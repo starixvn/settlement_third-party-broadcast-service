@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace ThirdPartyBroadcast.Consumer.Criteria.VirtualBetRadar;
 
-public class SendNotifyBetradarCriteria : NonQueryCommand
+public class SendNotifyBetRadarCriteria : NonQueryCommand
 {
     public int MatchId { get; set; }
     public int NotifyAction { get; set; }
-    public bool IsParlay { get; set; }
-    public short ParlayStatus { get; set; }
+    public bool IsParlay { get; set; } = true;
+    public short ParlayStatus { get; set; } = 2;
     public int ErrCode { get; set; }
     public string ErrMsg { get; set; }
 

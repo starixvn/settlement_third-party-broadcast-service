@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Fanex.Logging;
 using Fanex.Settlement.Converter.Services;
 using ThirdPartyBroadcast.Consumer.Criteria;
 using ThirdPartyBroadcast.Consumer.Models;
@@ -67,6 +68,11 @@ public class AnnouncementServiceImp : AnnouncementService
             var uploadCriteria = CreateMessageUploadCriteria(message, adminId);
 
             var result = await Upload(uploadCriteria);
+
+            if (!result.IsSuccessful)
+            {
+                return result;
+            }
         }
 
         return new Result();
@@ -109,59 +115,35 @@ public class AnnouncementServiceImp : AnnouncementService
 
     private List<MessageAnnounenceItem> CreateMessageAnnounenceItems(IEnumerable<TicketSettleInfo> settledTickets, int messageId)
     {
-        var groupCus = settledTickets
-            .Where(x => x.MemberId is not null)
-            .GroupBy(x => x.MemberId).Select(x => new MessageAnnounenceItem
-            {
-                TargetId = x.Key ?? 0,
-                TargetName = x.FirstOrDefault()?.MemberUserName,
-                BetTransId = string.Join(",", x.Select(x => x.TransId).ToArray()),
-                MessageId = messageId
-            }).ToList();
+        var groupCust = GenerateMessageAnnounenceItems(settledTickets, ticket => ticket.MemberId, ticket => ticket.MemberUserName, messageId);
+        var groupAgent = GenerateMessageAnnounenceItems(settledTickets, ticket => ticket.AgentId, ticket => ticket.AgentUserName, messageId);
+        var groupMaster = GenerateMessageAnnounenceItems(settledTickets, ticket => ticket.MasterId, ticket => ticket.MasterUserName, messageId);
+        var groupSuper = GenerateMessageAnnounenceItems(settledTickets, ticket => ticket.SuperId, ticket => ticket.SuperUserName, messageId);
 
-        //var groupPunter = settledTickets.GroupBy(x => x.MemberId).Select(x => new MessageAnnounenceItem
-        //{
-        //    TargetId = x.Key ?? 0,
-        //    TargetName = x.FirstOrDefault()?.MemberUserName,
-        //    BetTransId = string.Join(",", x.Select(x => x.TransId).ToArray()),
-        //    MessageId = messageId
-        //}).ToList();
-
-        var groupAgent = settledTickets
-            .Where(x => x.AgentId is not null)
-            .GroupBy(x => x.AgentId).Select(x => new MessageAnnounenceItem
-            {
-                TargetId = x.Key ?? 0,
-                TargetName = x.FirstOrDefault()?.AgentUserName,
-                BetTransId = string.Join(",", x.Select(x => x.TransId).ToArray()),
-                MessageId = messageId
-            }).ToList();
-
-        var groupMaster = settledTickets
-            .Where(x => x.MasterId is not null)
-            .GroupBy(x => x.MasterId).Select(x => new MessageAnnounenceItem
-            {
-                TargetId = x.Key ?? 0,
-                TargetName = x.FirstOrDefault()?.MasterUserName,
-                BetTransId = string.Join(",", x.Select(x => x.TransId).ToArray()),
-                MessageId = messageId
-            }).ToList();
-
-        var groupSuper = settledTickets
-            .Where(x => x.SuperId is not null)
-            .GroupBy(x => x.SuperId).Select(x => new MessageAnnounenceItem
-            {
-                TargetId = x.Key ?? 0,
-                TargetName = x.FirstOrDefault()?.SuperUserName,
-                BetTransId = string.Join(",", x.Select(x => x.TransId).ToArray()),
-                MessageId = messageId
-            }).ToList();
-
-        return groupCus
+        return groupCust
             //.Concat(groupPunter)
             .Concat(groupAgent)
             .Concat(groupMaster)
             .Concat(groupSuper).ToList();
+    }
+
+    private List<MessageAnnounenceItem> GenerateMessageAnnounenceItems(
+     IEnumerable<TicketSettleInfo> settledTickets,
+     Func<TicketSettleInfo, int?> idSelector,
+     Func<TicketSettleInfo, string> nameSelector,
+     int messageId)
+    {
+        return settledTickets
+            .Where(ticket => idSelector(ticket) is not null)
+            .GroupBy(ticket => idSelector(ticket))
+            .Select(group => new MessageAnnounenceItem
+            {
+                TargetId = group.Key ?? 0,
+                TargetName = nameSelector(group.FirstOrDefault()),
+                BetTransId = string.Join(",", group.Select(ticket => ticket.TransId)),
+                MessageId = messageId
+            })
+            .ToList();
     }
 
     private async Task<int> Insert(MessageAnnouncementInsertCriteria criteria)
@@ -174,7 +156,8 @@ public class AnnouncementServiceImp : AnnouncementService
         }
         catch (Exception ex)
         {
-            throw;
+            LogService.Error($"MessageAnnouncementInsert error: {ex.Message}");
+            return -1;
         }
     }
 
@@ -190,9 +173,13 @@ public class AnnouncementServiceImp : AnnouncementService
                 ErrorMessage = criteria.ErrorMsg
             };
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            throw;
+            LogService.Error($"MessageUpload error: {ex.Message}");
+            return new Result
+            {
+                ErrorCode = criteria.ErrorCode,
+            };
         }
     }
 }

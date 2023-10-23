@@ -69,7 +69,7 @@ public class VirtualBetRadarServiceImp : VirtualBetRadarService
         return result;
     }
 
-    private async Task<Result> HandleSettle(List<TicketSettleInfo> currentTickets, MatchStatus matchInfo, VirtualBetRadarRequest request)
+    private async Task<Result> HandleSettle(List<TicketSettleInfo> currentTickets, MatchStatus matchStatus, VirtualBetRadarRequest request)
     {
         Exception currentEx = null;
         var settleResult = new Result();
@@ -79,14 +79,14 @@ public class VirtualBetRadarServiceImp : VirtualBetRadarService
             var criteria = mapper.Map<VirtualBetRadarRequest, VirtualBetRadarCriteria>(request);
             settleResult = await calculateService.Execute(criteria);
 
-            await HandleAfterSettle(request, settleResult);
+            await HandleAfterSettle(request, settleResult, matchStatus);
         }
         catch (Exception ex)
         {
             currentEx = ex;
         }
 
-        await HandleAnnounce(currentTickets, matchInfo, request);
+        await HandleAnnounce(currentTickets, matchStatus, request);
 
         if (currentEx is not null)
         {
@@ -121,12 +121,14 @@ public class VirtualBetRadarServiceImp : VirtualBetRadarService
               Scores: FT=[{criteria.Fth}-{criteria.Fta}]; HT=[{criteria.Hth}-{criteria.Hta}]
               Resource Results: {criteria.ResourceResult}";
 
-    private async Task HandleAfterSettle(VirtualBetRadarRequest request, Result settleResult)
+    private async Task HandleAfterSettle(VirtualBetRadarRequest request, Result settleResult, MatchStatus matchStatus)
     {
         var logCriteria = CreateWriteLogCriteria(request, settleResult);
         await repository.ExecuteAsync(logCriteria);
 
         await SendMail(logCriteria, settleResult);
+
+        await SendNotify(request, matchStatus);
     }
 
     private async Task SendMail(WriteLogCriteria logCriteria, Result settleResult)
@@ -139,8 +141,18 @@ public class VirtualBetRadarServiceImp : VirtualBetRadarService
         }
     }
 
-    private async Task SendNotify()
+    private async Task SendNotify(VirtualBetRadarRequest request, MatchStatus matchStatus)
     {
+        if (IsReSettleOrRefund(request.Action, matchStatus))
+        {
+            var criteria = new SendNotifyBetRadarCriteria
+            {
+                MatchId = request.MatchId,
+                NotifyAction = ActionIdValue(request.Action)
+            };
+
+            await repository.ExecuteAsync(criteria);
+        }
     }
 
     private static WriteLogCriteria CreateWriteLogCriteria(VirtualBetRadarRequest request, Result settleResult)
@@ -166,25 +178,23 @@ public class VirtualBetRadarServiceImp : VirtualBetRadarService
         await repository.ExecuteAsync(criteria);
     }
 
-    //private bool IsReSettleOrRefund(string action, string matchStatus)
+    private bool IsReSettleOrRefund(string action, MatchStatus matchStatus)
+        => action.ToLowerInvariant().Equals(ActionType.Refund) || matchStatus != null && (matchStatus.Calculate || matchStatus.CalRefund);
+
+    //private async Task<int> GetNotifyFlag(int matchId, string action)
     //{
-    //    return action.ToLowerInvariant().Equals(ActionType.Refund) || ;
+    //    const int notifyRefund = 10;
+    //    const int notifySingleValue = 2;
+    //    if (!action.ToLowerInvariant().Equals(ActionType.Calculate)) // action: REFUND
+    //    {
+    //        return notifyRefund;
+    //    }
+
+    //    // action RESETTLE
+    //    var matchStatus = await GetMatchStatus(matchId);
+    //    var hasNotify = matchStatus != null && (matchStatus.Calculate || matchStatus.CalRefund);
+    //    return hasNotify ? notifySingleValue + ParlayNotify(matchStatus) : 0;
     //}
-
-    private async Task<int> GetNotifyFlag(int matchId, string action)
-    {
-        const int notifyRefund = 10;
-        const int notifySingleValue = 2;
-        if (!action.ToLowerInvariant().Equals(ActionType.Calculate)) // action: REFUND
-        {
-            return notifyRefund;
-        }
-
-        // action RESETTLE
-        var matchStatus = await GetMatchStatus(matchId);
-        var hasNotify = matchStatus != null && (matchStatus.Calculate || matchStatus.CalRefund);
-        return hasNotify ? notifySingleValue + ParlayNotify(matchStatus) : 0;
-    }
 
     private async Task<MatchStatus> GetMatchStatus(int matchId)
     {
@@ -195,9 +205,9 @@ public class VirtualBetRadarServiceImp : VirtualBetRadarService
         return matchStatus;
     }
 
-    private static int ParlayNotify(MatchStatus matchStatus)
-    {
-        const int notifyParlayValue = 8;
-        return matchStatus.Multiple || matchStatus.Refund ? notifyParlayValue : 0;
-    }
+    //private static int ParlayNotify(MatchStatus matchStatus)
+    //{
+    //    const int notifyParlayValue = 8;
+    //    return matchStatus.Multiple || matchStatus.Refund ? notifyParlayValue : 0;
+    //}
 }
