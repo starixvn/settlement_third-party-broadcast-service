@@ -60,6 +60,7 @@ public class AnnouncementServiceImp : AnnouncementService
             var insertCriteria = CreateAnnounceInsertCriteria(matchInfo, group.Key, adminId);
 
             var messageId = await Insert(insertCriteria);
+
             var items = CreateMessageAnnounenceItems(group, messageId);
             var message = new MessageAnnounence
             {
@@ -121,7 +122,6 @@ public class AnnouncementServiceImp : AnnouncementService
         var groupSuper = GenerateMessageAnnounenceItems(settledTickets, ticket => ticket.SuperId, ticket => ticket.SuperUserName, messageId);
 
         return groupCust
-            //.Concat(groupPunter)
             .Concat(groupAgent)
             .Concat(groupMaster)
             .Concat(groupSuper).ToList();

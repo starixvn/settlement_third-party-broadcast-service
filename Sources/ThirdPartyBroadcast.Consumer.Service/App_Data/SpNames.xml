@@ -17,7 +17,7 @@
 		<Setting Key ="NAP_UpdateMatch_Remark" SpName="NAP_UpdateMatch_Remark" DbName="DBPRO.bodb02.bodbAdminNet" />
 		<Setting Key ="NAP_Admin_SendMail" SpName="NAP_Admin_SendMail" DbName="DBTXN.bodb02.bodbAdminNet" />
 		<Setting Key="WriteLog_UserLog_Settle" SpName="WriteLog_UserLog_Settle" DbName="DBLOG.bodb_CustomerLog.bodbAdminNet" />
-		<Setting Key="NAP_Set_Match_s193_Sel" SpName="NAP_Set_Match_s193_Sel" DbName="DBPRO.bodb02.bodbAdminNet" />
+		<Setting Key="NAP_Set_Match_s193_Sel" SpName="NAP_Set_Match_s193_Sel_UAT4" DbName="DBPRO.bodb02.bodbAdminNet" />
 		<Setting Key="NAP_Admin_Settlement_50_MoveTicketInfo" SpName="NAP_Admin_Settlement_50_MoveTicketInfo" DbName="DBPRO.bodb02.bodbAdminNet" />
 		<Setting Key="NAP_UserLog_WriteLogPreSettlement" SpName="NAP_UserLog_WriteLogPreSettlement" DbName="DBUserLog.LogTDB.bodbAdminNet" />
 		<Setting Key="NAP_Admin_SendNotify_s178" SpName="NAP_Admin_SendNotify_s178" DbName="DBTXN.bodb02.bodbAdminNet" />
@@ -26,7 +26,7 @@
 		<Setting Key="NAP_Set_Match_s180_Sel" SpName="NAP_Set_Match_s180_Sel" DbName="DBPRO.bodb02.bodbAdminNet" />
 		<Setting Key="NAP_Admin_MailingList_Sel" SpName="NAP_Admin_MailingList_Sel" DbName="DBTXN.bodb02.bodbAdminNet" />
 
-		<Setting Key="NAP_Admin_SendNotify_VS_Betradar" SpName="NAP_Admin_SendNotify_VS_Betradar" DbName="DBPRO.bodb02.bodbAdminNet" />
+		<Setting Key="NAP_Admin_SendNotify_VS_Betradar" SpName="NAP_Admin_SendNotify_VS_Betradar_UAT4" DbName="DBTXN.bodb02.bodbAdminNet" />
 		<Setting Key="NAP_SpecialDelete_Message_Insert" SpName="NAP_SpecialDelete_Message_Insert" DbName="DB061.bodb_Message.bodbAdminNet" />
 		<Setting Key="NAP_SpecialDelete_BatchMessage_Upload" SpName="NAP_SpecialDelete_BatchMessage_Upload" DbName="DB061.bodb_Message.bodbAdminNet" />
 	</Function>
@@ -132,10 +132,10 @@
 				<Setting Key="NAP_Admin_Settlement_VS_BetRadar_Push_DBSID02" SpName="NAP_Admin_Settlement_VS_BetRadar_Push" DbName="DBSID02.bodb02.bodbAdminNet" />
 				<Setting Key="NAP_Admin_Settlement_VS_BetRadar_Push_DBSID03" SpName="NAP_Admin_Settlement_VS_BetRadar_Push" DbName="DBSID03.bodb02.bodbAdminNet" />
 
-				<Setting Key="NAP_Admin_Settlement_BetRadar_DBTXN" SpName="NAP_Admin_Settlement_BetRadar" DbName="DBTXN.bodb02.bodbAdminNet" />
-				<Setting Key="NAP_Admin_Settlement_BetRadar_DBSID01" SpName="NAP_Admin_Settlement_BetRadar" DbName="DBSID01.bodb02.bodbAdminNet" />
-				<Setting Key="NAP_Admin_Settlement_BetRadar_DBSID02" SpName="NAP_Admin_Settlement_BetRadar" DbName="DBSID02.bodb02.bodbAdminNet" />
-				<Setting Key="NAP_Admin_Settlement_BetRadar_DBSID03" SpName="NAP_Admin_Settlement_BetRadar" DbName="DBSID03.bodb02.bodbAdminNet" />
+				<Setting Key="NAP_Admin_Settlement_BetRadar_DBTXN" SpName="NAP_Admin_Settlement_BetRadar_UAT4" DbName="DBTXN.bodb02.bodbAdminNet" />
+				<Setting Key="NAP_Admin_Settlement_BetRadar_DBSID01" SpName="NAP_Admin_Settlement_BetRadar_UAT4" DbName="DBSID01.bodb02.bodbAdminNet" />
+				<Setting Key="NAP_Admin_Settlement_BetRadar_DBSID02" SpName="NAP_Admin_Settlement_BetRadar_UAT4" DbName="DBSID02.bodb02.bodbAdminNet" />
+				<Setting Key="NAP_Admin_Settlement_BetRadar_DBSID03" SpName="NAP_Admin_Settlement_BetRadar_UAT4" DbName="DBSID03.bodb02.bodbAdminNet" />
 			</Function>
 
 			<Function Name="NAP_Admin_Settlement_s193_Validation">
