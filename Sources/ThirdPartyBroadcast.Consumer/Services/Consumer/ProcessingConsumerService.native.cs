@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using StackExchange.Redis;
+using System.Data;
 
 namespace ThirdPartyBroadcast.Consumer.Services.Consumer;
 
@@ -6,14 +7,30 @@ public class ProcessingConsumerService : IConsumer<IBroadcastApiProcessing>
 {
     private readonly GenerateConsumerService service;
 
-    public ProcessingConsumerService(GenerateConsumerService service)
+    private readonly IMaintenanceService maintenanceService;
+
+    private readonly IConnectionMultiplexer connectionMultiplexer;
+
+    private const string SpecifiedWord = ":space:";
+
+    public ProcessingConsumerService(GenerateConsumerService service, IMaintenanceService maintenanceService, IConnectionMultiplexer connectionMultiplexer)
     {
         this.service = service;
+        this.maintenanceService = maintenanceService;
+        this.connectionMultiplexer = connectionMultiplexer;
     }
+
+    private IDatabase RedisDatabase => connectionMultiplexer.GetDatabase();
 
     public async Task Consume(ConsumeContext<IBroadcastApiProcessing> context)
     {
         var message = context.Message;
+        if (maintenanceService.IsMaintenance)
+        {
+            RedisDatabase.ListLeftPush(CacheKeys.BroadcastProductWaitingCacheKey,
+                $"{message.ProductType}{SpecifiedWord}{message.Data}");
+            return;
+        }
         await service.SettleByProduct(message.ProductType, message.Data);
     }
 }

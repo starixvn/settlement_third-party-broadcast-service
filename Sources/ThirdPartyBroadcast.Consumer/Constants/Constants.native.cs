@@ -3,6 +3,8 @@
 public static class CacheKeys
 {
     public const string BroadcastFlagCacheKey = "Settlement-Broadcast-API-Flag";
+
+    public const string BroadcastProductWaitingCacheKey = "Settlement-Broadcast-API-Product-Waiting";
 }
 
 public static class QueueName

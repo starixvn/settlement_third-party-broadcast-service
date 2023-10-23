@@ -21,6 +21,7 @@ using ONEbook.UM.Configurations;
 using ONEbook.UM.Helpers;
 using ONEbook.UM.Transport;
 using SharpRaven;
+using StackExchange.Redis;
 using ThirdPartyBroadcast.Consumer.Services;
 using ThirdPartyBroadcast.Consumer.Services.Consumer;
 using ThirdPartyBroadcast.Consumer.Services.Products;
@@ -84,6 +85,7 @@ public static class BroadcastConsumerInjection
     {
         var redisConfig = configuration.GetSection("AuthSettings:RedisConfig").Value;
         var applicationName = configuration.GetSection("AuthSettings:ChannelPrefix").Value;
+        service.AddSingleton<IConnectionMultiplexer>(sp => ConnectionMultiplexer.Connect($"{redisConfig},ChannelPrefix={applicationName}"));
         service.AddSingleton<ICache>(new RedisCache(new RedisCacheOptions
         {
             ConnectionString = redisConfig,
