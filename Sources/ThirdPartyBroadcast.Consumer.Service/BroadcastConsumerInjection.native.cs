@@ -85,7 +85,7 @@ public static class BroadcastConsumerInjection
     {
         var redisConfig = configuration.GetSection("AuthSettings:RedisConfig").Value;
         var applicationName = configuration.GetSection("AuthSettings:ChannelPrefix").Value;
-        service.AddSingleton<IConnectionMultiplexer>(sp => ConnectionMultiplexer.Connect($"{redisConfig},ChannelPrefix={applicationName}"));
+        service.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect($"{redisConfig},ChannelPrefix={applicationName}"));
         service.AddSingleton<ICache>(new RedisCache(new RedisCacheOptions
         {
             ConnectionString = redisConfig,

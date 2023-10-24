@@ -27,11 +27,13 @@ public class ProcessingConsumerService : IConsumer<IBroadcastApiProcessing>
         var message = context.Message;
         if (maintenanceService.IsMaintenance)
         {
-            RedisDatabase.ListLeftPush(CacheKeys.BroadcastProductWaitingCacheKey,
-                $"{message.ProductType}{SpecifiedWord}{message.Data}");
-            return;
+            await RedisDatabase.ListRightPushAsync(CacheKeys.BroadcastServiceProductWaitingCacheKey,
+                  $"{message.ProductType}{SpecifiedWord}{message.Data}");
         }
-        await service.SettleByProduct(message.ProductType, message.Data);
+        else
+        {
+            await service.SettleByProduct(message.ProductType, message.Data);
+        }
     }
 }
 

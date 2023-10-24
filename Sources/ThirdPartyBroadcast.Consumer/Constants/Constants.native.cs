@@ -2,15 +2,12 @@
 
 public static class CacheKeys
 {
-    public const string BroadcastFlagCacheKey = "Settlement-Broadcast-API-Flag";
-
-    public const string BroadcastProductWaitingCacheKey = "Settlement-Broadcast-API-Product-Waiting";
+    public const string BroadcastServiceProductWaitingCacheKey = "Broadcast-Service-Product-Waiting";
 }
 
 public static class QueueName
 {
     public const string Processing = "broadcast-api-processing-event";
-    public const string Fault = "broadcast-api-processing-event-fault";
 }
 
 public static class EmailType
