@@ -61,6 +61,14 @@ public class AnnouncementServiceImp : AnnouncementService
 
             var messageId = await Insert(insertCriteria);
 
+            if (messageId <= 0)
+            {
+                return new Result
+                {
+                    ErrorCode = -1,
+                };
+            }
+
             var items = CreateMessageAnnounenceItems(group, messageId);
             var message = new MessageAnnounence
             {
