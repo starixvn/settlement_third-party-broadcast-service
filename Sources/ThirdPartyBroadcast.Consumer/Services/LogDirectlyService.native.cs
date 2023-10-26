@@ -1,5 +1,6 @@
 ﻿using Fanex.Logging;
 using Fanex.Logging.Extensions;
+using Microsoft.Extensions.Options;
 using ThirdPartyBroadcast.Consumer.Criteria;
 
 namespace ThirdPartyBroadcast.Consumer.Services;
@@ -21,17 +22,25 @@ public class LogDirectlyServiceImp : LogDirectlyService
 
     private readonly IDynamicRepository dynamicRepository;
 
-    public LogDirectlyServiceImp(IDynamicRepository dynamicRepository)
+    private readonly AppSettingsKey appSettingsKey;
+
+    public LogDirectlyServiceImp(
+        IDynamicRepository dynamicRepository,
+        IOptions<AppSettingsKey> appSettingsKey)
     {
         this.dynamicRepository = dynamicRepository;
+        this.appSettingsKey = appSettingsKey.Value;
     }
 
     public string Message(int matchId) => $"Settlement for matchId: {matchId}";
 
     public async Task WriteInfo(string productType, string data)
     {
-        var productName = GetProductName(productType);
-        await LogService.InfoAsync($"ThirdPartyBroadcast Service - Product Name:{productName} - Match info: {data}");
+        if (appSettingsKey.EnableWriteLog)
+        {
+            var productName = GetProductName(productType);
+            await LogService.InfoAsync($"ThirdPartyBroadcast Service - Product Name:{productName} - Match info: {data}");
+        }
     }
 
     public async Task WriteLog(int matchId, string message)
