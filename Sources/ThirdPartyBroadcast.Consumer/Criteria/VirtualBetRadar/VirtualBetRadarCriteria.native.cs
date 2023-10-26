@@ -24,5 +24,5 @@ public class VirtualBetRadarCriteria : CalculateCriteria
     //    set => notifyFlag = value;
     //}
 
-    public override string GetSettingKey() => $"NAP_Admin_Settlement_BetRadar_{DbServer}";
+    public override string GetSettingKey() => $"NAP_Admin_Settlement_VS_BetRadar_{DbServer}";
 }

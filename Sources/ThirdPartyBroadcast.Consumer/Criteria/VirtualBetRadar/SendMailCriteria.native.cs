@@ -4,7 +4,7 @@ public class SendMailCriteria : NonQueryCommand
 {
     public int MatchId { get; set; }
 
-    public string SourceName { get; set; } = "NAP_Admin_Settlement_BetRadar";
+    public string SourceName { get; set; } = "NAP_Admin_Settlement_VS_BetRadar";
 
     public int AdminId { get; set; }
 
@@ -14,7 +14,7 @@ public class SendMailCriteria : NonQueryCommand
 
     public string Severity { get; set; } = "Error";
 
-    public string ProcName { get; set; } = "NAP_Admin_Settlement_BetRadar";
+    public string ProcName { get; set; } = "NAP_Admin_Settlement_VS_BetRadar";
 
     public string Remark { get; set; }
 

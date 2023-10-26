@@ -2,10 +2,8 @@
 
 namespace ThirdPartyBroadcast.Consumer.Services.Products;
 
-using System.Xml.Serialization;
 using Constants;
 using Criteria.VirtualBetRadar;
-using ThirdPartyBroadcast.Consumer.Criteria.LeapGaming;
 using ThirdPartyBroadcast.Consumer.Models;
 
 public interface VirtualBetRadarService
