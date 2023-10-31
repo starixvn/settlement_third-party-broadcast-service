@@ -46,6 +46,7 @@ public class AnnouncementServiceImp : AnnouncementService
                 MasterUserName = st.MasterUserName,
                 SuperId = st.SuperId,
                 SuperUserName = st.SuperUserName,
+                StatusId = pst.StatusId,
             });
 
         var groupStatus = result.GroupBy(x => x.Status);

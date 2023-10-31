@@ -10,5 +10,5 @@ namespace ThirdPartyBroadcast.Consumer.Constants;
 public static class MsgContentType
 {
     public const short Running = 105;
-    public const short Settled = 101;
+    public const short Settled = 110;
 }
