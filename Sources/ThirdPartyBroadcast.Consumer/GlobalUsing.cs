@@ -1,5 +1,4 @@
 ﻿global using AutoMapper;
-global using Fanex.Caching;
 global using Fanex.Data.Repository;
 global using Fanex.Settlement.ScaleOut.Request;
 global using Fanex.Settlement.ScaleOut.Services;

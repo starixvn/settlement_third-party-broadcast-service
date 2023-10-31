@@ -11,6 +11,7 @@ using Fanex.MailDeliver.MailClient;
 using Fanex.Settlement.Converter.Services;
 using Fanex.Settlement.ScaleOut;
 using Fanex.Settlement.ScaleOut.Services;
+using MassTransit;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,6 +21,7 @@ using ONEbook.UM.Configurations;
 using ONEbook.UM.Helpers;
 using ONEbook.UM.Transport;
 using SharpRaven;
+using StackExchange.Redis;
 using ThirdPartyBroadcast.Consumer.Services;
 using ThirdPartyBroadcast.Consumer.Services.Consumer;
 using ThirdPartyBroadcast.Consumer.Services.Products;
@@ -39,9 +41,6 @@ public static class BroadcastConsumerInjection
         service.AddTransient<GeneralService, GeneralServiceImp>();
         service.AddTransient<ScaleOutSettleService, ScaleOutSettleServiceImp>();
         service.AddSingleton<ICacheService, CacheService>();
-        service.AddSingleton<BroadcastConsumerController, BroadcastConsumerControllerImp>();
-        service.AddSingleton<ExchangesService, ExchangesServiceImp>();
-        service.AddSingleton<FlagService, FlagServiceImp>();
         service.AddSingleton<GenerateConsumerService, GenerateConsumerServiceImp>();
         service.AddSingleton<BitCoinService, BitCoinServiceImp>();
         service.AddSingleton<GroupOneService, GroupOneServiceImp>();
@@ -67,6 +66,7 @@ public static class BroadcastConsumerInjection
         StartUmSetting(configuration);
         StartLogSetting(configuration);
         service.ConfigureAutoMapper();
+        service.ConfigureMassTransit(configuration);
     }
 
     private static void ConfigureAutoMapper(this IServiceCollection service)
@@ -85,6 +85,7 @@ public static class BroadcastConsumerInjection
     {
         var redisConfig = configuration.GetSection("AuthSettings:RedisConfig").Value;
         var applicationName = configuration.GetSection("AuthSettings:ChannelPrefix").Value;
+        service.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect($"{redisConfig},ChannelPrefix={applicationName}"));
         service.AddSingleton<ICache>(new RedisCache(new RedisCacheOptions
         {
             ConnectionString = redisConfig,
@@ -121,5 +122,26 @@ public static class BroadcastConsumerInjection
 
         AppSettings.AppMailId = configuration.GetSection("MailServer:Id").Value;
         AppSettings.AppMailAddress = configuration.GetSection("MailServer:Address").Value;
+    }
+
+    private static void ConfigureMassTransit(this IServiceCollection service, IConfiguration configuration)
+    {
+        var host = configuration.GetSection("RabbitMQ:Hosting").Value;
+        var virtualHost = configuration.GetSection("RabbitMQ:VirtualHost").Value;
+        var username = configuration.GetSection("RabbitMQ:Username").Value;
+        var password = configuration.GetSection("RabbitMQ:Password").Value;
+        service.AddMassTransit(busConfigurator =>
+        {
+            busConfigurator.AddConsumer<ProcessingConsumerService, MyConsumerDefinition>();
+            busConfigurator.UsingRabbitMq((context, busFactoryConfigurator) =>
+            {
+                busFactoryConfigurator.Host(host, virtualHost, h =>
+                {
+                    h.Username(username);
+                    h.Password(password);
+                });
+                busFactoryConfigurator.ConfigureEndpoints(context);
+            });
+        });
     }
 }
