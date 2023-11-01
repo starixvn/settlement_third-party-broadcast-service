@@ -56,17 +56,17 @@ public class BetBuilderServiceImp : BetBuilderService
 
         var selectedMarket = RemoveInvalidMarket(invalidMarketIds, request.Resources);
 
-        if (!string.IsNullOrEmpty(invalidMarketIds))
+        if (!string.IsNullOrWhiteSpace(invalidMarketIds))
         {
-            validationResult = await WriteLog(request, invalidMarketIds);
+            await WriteLog(request, invalidMarketIds);
         }
 
-        if (string.IsNullOrEmpty(selectedMarket))
+        if (!string.IsNullOrWhiteSpace(selectedMarket))
         {
-            return validationResult;
+            return await UpdateAndSettle(request, selectedMarket);
         }
 
-        return await UpdateAndSettle(request, selectedMarket);
+        return new Result();
     }
 
     private async Task<Result> UpdateAndSettle(BetBuilderRequest request, string selectedMarket)
@@ -88,10 +88,9 @@ public class BetBuilderServiceImp : BetBuilderService
         return $"NAP: Calculate {criteria.Action} for matchId: {criteria.MatchId} {messageResource}; IsAuto:{criteria.IsAuto}; BetType:38";
     }
 
-    private async Task<Result> WriteLog(BetBuilderRequest request, string invalidMarketIds)
+    private async Task WriteLog(BetBuilderRequest request, string invalidMarketIds)
     {
         const int MaxLength = 115;
-        const int existInvalidMarketErrorCode = 1_000_007;
         const string logMessage = "MarketIds cannot be auto settled since they have been settled already:";
         var marketIds = invalidMarketIds.Length > MaxLength ? $"{invalidMarketIds[..MaxLength]}..." : invalidMarketIds;
         var actionId = string.Equals(request.Action.ToLowerInvariant(), ActionType.Calculate) ? ActionId.BetBuilderCalc : ActionId.BetBuilderRefund;
@@ -99,12 +98,6 @@ public class BetBuilderServiceImp : BetBuilderService
 
         var criteria = new WriteLogCriteria(request.MatchId, message, actionId, request.AdminId, request.Ip);
         await repository.ExecuteAsync(criteria);
-
-        return new Result
-        {
-            ErrorCode = existInvalidMarketErrorCode,
-            ErrorMessage = message,
-        };
     }
 
     private async Task UpdateMatchInfo(BetBuilderRequest request, string selectedMarket)
