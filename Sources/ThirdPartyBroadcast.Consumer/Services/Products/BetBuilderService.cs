@@ -66,10 +66,10 @@ public class BetBuilderServiceImp : BetBuilderService
             return validationResult;
         }
 
-        return await UpdateAndSettle(request, selectedMarket, validationResult);
+        return await UpdateAndSettle(request, selectedMarket);
     }
 
-    private async Task<Result> UpdateAndSettle(BetBuilderRequest request, string selectedMarket, Result validateResult)
+    private async Task<Result> UpdateAndSettle(BetBuilderRequest request, string selectedMarket)
     {
         await UpdateMatchInfo(request, selectedMarket);
 
@@ -79,26 +79,13 @@ public class BetBuilderServiceImp : BetBuilderService
         var message = GenerateLogMessage(criteria, request.Resources);
         await logDirectlyService.WriteLog(criteria.MatchId, message);
 
-        var settleResult = await calculateService.Execute(criteria);
-
-        return HandleError(validateResult, settleResult);
+        return await calculateService.Execute(criteria);
     }
 
     private static string GenerateLogMessage(BetBuilderCriteria criteria, string resources)
     {
         var messageResource = string.IsNullOrEmpty(resources) ? string.Empty : $"{resources}<br/>";
         return $"NAP: Calculate {criteria.Action} for matchId: {criteria.MatchId} {messageResource}; IsAuto:{criteria.IsAuto}; BetType:38";
-    }
-
-    private static Result HandleError(Result validateResult, Result settleResult)
-    {
-        if (validateResult.ErrorCode > 0 && settleResult.ErrorCode > 0)
-        {
-            validateResult.ErrorMessage = $"{validateResult.ErrorMessage} | {settleResult.ErrorMessage}";
-            return validateResult;
-        }
-
-        return validateResult.ErrorCode > 0 ? validateResult : settleResult;
     }
 
     private async Task<Result> WriteLog(BetBuilderRequest request, string invalidMarketIds)
