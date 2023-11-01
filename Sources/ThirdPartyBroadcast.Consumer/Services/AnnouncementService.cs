@@ -99,7 +99,8 @@ public class AnnouncementServiceImp : AnnouncementService
             Content_cs = CreateMessageContent(matchInfo, isRunningRefund ? MessageAnnounceTemplate.RunningMsgMandarin : MessageAnnounceTemplate.SettledMsgMandarin),
             MsgContentsType = isRunningRefund ? MsgContentType.Running : MsgContentType.Settled,
             MatchId = matchInfo.MatchId,
-            Creator = adminId
+            Creator = adminId,
+            LeagueGroupId = matchInfo.LeagueGroupId,
         };
 
         return criteria;

@@ -110,6 +110,7 @@ public class VirtualBetRadarServiceImp : VirtualBetRadarService
             KickOffTime = matchStatus.KickOffTime,
             LeagueName = matchStatus.LeagueName,
             MatchId = matchStatus.MatchId,
+            LeagueGroupId = matchStatus.LeagueGroupId,
         };
         await announcementService.Handle(matchInfo, groupTickets, request.AdminId);
     }

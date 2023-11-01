@@ -13,6 +13,7 @@ public class MatchInfo
     public DateTime KickOffTime { get; set; }
 
     public string LeagueName { get; set; }
+    public short? LeagueGroupId { get; set; }
 
     public int TotalTickets { get; set; }
 }
