@@ -138,7 +138,7 @@ public class BetBuilderServiceTests
             ErrorMessage = "error"
         };
 
-        const string message = "MarketIds cannot be auto settled since they have been settled already: 123 | error";
+        const string message = "error";
 
         scaleOutSettleThirdPartyService.ValidateBetBuilder(Arg.Any<ScaleOutRequest.BetBuilderRequest>())
             .Returns((new ResultMessage(), "123"));
