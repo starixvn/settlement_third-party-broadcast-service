@@ -30,7 +30,7 @@ public class AnnouncementServiceImp : AnnouncementService
 
     public async Task Handle(List<TicketSettleInfo> currentTickets, MatchInfo matchInfo, int adminId)
     {
-        var settledTickets = await ticketSettleService.GetTicketsByTransIds(currentTickets);
+        var settledTickets = await ticketSettleService.GetTicketsByTransIds(matchInfo.MatchId, currentTickets);
 
         if (settledTickets.Count == 0)
         {
@@ -41,7 +41,6 @@ public class AnnouncementServiceImp : AnnouncementService
 
         await HandleInsertMessage(matchInfo, groupTickets, adminId);
     }
-
 
     private IEnumerable<IGrouping<string, TicketSettleInfo>> CreateGroupsStatus(
         IEnumerable<TicketSettleInfo> prevSettleTickets,

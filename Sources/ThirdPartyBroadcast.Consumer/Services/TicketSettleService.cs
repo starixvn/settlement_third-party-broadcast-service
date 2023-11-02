@@ -8,7 +8,7 @@ public interface TicketSettleService
 {
     Task<List<TicketSettleInfo>> GetTicketsByAction(int matchId, string action);
 
-    Task<List<TicketSettleInfo>> GetTicketsByTransIds(List<TicketSettleInfo> tickets);
+    Task<List<TicketSettleInfo>> GetTicketsByTransIds(int matchId, List<TicketSettleInfo> tickets);
 }
 
 public class TicketSettleServiceImp : TicketSettleService
@@ -32,12 +32,12 @@ public class TicketSettleServiceImp : TicketSettleService
         return new List<TicketSettleInfo>();
     }
 
-    public async Task<List<TicketSettleInfo>> GetTicketsByTransIds(List<TicketSettleInfo> tickets)
+    public async Task<List<TicketSettleInfo>> GetTicketsByTransIds(int matchId, List<TicketSettleInfo> tickets)
     {
         if (tickets.Count != 0)
         {
             var transIDs = string.Join(',', tickets.Select(x => x.TransId).ToArray());
-            return await GetAllTickets(new TicketSettleCriteria { TransIDs = transIDs });
+            return await GetAllTickets(new TicketSettleCriteria { MatchId = matchId, TransIDs = transIDs });
         }
 
         return new List<TicketSettleInfo>();
