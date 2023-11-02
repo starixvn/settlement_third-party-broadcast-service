@@ -12,23 +12,38 @@ namespace ThirdPartyBroadcast.Consumer.Services;
 
 public interface AnnouncementService
 {
-    IEnumerable<IGrouping<string, TicketSettleInfo>> CreateGroupsStatus(IEnumerable<TicketSettleInfo> prevSettleTickets, IEnumerable<TicketSettleInfo> settledTickets);
-
-    Task<Result> Handle(MatchInfo matchInfo, IEnumerable<IGrouping<string, TicketSettleInfo>> groups, int adminId);
+    Task Handle(List<TicketSettleInfo> currentTickets, MatchInfo matchInfo, int adminId);
 }
 
 public class AnnouncementServiceImp : AnnouncementService
 {
     private IDynamicRepository repository;
     private readonly XmlConvertService xmlConvertService;
+    private readonly TicketSettleService ticketSettleService;
 
-    public AnnouncementServiceImp(IDynamicRepository repository, XmlConvertService xmlConvertService)
+    public AnnouncementServiceImp(IDynamicRepository repository, XmlConvertService xmlConvertService, TicketSettleService ticketSettleService)
     {
         this.repository = repository;
         this.xmlConvertService = xmlConvertService;
+        this.ticketSettleService = ticketSettleService;
     }
 
-    public IEnumerable<IGrouping<string, TicketSettleInfo>> CreateGroupsStatus(
+    public async Task Handle(List<TicketSettleInfo> currentTickets, MatchInfo matchInfo, int adminId)
+    {
+        var settledTickets = await ticketSettleService.GetTicketsByTransIds(currentTickets);
+
+        if (settledTickets.Count == 0)
+        {
+            return;
+        }
+
+        var groupTickets = CreateGroupsStatus(currentTickets, settledTickets).ToList();
+
+        await HandleInsertMessage(matchInfo, groupTickets, adminId);
+    }
+
+
+    private IEnumerable<IGrouping<string, TicketSettleInfo>> CreateGroupsStatus(
         IEnumerable<TicketSettleInfo> prevSettleTickets,
         IEnumerable<TicketSettleInfo> settledTickets)
     {
@@ -54,7 +69,7 @@ public class AnnouncementServiceImp : AnnouncementService
         return groupStatus;
     }
 
-    public async Task<Result> Handle(MatchInfo matchInfo, IEnumerable<IGrouping<string, TicketSettleInfo>> groups, int adminId)
+    private async Task<Result> HandleInsertMessage(MatchInfo matchInfo, IEnumerable<IGrouping<string, TicketSettleInfo>> groups, int adminId)
     {
         foreach (var group in groups)
         {
@@ -67,6 +82,7 @@ public class AnnouncementServiceImp : AnnouncementService
                 return new Result
                 {
                     ErrorCode = -1,
+                    ErrorMessage = "Insert message error"
                 };
             }
 

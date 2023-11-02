@@ -4,6 +4,7 @@ namespace ThirdPartyBroadcast.Consumer.Services.Products;
 
 using Constants;
 using Criteria.VirtualBetRadar;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using ThirdPartyBroadcast.Consumer.Models;
 
 public interface VirtualBetRadarService
@@ -46,14 +47,12 @@ public class VirtualBetRadarServiceImp : VirtualBetRadarService
         var betRadarValidationCriteria = mapper.Map<VirtualBetRadarRequest, BetRadarValidationCriteria>(request);
         var resultValidation = await calculateService.ExecuteValidationMultiServer(betRadarValidationCriteria);
         var criteria = mapper.Map<VirtualBetRadarRequest, VirtualBetRadarCriteria>(request);
-        //criteria.NotifyFlag = await GetNotifyFlag(request.MatchId, request.Action);
 
         if (!resultValidation.IsSuccessful)
         {
             return resultValidation;
         }
 
-        // TODO
         var currentMatchInfo = await GetMatchStatus(request.MatchId);
         var currentTickets = await ticketSettleService.GetTicketsByAction(request.MatchId, request.Action);
 
@@ -84,27 +83,6 @@ public class VirtualBetRadarServiceImp : VirtualBetRadarService
             currentEx = ex;
         }
 
-        await HandleAnnounce(currentTickets, matchStatus, request);
-
-        if (currentEx is not null)
-        {
-            throw currentEx;
-        }
-
-        return settleResult;
-    }
-
-    private async Task HandleAnnounce(List<TicketSettleInfo> currentTickets, MatchStatus matchStatus, VirtualBetRadarRequest request)
-    {
-        var settledTickets = await ticketSettleService.GetTicketsByTransIds(currentTickets);
-
-        if (settledTickets.Count == 0)
-        {
-            return;
-        }
-
-        var groupTickets = announcementService.CreateGroupsStatus(currentTickets, settledTickets).ToList();
-
         var matchInfo = new MatchInfo
         {
             KickOffTime = matchStatus.KickOffTime,
@@ -112,7 +90,14 @@ public class VirtualBetRadarServiceImp : VirtualBetRadarService
             MatchId = matchStatus.MatchId,
             LeagueGroupId = matchStatus.LeagueGroupId,
         };
-        await announcementService.Handle(matchInfo, groupTickets, request.AdminId);
+        await announcementService.Handle(currentTickets, matchInfo, request.AdminId);
+
+        if (currentEx is not null)
+        {
+            throw currentEx;
+        }
+
+        return settleResult;
     }
 
     private static string GenerateMessageLog(VirtualBetRadarCriteria criteria)

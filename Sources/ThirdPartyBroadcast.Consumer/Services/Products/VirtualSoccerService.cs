@@ -1,6 +1,7 @@
 ﻿namespace ThirdPartyBroadcast.Consumer.Services.Products;
 
 using Criteria.VirtualSoccer;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using ThirdPartyBroadcast.Consumer.Criteria.VirtualBetRadar;
 
 public interface VirtualSoccerService
@@ -72,7 +73,7 @@ public class VirtualSoccerServiceImp : VirtualSoccerService
             currentEx = ex;
         }
 
-        await HandleAnnounce(currentTickets, matchInfo, criteria.AdminId);
+        await announcementService.Handle(currentTickets, matchInfo, criteria.AdminId);
 
         if (currentEx is not null)
         {
@@ -82,23 +83,10 @@ public class VirtualSoccerServiceImp : VirtualSoccerService
         return settleResult;
     }
 
-    private async Task HandleAnnounce(List<TicketSettleInfo> currentTickets, MatchInfo matchInfo, int adminId)
-    {
-        var settledTickets = await ticketSettleService.GetTicketsByTransIds(currentTickets);
-
-        if (settledTickets.Count == 0)
-        {
-            return;
-        }
-
-        var groupTickets = announcementService.CreateGroupsStatus(currentTickets, settledTickets).ToList();
-
-        await announcementService.Handle(matchInfo, groupTickets, adminId);
-    }
-
     private async Task<MatchInfo> GetMatchInfo(int matchId)
     {
         var matchInfo = await repository.GetAsync<MatchInfo>(new VisualSoccerGetMatchInfoCriteria { MatchId = matchId });
+        matchInfo.MatchId = matchId;
 
         return matchInfo;
     }

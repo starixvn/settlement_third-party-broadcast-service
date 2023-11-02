@@ -7,6 +7,7 @@ using Criteria.LeapGaming;
 using Fanex.Data.Repository;
 using Fanex.Settlement.Converter.Services;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
 
 public interface LeapGamingService
 {
@@ -91,7 +92,7 @@ public class LeapGamingServiceImp : LeapGamingService
             currentEx = ex;
         }
 
-        await HandleAnnounce(currentTickets, matchInfo, request.AdminId);
+        await announcementService.Handle(currentTickets, matchInfo, request.AdminId);
 
         if (currentEx is not null)
         {
@@ -99,20 +100,6 @@ public class LeapGamingServiceImp : LeapGamingService
         }
 
         return settleResult;
-    }
-
-    private async Task HandleAnnounce(List<TicketSettleInfo> currentTickets, MatchInfo matchInfo, int adminId)
-    {
-        var settledTickets = await ticketSettleService.GetTicketsByTransIds(currentTickets);
-
-        if (settledTickets.Count == 0)
-        {
-            return;
-        }
-
-        var groupTickets = announcementService.CreateGroupsStatus(currentTickets, settledTickets).ToList();
-
-        await announcementService.Handle(matchInfo, groupTickets, adminId);
     }
 
     private async Task WriteLogSettled(LeapGamingRequest request, Result resultSettle)
