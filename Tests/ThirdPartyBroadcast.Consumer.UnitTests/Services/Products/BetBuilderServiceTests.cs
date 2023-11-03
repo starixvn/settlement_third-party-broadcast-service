@@ -3,7 +3,6 @@
 namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products;
 
 using Criteria;
-using Criteria.BetBuilder;
 using Requests;
 
 public class BetBuilderServiceTests

@@ -1,8 +1,6 @@
 ﻿namespace ThirdPartyBroadcast.Consumer.Services.Products;
 
 using Criteria.VirtualSoccer;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using ThirdPartyBroadcast.Consumer.Criteria.VirtualBetRadar;
 
 public interface VirtualSoccerService
 {
@@ -25,7 +23,8 @@ public class VirtualSoccerServiceImp : VirtualSoccerService
 
     private readonly AnnouncementService announcementService;
 
-    public VirtualSoccerServiceImp(ScaleOutSettleThirdPartyService scaleOutSettleThirdPartyService,
+    public VirtualSoccerServiceImp(
+        ScaleOutSettleThirdPartyService scaleOutSettleThirdPartyService,
         IDynamicRepository repository,
         IMapper mapper,
         CalculateService calculateService,

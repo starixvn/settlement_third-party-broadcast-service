@@ -2,6 +2,7 @@
 
 using Criteria.VirtualSoccer;
 using Fanex.Settlement.ScaleOut.Request;
+using ThirdPartyBroadcast.Consumer.Services;
 
 public class VirtualSoccerServiceTests
 {
@@ -12,7 +13,12 @@ public class VirtualSoccerServiceTests
     private readonly IDynamicRepository repository;
 
     private readonly VirtualSoccerService service;
+
     private readonly LogDirectlyService logDirectlyService;
+
+    private readonly AnnouncementService announcementService;
+
+    private readonly TicketSettleService ticketSettleService;
 
     public VirtualSoccerServiceTests()
     {
@@ -20,11 +26,13 @@ public class VirtualSoccerServiceTests
         scaleOutSettleThirdPartyService = Substitute.For<ScaleOutSettleThirdPartyService>();
         repository = Substitute.For<IDynamicRepository>();
         logDirectlyService = Substitute.For<LogDirectlyService>();
+        announcementService = Substitute.For<AnnouncementService>();
+        ticketSettleService = Substitute.For<TicketSettleService>();
         var mapperConfig = new MapperConfigurationExpression();
         mapperConfig.AddProfile<ThirdPartyBroadcastMappingProfile>();
         var config = new MapperConfiguration(mapperConfig);
         var mapper = new Mapper(config);
-        service = new VirtualSoccerServiceImp(scaleOutSettleThirdPartyService, repository, mapper, calculateService, logDirectlyService);
+        service = new VirtualSoccerServiceImp(scaleOutSettleThirdPartyService, repository, mapper, calculateService, logDirectlyService, announcementService, ticketSettleService);
     }
 
     [Theory]

@@ -1,7 +1,6 @@
 ﻿using Fanex.Settlement.Converter.Services;
 using Fanex.Settlement.ScaleOut.Constants;
 using ThirdPartyBroadcast.Consumer.Criteria;
-using ThirdPartyBroadcast.Consumer.Criteria.BetBuilder;
 
 namespace ThirdPartyBroadcast.Consumer.Services.Products;
 

@@ -2,6 +2,7 @@
 
 namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products;
 
+using AutoMapper;
 using Criteria.VirtualBetRadar;
 
 public class VirtualBetRadarServiceTests
@@ -14,6 +15,7 @@ public class VirtualBetRadarServiceTests
     private readonly LogDirectlyService logService;
     private readonly TicketSettleService ticketSettleService;
     private readonly AnnouncementService announcementService;
+    private readonly IMapper mapper;
 
     public VirtualBetRadarServiceTests()
     {
@@ -24,7 +26,7 @@ public class VirtualBetRadarServiceTests
         var mapperConfig = new MapperConfigurationExpression();
         mapperConfig.AddProfile<ThirdPartyBroadcastMappingProfile>();
         var config = new MapperConfiguration(mapperConfig);
-        var mapper = new Mapper(config);
+        mapper = new Mapper(config);
         service = new VirtualBetRadarServiceImp(repository, mapper, calculateService, logService, ticketSettleService, announcementService);
     }
 
@@ -49,8 +51,8 @@ public class VirtualBetRadarServiceTests
             Calculate = calculate
         };
 
-        IMapper mapperMock = Substitute.For<IMapper>();
-        var serviceMock = new VirtualBetRadarServiceImp(repository, mapperMock, calculateService, logService);
+        var mapperMock = Substitute.For<IMapper>();
+        var serviceMock = new VirtualBetRadarServiceImp(repository, mapper, calculateService, logService, ticketSettleService, announcementService);
         calculateService.ExecuteValidationMultiServer(Arg.Any<BetRadarValidationCriteria>()).Returns(new Result());
         await repository.ExecuteAsync(Arg.Any<BetRadarUpdateMatchCriteria>());
         calculateService.Execute(Arg.Any<VirtualBetRadarCriteria>()).Returns(new Result());
