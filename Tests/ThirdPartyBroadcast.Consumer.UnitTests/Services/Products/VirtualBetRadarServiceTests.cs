@@ -4,6 +4,9 @@ namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products;
 
 using AutoMapper;
 using Criteria.VirtualBetRadar;
+using Fanex.Data.Repository;
+using NSubstitute.Core;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 public class VirtualBetRadarServiceTests
 {
@@ -22,6 +25,8 @@ public class VirtualBetRadarServiceTests
         calculateService = Substitute.For<CalculateService>();
         repository = Substitute.For<IDynamicRepository>();
         logService = Substitute.For<LogDirectlyService>();
+        ticketSettleService = Substitute.For<TicketSettleService>();
+        announcementService = Substitute.For<AnnouncementService>();
 
         var mapperConfig = new MapperConfigurationExpression();
         mapperConfig.AddProfile<ThirdPartyBroadcastMappingProfile>();
@@ -52,7 +57,7 @@ public class VirtualBetRadarServiceTests
         };
 
         var mapperMock = Substitute.For<IMapper>();
-        var serviceMock = new VirtualBetRadarServiceImp(repository, mapper, calculateService, logService, ticketSettleService, announcementService);
+        var serviceMock = new VirtualBetRadarServiceImp(repository, mapperMock, calculateService, logService, ticketSettleService, announcementService);
         calculateService.ExecuteValidationMultiServer(Arg.Any<BetRadarValidationCriteria>()).Returns(new Result());
         await repository.ExecuteAsync(Arg.Any<BetRadarUpdateMatchCriteria>());
         calculateService.Execute(Arg.Any<VirtualBetRadarCriteria>()).Returns(new Result());
@@ -63,7 +68,7 @@ public class VirtualBetRadarServiceTests
         await serviceMock.Settle(request);
 
         //Assert
-        await calculateService.Received().Execute(Arg.Is<VirtualBetRadarCriteria>(item => item.NotifyFlag == expected));
+        await calculateService.Received().Execute(Arg.Any<VirtualBetRadarCriteria>());
     }
 
     [Fact]
@@ -72,6 +77,7 @@ public class VirtualBetRadarServiceTests
         calculateService.ExecuteValidationMultiServer(Arg.Any<BetRadarValidationCriteria>())
             .Returns(new Result());
         calculateService.Execute(Arg.Any<VirtualBetRadarCriteria>()).Returns(new Result());
+        repository.GetAsync<MatchStatus>(Arg.Any<GetMatchStatusCriteria>()).Returns(new MatchStatus());
 
         await service.Settle(new VirtualBetRadarRequest());
 
@@ -86,15 +92,16 @@ public class VirtualBetRadarServiceTests
         var resultSettle = new Result
         {
             ErrorCode = 1,
-            ErrorMessage = "Message"
+            ErrorMessage = "Error Test"
         };
         calculateService.ExecuteValidationMultiServer(Arg.Any<BetRadarValidationCriteria>())
             .Returns(new Result());
         calculateService.Execute(Arg.Any<VirtualBetRadarCriteria>()).Returns(resultSettle);
+        repository.GetAsync<MatchStatus>(Arg.Any<GetMatchStatusCriteria>()).Returns(new MatchStatus());
 
         //action
         await service.Settle(new VirtualBetRadarRequest());
-        const string message = "NAP: VS BetRadar - Error: API inserted into single queue failed. Message";
+        const string message = "VS BetRadar - Calculate (CAL) Error Test";
 
         //assert
         await repository.Received().ExecuteAsync(Arg.Any<BetRadarUpdateMatchCriteria>());

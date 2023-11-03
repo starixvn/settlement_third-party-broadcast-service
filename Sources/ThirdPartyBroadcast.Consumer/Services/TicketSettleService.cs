@@ -45,23 +45,16 @@ public class TicketSettleServiceImp : TicketSettleService
 
     private async Task<List<TicketSettleInfo>> GetAllTickets(TicketSettleCriteria criteria)
     {
-        try
+        var result = new List<TicketSettleInfo>();
+        foreach (var server in appSettings.SiteDbServer.Where(x => !x.Equals(DbName.DbTrans)))
         {
-            var result = new List<TicketSettleInfo>();
-            foreach (var server in appSettings.SiteDbServer.Where(x => !x.Equals(DbName.DbTrans)))
-            {
-                criteria.DbServer = server;
+            criteria.DbServer = server;
 
-                var ticketInfo = await repository.FetchAsync<TicketSettleInfo>(criteria);
+            var ticketInfo = await repository.FetchAsync<TicketSettleInfo>(criteria);
 
-                result.AddRange(ticketInfo);
-            }
-
-            return result;
+            result.AddRange(ticketInfo);
         }
-        catch (Exception ex)
-        {
-            throw;
-        }
+
+        return result;
     }
 }

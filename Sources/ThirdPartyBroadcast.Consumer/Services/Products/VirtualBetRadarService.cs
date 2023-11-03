@@ -165,21 +165,6 @@ public class VirtualBetRadarServiceImp : VirtualBetRadarService
     private bool IsReSettleOrRefund(string action, MatchStatus matchStatus)
         => action.ToLowerInvariant().Equals(ActionType.Refund) || matchStatus != null && (matchStatus.Calculate || matchStatus.CalRefund);
 
-    //private async Task<int> GetNotifyFlag(int matchId, string action)
-    //{
-    //    const int notifyRefund = 10;
-    //    const int notifySingleValue = 2;
-    //    if (!action.ToLowerInvariant().Equals(ActionType.Calculate)) // action: REFUND
-    //    {
-    //        return notifyRefund;
-    //    }
-
-    //    // action RESETTLE
-    //    var matchStatus = await GetMatchStatus(matchId);
-    //    var hasNotify = matchStatus != null && (matchStatus.Calculate || matchStatus.CalRefund);
-    //    return hasNotify ? notifySingleValue + ParlayNotify(matchStatus) : 0;
-    //}
-
     private async Task<MatchStatus> GetMatchStatus(int matchId)
     {
         var criteria = new GetMatchStatusCriteria { MatchId = matchId };
@@ -188,10 +173,4 @@ public class VirtualBetRadarServiceImp : VirtualBetRadarService
 
         return matchStatus;
     }
-
-    //private static int ParlayNotify(MatchStatus matchStatus)
-    //{
-    //    const int notifyParlayValue = 8;
-    //    return matchStatus.Multiple || matchStatus.Refund ? notifyParlayValue : 0;
-    //}
 }

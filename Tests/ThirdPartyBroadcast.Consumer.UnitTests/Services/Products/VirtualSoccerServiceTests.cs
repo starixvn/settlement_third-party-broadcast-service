@@ -15,6 +15,8 @@ public class VirtualSoccerServiceTests
     private readonly VirtualSoccerService service;
 
     private readonly LogDirectlyService logDirectlyService;
+    private readonly TicketSettleService ticketSettleService;
+    private readonly AnnouncementService announcementService;
 
     private readonly AnnouncementService announcementService;
 
@@ -26,8 +28,9 @@ public class VirtualSoccerServiceTests
         scaleOutSettleThirdPartyService = Substitute.For<ScaleOutSettleThirdPartyService>();
         repository = Substitute.For<IDynamicRepository>();
         logDirectlyService = Substitute.For<LogDirectlyService>();
-        announcementService = Substitute.For<AnnouncementService>();
         ticketSettleService = Substitute.For<TicketSettleService>();
+        announcementService = Substitute.For<AnnouncementService>();
+
         var mapperConfig = new MapperConfigurationExpression();
         mapperConfig.AddProfile<ThirdPartyBroadcastMappingProfile>();
         var config = new MapperConfiguration(mapperConfig);
@@ -46,6 +49,8 @@ public class VirtualSoccerServiceTests
             Fta = away,
             Fth = home
         };
+
+        repository.GetAsync<MatchInfo>(Arg.Any<VisualSoccerGetMatchInfoCriteria>()).Returns(new MatchInfo { MatchId = request.MatchId });
 
         await service.Settle(request);
 

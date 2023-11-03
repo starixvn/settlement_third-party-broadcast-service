@@ -23,6 +23,9 @@ public class LeapGamingServiceTests
         logDirectlyService = Substitute.For<LogDirectlyService>();
         repository = Substitute.For<IDynamicRepository>();
         recipientTicketsService = Substitute.For<RecipientTicketsService>();
+        ticketSettleService = Substitute.For<TicketSettleService>();
+        announcementService = Substitute.For<AnnouncementService>();
+
         var mapperConfig = new MapperConfigurationExpression();
         mapperConfig.AddProfile<ThirdPartyBroadcastMappingProfile>();
         var config = new MapperConfiguration(mapperConfig);
