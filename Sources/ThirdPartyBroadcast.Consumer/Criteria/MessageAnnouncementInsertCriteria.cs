@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Fanex.Data;
+﻿using Fanex.Data;
 
 namespace ThirdPartyBroadcast.Consumer.Criteria;
 
@@ -29,11 +24,14 @@ public class MessageAnnouncementInsertCriteria : NonQueryCommand
     public bool IsBatch { get; set; } = true;
 
     public short MsgContentsType { get; set; }
+
     public int Creator { get; set; }
+
     public string CreatorName { get; set; } = string.Empty;
+
     public short? LeagueGroupId { get; set; }
 
     public override string GetSettingKey() => "NAP_SpecialDelete_Message_Insert";
 
-    public override bool IsValid() => true;
+    public override bool IsValid() => MatchId > 0;
 }

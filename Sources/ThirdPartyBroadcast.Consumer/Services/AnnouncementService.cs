@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Fanex.Logging;
+﻿using Fanex.Logging;
 using Fanex.Settlement.Converter.Services;
 using ThirdPartyBroadcast.Consumer.Criteria;
-using ThirdPartyBroadcast.Consumer.Models;
 
 namespace ThirdPartyBroadcast.Consumer.Services;
 
@@ -17,11 +11,14 @@ public interface AnnouncementService
 
 public class AnnouncementServiceImp : AnnouncementService
 {
-    private IDynamicRepository repository;
+    private readonly IDynamicRepository repository;
     private readonly XmlConvertService xmlConvertService;
     private readonly TicketSettleService ticketSettleService;
 
-    public AnnouncementServiceImp(IDynamicRepository repository, XmlConvertService xmlConvertService, TicketSettleService ticketSettleService)
+    public AnnouncementServiceImp(
+        IDynamicRepository repository,
+        XmlConvertService xmlConvertService,
+        TicketSettleService ticketSettleService)
     {
         this.repository = repository;
         this.xmlConvertService = xmlConvertService;
