@@ -7,13 +7,13 @@ public class MessageAnnouncementInsertCriteria : NonQueryCommand
     public int? MessageId { get; set; }
 
     [SpParam(SqlParamName = "Content_en")]
-    public string Content_en { get; set; }
+    public string ContentEng { get; set; }
 
     [SpParam(SqlParamName = "Content_ch")]
-    public string Content_ch { get; set; }
+    public string ContentCh { get; set; }
 
     [SpParam(SqlParamName = "Content_cs")]
-    public string Content_cs { get; set; }
+    public string ContentCs { get; set; }
 
     public int MatchId { get; set; }
 

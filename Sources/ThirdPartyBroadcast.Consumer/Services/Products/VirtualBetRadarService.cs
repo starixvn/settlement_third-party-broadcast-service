@@ -68,20 +68,10 @@ public class VirtualBetRadarServiceImp : VirtualBetRadarService
 
     private async Task<Result> HandleSettle(List<TicketSettleInfo> currentTickets, MatchStatus matchStatus, VirtualBetRadarRequest request)
     {
-        Exception currentEx = null;
-        var settleResult = new Result();
+        var criteria = mapper.Map<VirtualBetRadarRequest, VirtualBetRadarCriteria>(request);
+        var settleResult = await calculateService.Execute(criteria);
 
-        try
-        {
-            var criteria = mapper.Map<VirtualBetRadarRequest, VirtualBetRadarCriteria>(request);
-            settleResult = await calculateService.Execute(criteria);
-
-            await HandleAfterSettle(request, settleResult, matchStatus);
-        }
-        catch (Exception ex)
-        {
-            currentEx = ex;
-        }
+        await HandleAfterSettle(request, settleResult, matchStatus);
 
         var matchInfo = new MatchInfo
         {
@@ -91,11 +81,6 @@ public class VirtualBetRadarServiceImp : VirtualBetRadarService
             LeagueGroupId = matchStatus.LeagueGroupId,
         };
         await announcementService.Handle(currentTickets, matchInfo, request.AdminId);
-
-        if (currentEx is not null)
-        {
-            throw currentEx;
-        }
 
         return settleResult;
     }

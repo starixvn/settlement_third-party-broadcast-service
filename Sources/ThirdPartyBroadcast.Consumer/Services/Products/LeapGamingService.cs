@@ -75,29 +75,14 @@ public class LeapGamingServiceImp : LeapGamingService
 
     private async Task<Result> HandleSettle(List<TicketSettleInfo> currentTickets, MatchInfo matchInfo, LeapGamingRequest request)
     {
-        Exception currentEx = null;
-        var settleResult = new Result();
+        var criteria = mapper.Map<LeapGamingRequest, LeapGamingCriteria>(request);
+        var settleResult = await calculateService.Execute(criteria);
 
-        try
-        {
-            var criteria = mapper.Map<LeapGamingRequest, LeapGamingCriteria>(request);
-            settleResult = await calculateService.Execute(criteria);
+        await WriteLogSettled(request, settleResult);
 
-            await WriteLogSettled(request, settleResult);
-
-            await SendMail(request.Action, matchInfo);
-        }
-        catch (Exception ex)
-        {
-            currentEx = ex;
-        }
+        await SendMail(request.Action, matchInfo);
 
         await announcementService.Handle(currentTickets, matchInfo, request.AdminId);
-
-        if (currentEx is not null)
-        {
-            throw currentEx;
-        }
 
         return settleResult;
     }

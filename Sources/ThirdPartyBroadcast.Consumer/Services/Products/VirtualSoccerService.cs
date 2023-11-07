@@ -60,24 +60,9 @@ public class VirtualSoccerServiceImp : VirtualSoccerService
 
     private async Task<Result> HandleSettle(List<TicketSettleInfo> currentTickets, MatchInfo matchInfo, VirtualSoccerCriteria criteria)
     {
-        Exception currentEx = null;
-        var settleResult = new Result();
-
-        try
-        {
-            settleResult = await calculateService.Execute(criteria);
-        }
-        catch (Exception ex)
-        {
-            currentEx = ex;
-        }
+        var settleResult = await calculateService.Execute(criteria);
 
         await announcementService.Handle(currentTickets, matchInfo, criteria.AdminId);
-
-        if (currentEx is not null)
-        {
-            throw currentEx;
-        }
 
         return settleResult;
     }

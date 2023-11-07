@@ -73,15 +73,6 @@ public class AnnouncementServiceImp : AnnouncementService
 
             var messageId = await Insert(insertCriteria);
 
-            if (messageId <= 0)
-            {
-                return new Result
-                {
-                    ErrorCode = -1,
-                    ErrorMessage = "Insert message error"
-                };
-            }
-
             var items = CreateMessageAnnounenceItems(group, messageId);
             var message = new MessageAnnounence
             {
@@ -106,9 +97,9 @@ public class AnnouncementServiceImp : AnnouncementService
 
         var criteria = new MessageAnnouncementInsertCriteria
         {
-            Content_en = CreateMessageContent(matchInfo, isRunningRefund ? MessageAnnounceTemplate.RunningMsgEng : MessageAnnounceTemplate.SettledMsgEng),
-            Content_ch = CreateMessageContent(matchInfo, isRunningRefund ? MessageAnnounceTemplate.RunningMsgCantonese : MessageAnnounceTemplate.SettledMsgCantonese),
-            Content_cs = CreateMessageContent(matchInfo, isRunningRefund ? MessageAnnounceTemplate.RunningMsgMandarin : MessageAnnounceTemplate.SettledMsgMandarin),
+            ContentEng = CreateMessageContent(matchInfo, isRunningRefund ? MessageAnnounceTemplate.RunningMsgEng : MessageAnnounceTemplate.SettledMsgEng),
+            ContentCh = CreateMessageContent(matchInfo, isRunningRefund ? MessageAnnounceTemplate.RunningMsgCantonese : MessageAnnounceTemplate.SettledMsgCantonese),
+            ContentCs = CreateMessageContent(matchInfo, isRunningRefund ? MessageAnnounceTemplate.RunningMsgMandarin : MessageAnnounceTemplate.SettledMsgMandarin),
             MsgContentsType = isRunningRefund ? MsgContentType.Running : MsgContentType.Settled,
             MatchId = matchInfo.MatchId,
             Creator = adminId,
@@ -170,38 +161,17 @@ public class AnnouncementServiceImp : AnnouncementService
 
     private async Task<int> Insert(MessageAnnouncementInsertCriteria criteria)
     {
-        try
-        {
-            var messageId = await repository.GetAsync<int>(criteria);
-
-            return messageId;
-        }
-        catch (Exception ex)
-        {
-            LogService.Error($"MessageAnnouncementInsert error: {ex.Message}");
-            return -1;
-        }
+        return await repository.GetAsync<int>(criteria);
     }
 
     private async Task<Result> Upload(MessageUploadCriteria criteria)
     {
-        try
-        {
-            await repository.ExecuteAsync(criteria);
+        await repository.ExecuteAsync(criteria);
 
-            return new Result
-            {
-                ErrorCode = criteria.ErrorCode,
-                ErrorMessage = criteria.ErrorMsg
-            };
-        }
-        catch (Exception ex)
+        return new Result
         {
-            LogService.Error($"MessageUpload error: {ex.Message}");
-            return new Result
-            {
-                ErrorCode = criteria.ErrorCode,
-            };
-        }
+            ErrorCode = criteria.ErrorCode,
+            ErrorMessage = criteria.ErrorMsg
+        };
     }
 }
