@@ -5,9 +5,6 @@ namespace ThirdPartyBroadcast.Consumer.Services.Products;
 using Criteria;
 using Criteria.LeapGaming;
 using Fanex.Data.Repository;
-using Fanex.Settlement.Converter.Services;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc.ApplicationModels;
 
 public interface LeapGamingService
 {
@@ -98,7 +95,7 @@ public class LeapGamingServiceImp : LeapGamingService
     {
         var resources = DeserializeResources(request.SelectedResources);
         var message = $"VS 3 - Calculate({request.Action}) {(resultSettle.ErrorCode > 0 ? resultSettle.ErrorMessage : string.Empty)}";
-        var actionId = request.Action.ToLowerInvariant().Equals(ActionType.Calculate) ? ActionId.LeapGamingCalc : ActionId.LeapGamingRefund;
+        var actionId = string.Equals(request.Action, ActionName.Calculate, StringComparison.OrdinalIgnoreCase) ? ActionId.LeapGamingCalc : ActionId.LeapGamingRefund;
         var criteria = new WriteLogCriteria(request.MatchId, message, actionId, request.AdminId, request.Ip);
         var htResult = resources.Items.Find(i => i.Id == ResourceId.HalfTimeResourceId);
         var ftResult = resources.Items.Find(i => i.Id == ResourceId.FullTimeResourceId);
@@ -167,13 +164,13 @@ public class LeapGamingServiceImp : LeapGamingService
         var eventStatusChecking = !string.IsNullOrWhiteSpace(matchInfo.EventStatus) &&
                                   string.Equals(matchInfo.EventStatus.ToLowerInvariant(), EventStatus.Completed);
 
-        if (action.ToLowerInvariant().Equals(ActionType.Refund) || eventStatusChecking)
+        if (string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase) || eventStatusChecking)
         {
             var criteria = new LeapGamingTicketCriteria { MatchId = matchInfo.MatchId };
             var (creditTickets, depositTickets) = await repository.FetchMultipleAsync<TicketInfo, TicketInfo>(criteria);
 
             var recipients = await GetRecipients();
-            var actionName = string.Equals(action, ActionType.Refund, StringComparison.OrdinalIgnoreCase)
+            var actionName = string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase)
                 ? ActionName.Refund
                 : ActionName.ReSettle;
 
@@ -198,7 +195,7 @@ public class LeapGamingServiceImp : LeapGamingService
 
     private static bool IsValidResult(ResourceItemModel result, string action)
     {
-        if (action.ToLowerInvariant() == ActionType.Refund)
+        if (string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase))
         {
             return result is { Home: "", Away: "" };
         }

@@ -15,12 +15,6 @@ public class VirtualSoccerServiceTests
     private readonly VirtualSoccerService service;
 
     private readonly LogDirectlyService logDirectlyService;
-    private readonly TicketSettleService ticketSettleService;
-    private readonly AnnouncementService announcementService;
-
-    private readonly AnnouncementService announcementService;
-
-    private readonly TicketSettleService ticketSettleService;
 
     public VirtualSoccerServiceTests()
     {
@@ -28,8 +22,8 @@ public class VirtualSoccerServiceTests
         scaleOutSettleThirdPartyService = Substitute.For<ScaleOutSettleThirdPartyService>();
         repository = Substitute.For<IDynamicRepository>();
         logDirectlyService = Substitute.For<LogDirectlyService>();
-        ticketSettleService = Substitute.For<TicketSettleService>();
-        announcementService = Substitute.For<AnnouncementService>();
+        var ticketSettleService = Substitute.For<TicketSettleService>();
+        var announcementService = Substitute.For<AnnouncementService>();
 
         var mapperConfig = new MapperConfigurationExpression();
         mapperConfig.AddProfile<ThirdPartyBroadcastMappingProfile>();
@@ -39,8 +33,8 @@ public class VirtualSoccerServiceTests
     }
 
     [Theory]
-    [InlineData(ActionType.Calculate, 1, 1, SpName.VirtualSports + "-CAL")]
-    [InlineData(ActionType.Refund, null, null, SpName.VirtualSports + "-REFUND")]
+    [InlineData(ActionName.Calculate, 1, 1, SpName.VirtualSports + "-CAL")]
+    [InlineData(ActionName.Refund, null, null, SpName.VirtualSports + "-REFUND")]
     public async Task Settle_ValidatePassed_DoSettle(string action, int? home, int? away, string command)
     {
         var request = new VirtualSoccerRequest

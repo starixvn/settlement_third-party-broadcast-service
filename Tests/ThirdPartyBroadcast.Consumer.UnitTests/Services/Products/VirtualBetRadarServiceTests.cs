@@ -5,8 +5,6 @@ namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products;
 using AutoMapper;
 using Criteria.VirtualBetRadar;
 using Fanex.Data.Repository;
-using NSubstitute.Core;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 public class VirtualBetRadarServiceTests
 {
@@ -18,7 +16,6 @@ public class VirtualBetRadarServiceTests
     private readonly LogDirectlyService logService;
     private readonly TicketSettleService ticketSettleService;
     private readonly AnnouncementService announcementService;
-    private readonly IMapper mapper;
 
     public VirtualBetRadarServiceTests()
     {
@@ -31,17 +28,17 @@ public class VirtualBetRadarServiceTests
         var mapperConfig = new MapperConfigurationExpression();
         mapperConfig.AddProfile<ThirdPartyBroadcastMappingProfile>();
         var config = new MapperConfiguration(mapperConfig);
-        mapper = new Mapper(config);
+        var mapper = new Mapper(config);
         service = new VirtualBetRadarServiceImp(repository, mapper, calculateService, logService, ticketSettleService, announcementService);
     }
 
     [Theory]
-    [InlineData(ActionType.Calculate, false, false, true, true, 0)]
-    [InlineData(ActionType.Calculate, true, false, false, false, 2)]
-    [InlineData(ActionType.Calculate, false, true, false, false, 2)]
-    [InlineData(ActionType.Calculate, true, false, true, false, 10)]
-    [InlineData(ActionType.Calculate, true, false, false, true, 10)]
-    [InlineData(ActionType.Refund, true, false, false, true, 10)]
+    [InlineData(ActionName.Calculate, false, false, true, true, 0)]
+    [InlineData(ActionName.Calculate, true, false, false, false, 2)]
+    [InlineData(ActionName.Calculate, false, true, false, false, 2)]
+    [InlineData(ActionName.Calculate, true, false, true, false, 10)]
+    [InlineData(ActionName.Calculate, true, false, false, true, 10)]
+    [InlineData(ActionName.Refund, true, false, false, true, 10)]
     public async Task Settle_ValidatePassed_CallSettleWithCorrectNotifyStatus(string action, bool calculate, bool calRefund, bool multiple, bool refund, int expected)
     {
         var request = new VirtualBetRadarRequest

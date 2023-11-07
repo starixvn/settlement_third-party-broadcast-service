@@ -1,5 +1,4 @@
-﻿using Fanex.Logging;
-using Fanex.Settlement.Converter.Services;
+﻿using Fanex.Settlement.Converter.Services;
 using ThirdPartyBroadcast.Consumer.Criteria;
 
 namespace ThirdPartyBroadcast.Consumer.Services;
@@ -12,34 +11,37 @@ public interface AnnouncementService
 public class AnnouncementServiceImp : AnnouncementService
 {
     private readonly IDynamicRepository repository;
+
     private readonly XmlConvertService xmlConvertService;
+
     private readonly TicketSettleService ticketSettleService;
+
+    private readonly MessageAnnouncementService messageAnnouncementService;
 
     public AnnouncementServiceImp(
         IDynamicRepository repository,
         XmlConvertService xmlConvertService,
-        TicketSettleService ticketSettleService)
+        TicketSettleService ticketSettleService,
+        MessageAnnouncementService messageAnnouncementService)
     {
         this.repository = repository;
         this.xmlConvertService = xmlConvertService;
         this.ticketSettleService = ticketSettleService;
+        this.messageAnnouncementService = messageAnnouncementService;
     }
 
     public async Task Handle(List<TicketSettleInfo> currentTickets, MatchInfo matchInfo, int adminId)
     {
         var settledTickets = await ticketSettleService.GetTicketsByTransIds(matchInfo.MatchId, currentTickets);
 
-        if (settledTickets.Count == 0)
+        if (settledTickets.Count > 0)
         {
-            return;
+            var groupTickets = CreateGroupsStatus(currentTickets, settledTickets).ToList();
+            await HandleInsertMessage(matchInfo, groupTickets, adminId);
         }
-
-        var groupTickets = CreateGroupsStatus(currentTickets, settledTickets).ToList();
-
-        await HandleInsertMessage(matchInfo, groupTickets, adminId);
     }
 
-    private IEnumerable<IGrouping<string, TicketSettleInfo>> CreateGroupsStatus(
+    private static IEnumerable<IGrouping<string, TicketSettleInfo>> CreateGroupsStatus(
         IEnumerable<TicketSettleInfo> prevSettleTickets,
         IEnumerable<TicketSettleInfo> settledTickets)
     {
@@ -65,113 +67,41 @@ public class AnnouncementServiceImp : AnnouncementService
         return groupStatus;
     }
 
-    private async Task<Result> HandleInsertMessage(MatchInfo matchInfo, IEnumerable<IGrouping<string, TicketSettleInfo>> groups, int adminId)
+    private async Task HandleInsertMessage(
+        MatchInfo matchInfo,
+        IEnumerable<IGrouping<string, TicketSettleInfo>> groups,
+        int adminId)
     {
         foreach (var group in groups)
         {
-            var insertCriteria = CreateAnnounceInsertCriteria(matchInfo, group.Key, adminId);
+            var messageId = await GetMessageId(matchInfo, group.Key, adminId);
+            var items = messageAnnouncementService.CreateMessageItems(group, messageId);
 
-            var messageId = await Insert(insertCriteria);
-
-            var items = CreateMessageAnnounenceItems(group, messageId);
-            var message = new MessageAnnounence
-            {
-                Items = items,
-            };
-            var uploadCriteria = CreateMessageUploadCriteria(message, adminId);
-
-            var result = await Upload(uploadCriteria);
-
-            if (!result.IsSuccessful)
-            {
-                return result;
-            }
+            await CreateMessageUpload(items, adminId);
         }
-
-        return new Result();
     }
 
-    private MessageAnnouncementInsertCriteria CreateAnnounceInsertCriteria(MatchInfo matchInfo, string ticketStatus, int adminId)
+    private async Task<int> GetMessageId(MatchInfo matchInfo, string ticketStatus, int adminId)
     {
-        var isRunningRefund = ticketStatus == TicketType.Running;
+        var criteria = messageAnnouncementService.CreateMessageCriteria(matchInfo, ticketStatus, adminId);
+        return await repository.GetAsync<int>(criteria);
+    }
 
-        var criteria = new MessageAnnouncementInsertCriteria
+    private async Task CreateMessageUpload(List<MessageAnnounenceItem> items, int adminId)
+    {
+        var message = new MessageAnnounence
         {
-            ContentEng = CreateMessageContent(matchInfo, isRunningRefund ? MessageAnnounceTemplate.RunningMsgEng : MessageAnnounceTemplate.SettledMsgEng),
-            ContentCh = CreateMessageContent(matchInfo, isRunningRefund ? MessageAnnounceTemplate.RunningMsgCantonese : MessageAnnounceTemplate.SettledMsgCantonese),
-            ContentCs = CreateMessageContent(matchInfo, isRunningRefund ? MessageAnnounceTemplate.RunningMsgMandarin : MessageAnnounceTemplate.SettledMsgMandarin),
-            MsgContentsType = isRunningRefund ? MsgContentType.Running : MsgContentType.Settled,
-            MatchId = matchInfo.MatchId,
-            Creator = adminId,
-            LeagueGroupId = matchInfo.LeagueGroupId,
+            Items = items,
         };
 
-        return criteria;
-    }
-
-    private MessageUploadCriteria CreateMessageUploadCriteria(MessageAnnounence message, int adminId)
-    {
         var xmlMessage = xmlConvertService.Serialize(message);
 
-        return new MessageUploadCriteria
+        var criteria = new MessageUploadCriteria
         {
             XMLMessage = xmlMessage,
             CreatorId = adminId
         };
-    }
 
-    private string CreateMessageContent(MatchInfo matchInfo, string template)
-    {
-        return template
-               .Replace("@league_name", matchInfo.LeagueName)
-               .Replace("@KO_day_month", $"{matchInfo.KickOffTime.Day}/{matchInfo.KickOffTime.Month}");
-    }
-
-    private List<MessageAnnounenceItem> CreateMessageAnnounenceItems(IEnumerable<TicketSettleInfo> settledTickets, int messageId)
-    {
-        var groupCust = GenerateMessageAnnounenceItems(settledTickets, ticket => ticket.MemberId, ticket => ticket.MemberUserName, messageId);
-        var groupAgent = GenerateMessageAnnounenceItems(settledTickets, ticket => ticket.AgentId, ticket => ticket.AgentUserName, messageId);
-        var groupMaster = GenerateMessageAnnounenceItems(settledTickets, ticket => ticket.MasterId, ticket => ticket.MasterUserName, messageId);
-        var groupSuper = GenerateMessageAnnounenceItems(settledTickets, ticket => ticket.SuperId, ticket => ticket.SuperUserName, messageId);
-
-        return groupCust
-            .Concat(groupAgent)
-            .Concat(groupMaster)
-            .Concat(groupSuper).ToList();
-    }
-
-    private List<MessageAnnounenceItem> GenerateMessageAnnounenceItems(
-     IEnumerable<TicketSettleInfo> settledTickets,
-     Func<TicketSettleInfo, int?> idSelector,
-     Func<TicketSettleInfo, string> nameSelector,
-     int messageId)
-    {
-        return settledTickets
-            .Where(ticket => idSelector(ticket) is not null)
-            .GroupBy(ticket => idSelector(ticket))
-            .Select(group => new MessageAnnounenceItem
-            {
-                TargetId = group.Key ?? 0,
-                TargetName = nameSelector(group.FirstOrDefault()),
-                BetTransId = string.Join(",", group.Select(ticket => ticket.TransId)),
-                MessageId = messageId
-            })
-            .ToList();
-    }
-
-    private async Task<int> Insert(MessageAnnouncementInsertCriteria criteria)
-    {
-        return await repository.GetAsync<int>(criteria);
-    }
-
-    private async Task<Result> Upload(MessageUploadCriteria criteria)
-    {
         await repository.ExecuteAsync(criteria);
-
-        return new Result
-        {
-            ErrorCode = criteria.ErrorCode,
-            ErrorMessage = criteria.ErrorMsg
-        };
     }
 }

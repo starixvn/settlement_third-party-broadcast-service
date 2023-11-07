@@ -5,6 +5,7 @@ using ThirdPartyBroadcast.Consumer.Criteria;
 namespace ThirdPartyBroadcast.Consumer.Services.Products;
 
 using Requests;
+using System;
 
 public interface BetBuilderService
 {
@@ -92,7 +93,7 @@ public class BetBuilderServiceImp : BetBuilderService
         const int MaxLength = 115;
         const string logMessage = "MarketIds cannot be auto settled since they have been settled already:";
         var marketIds = invalidMarketIds.Length > MaxLength ? $"{invalidMarketIds[..MaxLength]}..." : invalidMarketIds;
-        var actionId = string.Equals(request.Action.ToLowerInvariant(), ActionType.Calculate) ? ActionId.BetBuilderCalc : ActionId.BetBuilderRefund;
+        var actionId = string.Equals(request.Action, Constants.ActionName.Calculate, StringComparison.OrdinalIgnoreCase) ? ActionId.BetBuilderCalc : ActionId.BetBuilderRefund;
         var message = $"{logMessage} {marketIds}";
 
         var criteria = new WriteLogCriteria(request.MatchId, message, actionId, request.AdminId, request.Ip);

@@ -4,8 +4,8 @@ namespace ThirdPartyBroadcast.Consumer.Services.Products;
 
 using Constants;
 using Criteria.VirtualBetRadar;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using ThirdPartyBroadcast.Consumer.Models;
+using Models;
+using System;
 
 public interface VirtualBetRadarService
 {
@@ -139,7 +139,9 @@ public class VirtualBetRadarServiceImp : VirtualBetRadarService
         return criteria;
     }
 
-    private static int ActionIdValue(string actionName) => actionName.ToLowerInvariant().Equals(ActionType.Calculate) ? ActionId.VirtualBetRadarCalc : ActionId.VirtualBetRadarRefund;
+    private static int ActionIdValue(string actionName) => string.Equals(actionName, ActionName.Calculate, StringComparison.OrdinalIgnoreCase)
+        ? ActionId.VirtualBetRadarCalc
+        : ActionId.VirtualBetRadarRefund;
 
     private async Task UpdateMatchInfo(VirtualBetRadarRequest request)
     {
@@ -147,8 +149,9 @@ public class VirtualBetRadarServiceImp : VirtualBetRadarService
         await repository.ExecuteAsync(criteria);
     }
 
-    private bool IsReSettleOrRefund(string action, MatchStatus matchStatus)
-        => action.ToLowerInvariant().Equals(ActionType.Refund) || matchStatus != null && (matchStatus.Calculate || matchStatus.CalRefund);
+    private static bool IsReSettleOrRefund(string action, MatchStatus matchStatus)
+    => string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase)
+       || matchStatus != null && (matchStatus.Calculate || matchStatus.CalRefund);
 
     private async Task<MatchStatus> GetMatchStatus(int matchId)
     {

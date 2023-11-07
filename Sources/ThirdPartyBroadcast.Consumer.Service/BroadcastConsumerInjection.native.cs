@@ -58,6 +58,7 @@ public static class BroadcastConsumerInjection
         service.AddSingleton<PinGoalService, PinGoalServiceImp>();
         service.AddTransient<TicketSettleService, TicketSettleServiceImp>();
         service.AddTransient<AnnouncementService, AnnouncementServiceImp>();
+        service.AddTransient<MessageAnnouncementService, MessageAnnouncementServiceImp>();
 
         service.AddSingleton<IMaintenanceService, MaintenanceServiceImp>();
         service.AddSingleton(new UMClientConfiguration().Initialize(configuration));

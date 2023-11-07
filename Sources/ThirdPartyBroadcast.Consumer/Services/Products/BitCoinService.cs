@@ -1,6 +1,7 @@
 ﻿namespace ThirdPartyBroadcast.Consumer.Services.Products;
 
 using Criteria.BitCoin;
+using System;
 
 public interface BitCoinService
 {
@@ -63,12 +64,12 @@ public class BitCoinServiceImp : BitCoinService
 
     private async Task Notification(BitCoinRequest request, string eventStatus)
     {
-        if (string.Equals(eventStatus.ToLowerInvariant(), EventStatus.Completed) || string.Equals(request.Action.ToLowerInvariant(), ActionType.Refund))
+        if (string.Equals(eventStatus.ToLowerInvariant(), EventStatus.Completed) || string.Equals(request.Action, ActionName.Refund, StringComparison.OrdinalIgnoreCase))
         {
             var criteria = new NotifyCriteria
             {
                 MatchId = request.MatchId,
-                NotifyAction = string.Equals(request.Action.ToLowerInvariant(), ActionType.Refund) ? ActionId.BitCoinRefund : ActionId.BitCoinCalc
+                NotifyAction = string.Equals(request.Action, ActionName.Refund, StringComparison.OrdinalIgnoreCase) ? ActionId.BitCoinRefund : ActionId.BitCoinCalc
             };
 
             await repository.ExecuteAsync(criteria);

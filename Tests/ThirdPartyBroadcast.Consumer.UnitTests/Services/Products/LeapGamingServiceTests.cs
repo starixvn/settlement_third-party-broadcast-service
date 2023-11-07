@@ -14,8 +14,6 @@ public class LeapGamingServiceTests
     private readonly LeapGamingService service;
 
     private readonly RecipientTicketsService recipientTicketsService;
-    private readonly TicketSettleService ticketSettleService;
-    private readonly AnnouncementService announcementService;
 
     public LeapGamingServiceTests()
     {
@@ -23,8 +21,8 @@ public class LeapGamingServiceTests
         logDirectlyService = Substitute.For<LogDirectlyService>();
         repository = Substitute.For<IDynamicRepository>();
         recipientTicketsService = Substitute.For<RecipientTicketsService>();
-        ticketSettleService = Substitute.For<TicketSettleService>();
-        announcementService = Substitute.For<AnnouncementService>();
+        var ticketSettleService = Substitute.For<TicketSettleService>();
+        var announcementService = Substitute.For<AnnouncementService>();
 
         var mapperConfig = new MapperConfigurationExpression();
         mapperConfig.AddProfile<ThirdPartyBroadcastMappingProfile>();

@@ -76,8 +76,8 @@ public class BetBuilderServiceTests
     }
 
     [Theory]
-    [InlineData(ActionType.Calculate, ActionId.BetBuilderCalc)]
-    [InlineData(ActionType.Refund, ActionId.BetBuilderRefund)]
+    [InlineData(ActionName.Calculate, ActionId.BetBuilderCalc)]
+    [InlineData(ActionName.Refund, ActionId.BetBuilderRefund)]
     public async Task Settle_ValidatePassedAndExistInvalidResult_SettleCorrectResult(string action, int actionId)
     {
         var resources = new ResourcesMarketModel

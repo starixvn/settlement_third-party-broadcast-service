@@ -1,6 +1,7 @@
 ﻿namespace ThirdPartyBroadcast.Consumer.Services.Products;
 
 using Criteria.VirtualSoccer;
+using System;
 
 public interface VirtualSoccerService
 {
@@ -83,7 +84,7 @@ public class VirtualSoccerServiceImp : VirtualSoccerService
         var updateInfoRequest = mapper.Map<VirtualSoccerRequest, UpdateMatchInfo3RdRequest>(request);
         var criteria = mapper.Map<VirtualSoccerRequest, VrSoccerUpdateMatchCriteria>(request);
 
-        if (request.Action.ToLowerInvariant().Equals(ActionType.Calculate))
+        if (string.Equals(request.Action, ActionName.Calculate, StringComparison.OrdinalIgnoreCase))
         {
             updateInfoRequest.FTAway = request.Fta;
             updateInfoRequest.FTHome = request.Fth;

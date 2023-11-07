@@ -52,8 +52,8 @@ public class BitCoinServiceTests
     }
 
     [Theory]
-    [InlineData(EventStatus.Completed, ActionType.Calculate)]
-    [InlineData("Running", ActionType.Refund)]
+    [InlineData(EventStatus.Completed, ActionName.Calculate)]
+    [InlineData("Running", ActionName.Refund)]
     public async Task Settle_ReSettle_ShouldNotify(string eventStatus, string action)
     {
         repository.GetAsync<string>(Arg.Any<BitCoinEventStatusCriteria>()).Returns(eventStatus);
