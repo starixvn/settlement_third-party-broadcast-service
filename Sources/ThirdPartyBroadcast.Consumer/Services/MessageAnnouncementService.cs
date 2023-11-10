@@ -13,13 +13,17 @@ public class MessageAnnouncementServiceImp : MessageAnnouncementService
 {
     public MessageAnnouncementInsertCriteria CreateMessageCriteria(MatchInfo matchInfo, string ticketStatus, int adminId)
     {
+        var leagueNameCh = !string.IsNullOrEmpty(matchInfo.LeagueNameCh) ? matchInfo.LeagueNameCh : matchInfo.LeagueName;
+        var leagueNameCs = !string.IsNullOrEmpty(matchInfo.LeagueNameCs) ? matchInfo.LeagueNameCs : matchInfo.LeagueName;
+        var koTime = matchInfo.KickOffTime;
+
         if (string.Equals(ticketStatus, TicketType.Running, StringComparison.OrdinalIgnoreCase))
         {
             return new MessageAnnouncementInsertCriteria
             {
-                ContentEng = CreateMessageContent(matchInfo, MessageAnnounceTemplate.RunningMsgEng),
-                ContentCh = CreateMessageContent(matchInfo, MessageAnnounceTemplate.RunningMsgCantonese),
-                ContentCs = CreateMessageContent(matchInfo, MessageAnnounceTemplate.RunningMsgMandarin),
+                ContentEng = CreateMessageContent(matchInfo.LeagueName, koTime, MessageAnnounceTemplate.RunningMsgEng),
+                ContentCh = CreateMessageContent(leagueNameCh, koTime, MessageAnnounceTemplate.RunningMsgCantonese),
+                ContentCs = CreateMessageContent(leagueNameCs, koTime, MessageAnnounceTemplate.RunningMsgMandarin),
                 MsgContentsType = MsgContentType.Running,
                 MatchId = matchInfo.MatchId,
                 Creator = adminId,
@@ -29,9 +33,9 @@ public class MessageAnnouncementServiceImp : MessageAnnouncementService
 
         return new MessageAnnouncementInsertCriteria
         {
-            ContentEng = CreateMessageContent(matchInfo, MessageAnnounceTemplate.SettledMsgEng),
-            ContentCh = CreateMessageContent(matchInfo, MessageAnnounceTemplate.SettledMsgCantonese),
-            ContentCs = CreateMessageContent(matchInfo, MessageAnnounceTemplate.SettledMsgMandarin),
+            ContentEng = CreateMessageContent(matchInfo.LeagueName, koTime, MessageAnnounceTemplate.SettledMsgEng),
+            ContentCh = CreateMessageContent(leagueNameCh, koTime, MessageAnnounceTemplate.SettledMsgCantonese),
+            ContentCs = CreateMessageContent(leagueNameCs, koTime, MessageAnnounceTemplate.SettledMsgMandarin),
             MsgContentsType = MsgContentType.Settled,
             MatchId = matchInfo.MatchId,
             Creator = adminId,
@@ -39,11 +43,11 @@ public class MessageAnnouncementServiceImp : MessageAnnouncementService
         };
     }
 
-    private static string CreateMessageContent(MatchInfo matchInfo, string template)
+    private static string CreateMessageContent(string leagueName, DateTime kickOffTime, string template)
     {
         return template
-            .Replace("@league_name", matchInfo.LeagueName)
-            .Replace("@KO_day_month", $"{matchInfo.KickOffTime.Day}/{matchInfo.KickOffTime.Month}");
+            .Replace("@league_name", leagueName)
+            .Replace("@KO_day_month", $"{kickOffTime.Day}/{kickOffTime.Month}");
     }
 
     public List<MessageAnnounenceItem> CreateMessageItems(IEnumerable<TicketSettleInfo> settledTickets, int messageId)

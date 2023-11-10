@@ -77,6 +77,8 @@ public class VirtualBetRadarServiceImp : VirtualBetRadarService
         {
             KickOffTime = matchStatus.KickOffTime,
             LeagueName = matchStatus.LeagueName,
+            LeagueNameCs = matchStatus.LeagueNameCs,
+            LeagueNameCh = matchStatus.LeagueNameCh,
             MatchId = matchStatus.MatchId,
             LeagueGroupId = matchStatus.LeagueGroupId,
         };
