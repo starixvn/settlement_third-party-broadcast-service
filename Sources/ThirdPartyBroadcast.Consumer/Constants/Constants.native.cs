@@ -64,11 +64,10 @@ public static class ActionName
     public const string Refund = "Refund";
 }
 
-public static class TicketType
+public enum TicketType
 {
-    public const string Running = "running";
-
-    public const string Settled = "settled";
+    Running,
+    Settled
 }
 
 public static class MsgContentType
@@ -85,4 +84,11 @@ public static class StatusType
 public static class DbName
 {
     public const string DbTrans = "DBTXN";
+}
+
+public class ContentLanguage
+{
+    public const string English = "en";
+    public const string Cantonese = "zh-TW";
+    public const string Mandarin = "zh-CN";
 }

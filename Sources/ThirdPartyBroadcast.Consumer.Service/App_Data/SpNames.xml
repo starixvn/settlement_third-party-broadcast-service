@@ -164,6 +164,7 @@
 			</Function>
 		</Function>
 		<Function Name="TicketInfo">
+			<Setting Key="NAP_Set_VS_TicketInfo_Sel_DBTXN" SpName="NAP_Set_VS_TicketInfo_Sel" DbName="DBTXN.bodb02.bodbAdminNet" />
 			<Setting Key="NAP_Set_VS_TicketInfo_Sel_DBSID01" SpName="NAP_Set_VS_TicketInfo_Sel" DbName="DBSID01.bodb02.bodbAdminNet" />
 			<Setting Key="NAP_Set_VS_TicketInfo_Sel_DBSID02" SpName="NAP_Set_VS_TicketInfo_Sel" DbName="DBSID02.bodb02.bodbAdminNet" />
 			<Setting Key="NAP_Set_VS_TicketInfo_Sel_DBSID03" SpName="NAP_Set_VS_TicketInfo_Sel" DbName="DBSID03.bodb02.bodbAdminNet" />

@@ -22,5 +22,5 @@ public class TicketSettleInfo
 
     public string SuperUserName { get; set; }
 
-    public string Status => StatusId == StatusType.Running ? TicketType.Running : TicketType.Settled;
+    public TicketType Status => StatusId == StatusType.Running ? TicketType.Running : TicketType.Settled;
 }

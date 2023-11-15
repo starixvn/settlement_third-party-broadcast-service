@@ -16,6 +16,18 @@ public class MatchInfo
     public string LeagueNameCh { get; set; }
     public string LeagueNameCs { get; set; }
 
+    public int LeagueId { get; set; }
+    public int HomeId { get; set; }
+    public int AwayId { get; set; }
+
+    public string homeName { get; set; }
+    public string homeNameCh { get; set; }
+    public string homeNameCs { get; set; }
+
+    public string awayName { get; set; }
+    public string awayNameCh { get; set; }
+    public string awayNameCs { get; set; }
+
     public short? LeagueGroupId { get; set; }
 
     public int TotalTickets { get; set; }

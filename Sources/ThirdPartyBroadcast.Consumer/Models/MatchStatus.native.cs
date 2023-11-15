@@ -11,11 +11,16 @@ public class MatchStatus
     public bool Multiple { get; set; }
 
     public string EventStatus { get; set; }
+
     public DateTime KickOffTime { get; set; }
 
-    public string LeagueName { get; set; }
-    public string LeagueNameCh { get; set; }
-    public string LeagueNameCs { get; set; }
     public short? LeagueGroupId { get; set; }
+
+    public int LeagueId { get; set; }
+
+    public int HomeId { get; set; }
+
+    public int AwayId { get; set; }
+
     public int MatchId { get; set; }
 }

@@ -8,6 +8,7 @@ using Fanex.Logging.Extensions.AspNetCore;
 using Fanex.Logging.Extensions.Database;
 using Fanex.Logging.Sentry.RavenClient;
 using Fanex.MailDeliver.MailClient;
+using Fanex.RemotingRef;
 using Fanex.Settlement.Converter.Services;
 using Fanex.Settlement.ScaleOut;
 using Fanex.Settlement.ScaleOut.Services;
@@ -70,6 +71,12 @@ public static class BroadcastConsumerInjection
         StartLogSetting(configuration);
         service.ConfigureAutoMapper();
         service.ConfigureMassTransit(configuration);
+
+        RefDataTypeContainer
+            .ConnectTo(new Uri(configuration.GetSection("Fanex.RemotingRef.Service.Url").Value))
+            .FromApplication("Settlement");
+        service.AddSingleton<IRemotingRefService, RemotingRefService>();
+        service.AddTransient<RefDataService, RefDataServiceImp>();
     }
 
     private static void ConfigureAutoMapper(this IServiceCollection service)

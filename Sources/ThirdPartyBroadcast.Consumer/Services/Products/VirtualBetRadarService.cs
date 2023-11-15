@@ -81,6 +81,9 @@ public class VirtualBetRadarServiceImp : VirtualBetRadarService
             LeagueNameCh = matchStatus.LeagueNameCh,
             MatchId = matchStatus.MatchId,
             LeagueGroupId = matchStatus.LeagueGroupId,
+            LeagueId = matchStatus.LeagueId,
+            HomeId = matchStatus.HomeId,
+            AwayId = matchStatus.AwayId,
         };
         await announcementService.Handle(currentTickets, matchInfo, request.AdminId);
 

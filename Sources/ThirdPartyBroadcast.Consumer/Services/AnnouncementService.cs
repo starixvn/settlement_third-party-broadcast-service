@@ -41,7 +41,7 @@ public class AnnouncementServiceImp : AnnouncementService
         }
     }
 
-    private static IEnumerable<IGrouping<string, TicketSettleInfo>> CreateGroupsStatus(
+    private static IEnumerable<IGrouping<TicketType, TicketSettleInfo>> CreateGroupsStatus(
         IEnumerable<TicketSettleInfo> prevSettleTickets,
         IEnumerable<TicketSettleInfo> settledTickets)
     {
@@ -69,7 +69,7 @@ public class AnnouncementServiceImp : AnnouncementService
 
     private async Task HandleInsertMessage(
         MatchInfo matchInfo,
-        IEnumerable<IGrouping<string, TicketSettleInfo>> groups,
+        IEnumerable<IGrouping<TicketType, TicketSettleInfo>> groups,
         int adminId)
     {
         foreach (var group in groups)
@@ -81,9 +81,9 @@ public class AnnouncementServiceImp : AnnouncementService
         }
     }
 
-    private async Task<int> GetMessageId(MatchInfo matchInfo, string ticketStatus, int adminId)
+    private async Task<int> GetMessageId(MatchInfo matchInfo, TicketType ticketType, int adminId)
     {
-        var criteria = messageAnnouncementService.CreateMessageCriteria(matchInfo, ticketStatus, adminId);
+        var criteria = messageAnnouncementService.CreateMessageCriteria(matchInfo, ticketType, adminId);
         return await repository.GetAsync<int>(criteria);
     }
 
