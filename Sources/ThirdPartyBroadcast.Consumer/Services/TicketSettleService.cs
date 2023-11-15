@@ -45,7 +45,7 @@ public class TicketSettleServiceImp : TicketSettleService
     private async Task<List<TicketSettleInfo>> GetAllTickets(TicketSettleCriteria criteria)
     {
         var result = new List<TicketSettleInfo>();
-        foreach (var server in appSettings.SiteDbServer.Where(x => !x.Equals(DbName.DbTrans)))
+        foreach (var server in appSettings.SiteDbServer)
         {
             criteria.DbServer = server;
 

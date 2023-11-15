@@ -76,9 +76,6 @@ public class VirtualBetRadarServiceImp : VirtualBetRadarService
         var matchInfo = new MatchInfo
         {
             KickOffTime = matchStatus.KickOffTime,
-            LeagueName = matchStatus.LeagueName,
-            LeagueNameCs = matchStatus.LeagueNameCs,
-            LeagueNameCh = matchStatus.LeagueNameCh,
             MatchId = matchStatus.MatchId,
             LeagueGroupId = matchStatus.LeagueGroupId,
             LeagueId = matchStatus.LeagueId,
