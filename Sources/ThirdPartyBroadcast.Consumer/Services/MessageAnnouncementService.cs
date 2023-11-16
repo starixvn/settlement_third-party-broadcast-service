@@ -41,8 +41,6 @@ public class MessageAnnouncementServiceImp : MessageAnnouncementService
         var homeName = GetTeamName(matchInfo.HomeId, languageCode);
         var awayName = GetTeamName(matchInfo.AwayId, languageCode);
 
-        LogService.Warn($"MessageContent {leagueName} {homeName}-vs- {awayName}");
-
         return template
             .Replace("@home_name", homeName)
             .Replace("@away_name", awayName)
@@ -74,7 +72,6 @@ public class MessageAnnouncementServiceImp : MessageAnnouncementService
         var leagueNameCh = GetLeagueNameByLanguage(ContentLanguage.Cantonese);
         var leagueNameCs = GetLeagueNameByLanguage(ContentLanguage.Mandarin);
 
-        LogService.Warn($"GetLeagueName {leagueName} {leagueNameCh}-vs- {leagueNameCs}");
         return languageCode switch
         {
             ContentLanguage.Cantonese => !string.IsNullOrEmpty(leagueNameCh) ? leagueNameCh : leagueName,
