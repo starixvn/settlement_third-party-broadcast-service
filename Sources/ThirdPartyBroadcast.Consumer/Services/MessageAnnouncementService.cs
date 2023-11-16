@@ -22,6 +22,8 @@ public class MessageAnnouncementServiceImp : MessageAnnouncementService
 
     public MessageAnnouncementInsertCriteria CreateMessageCriteria(MatchInfo matchInfo, TicketType ticketType, int adminId)
     {
+        matchInfo.RefDataService = refDataService;
+
         return new MessageAnnouncementInsertCriteria
         {
             ContentEng = CreateMessageContent(matchInfo, ticketType, ContentLanguage.English),
@@ -37,48 +39,30 @@ public class MessageAnnouncementServiceImp : MessageAnnouncementService
     private string CreateMessageContent(MatchInfo matchInfo, TicketType ticketType, string languageCode)
     {
         var template = GetTemplate(ticketType, languageCode);
-        var leagueName = GetLeagueName(matchInfo.LeagueId, languageCode);
-        var homeName = GetTeamName(matchInfo.HomeId, languageCode);
-        var awayName = GetTeamName(matchInfo.AwayId, languageCode);
+        var leagueName = GetLeagueName(matchInfo, languageCode);
+        var teamName = GetTeamName(matchInfo, languageCode);
 
         return template
-            .Replace("@home_name", homeName)
-            .Replace("@away_name", awayName)
+            .Replace("@team_name", teamName)
             .Replace("@league_name", leagueName)
-            .Replace("@KO_day_month", $"{matchInfo.KickOffTime.Day}/{matchInfo.KickOffTime.Month}");
+            .Replace("@KO_day_month", matchInfo.KickOffDate);
     }
 
-    private string GetTeamName(int teamId, string languageCode)
-    {
-        string GetTeamNameByLanguage(string langCode) => refDataService.GetTeamName(teamId, langCode);
-
-        var teamName = GetTeamNameByLanguage(ContentLanguage.English);
-        var teamNameCh = GetTeamNameByLanguage(ContentLanguage.Cantonese);
-        var teamNameCs = GetTeamNameByLanguage(ContentLanguage.Mandarin);
-
-        return languageCode switch
+    private string GetTeamName(MatchInfo matchInfo, string languageCode) =>
+        languageCode switch
         {
-            ContentLanguage.Cantonese => !string.IsNullOrEmpty(teamNameCh) ? teamNameCh : teamName,
-            ContentLanguage.Mandarin => !string.IsNullOrEmpty(teamNameCs) ? teamNameCs : teamName,
-            _ => teamName,
+            ContentLanguage.Cantonese => matchInfo.TeamNameCh,
+            ContentLanguage.Mandarin => matchInfo.TeamNameCs,
+            _ => matchInfo.TeamName,
         };
-    }
 
-    private string GetLeagueName(int leagueId, string languageCode)
-    {
-        string GetLeagueNameByLanguage(string langCode) => refDataService.GetLeagueName(leagueId, langCode);
-
-        var leagueName = GetLeagueNameByLanguage(ContentLanguage.English);
-        var leagueNameCh = GetLeagueNameByLanguage(ContentLanguage.Cantonese);
-        var leagueNameCs = GetLeagueNameByLanguage(ContentLanguage.Mandarin);
-
-        return languageCode switch
+    private string GetLeagueName(MatchInfo matchInfo, string languageCode) =>
+        languageCode switch
         {
-            ContentLanguage.Cantonese => !string.IsNullOrEmpty(leagueNameCh) ? leagueNameCh : leagueName,
-            ContentLanguage.Mandarin => !string.IsNullOrEmpty(leagueNameCs) ? leagueNameCs : leagueName,
-            _ => leagueName,
+            ContentLanguage.Cantonese => matchInfo.LeagueNameCh,
+            ContentLanguage.Mandarin => matchInfo.LeagueNameCs,
+            _ => matchInfo.LeagueName,
         };
-    }
 
     private string GetTemplate(TicketType ticketType, string languageCode) => (ticketType, languageCode) switch
     {
