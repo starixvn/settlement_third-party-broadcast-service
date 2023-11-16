@@ -1,6 +1,4 @@
-﻿using Fanex.Logging;
-using ThirdPartyBroadcast.Consumer.Constants;
-using ThirdPartyBroadcast.Consumer.Criteria;
+﻿using ThirdPartyBroadcast.Consumer.Criteria;
 
 namespace ThirdPartyBroadcast.Consumer.Services;
 
@@ -36,7 +34,7 @@ public class MessageAnnouncementServiceImp : MessageAnnouncementService
         };
     }
 
-    private string CreateMessageContent(MatchInfo matchInfo, TicketType ticketType, string languageCode)
+    private static string CreateMessageContent(MatchInfo matchInfo, TicketType ticketType, string languageCode)
     {
         var template = GetTemplate(ticketType, languageCode);
         var leagueName = GetLeagueName(matchInfo, languageCode);
@@ -48,7 +46,7 @@ public class MessageAnnouncementServiceImp : MessageAnnouncementService
             .Replace("@KO_day_month", matchInfo.KickOffDate);
     }
 
-    private string GetTeamName(MatchInfo matchInfo, string languageCode) =>
+    private static string GetTeamName(MatchInfo matchInfo, string languageCode) =>
         languageCode switch
         {
             ContentLanguage.Cantonese => matchInfo.TeamNameCh,
@@ -56,7 +54,7 @@ public class MessageAnnouncementServiceImp : MessageAnnouncementService
             _ => matchInfo.TeamName,
         };
 
-    private string GetLeagueName(MatchInfo matchInfo, string languageCode) =>
+    private static string GetLeagueName(MatchInfo matchInfo, string languageCode) =>
         languageCode switch
         {
             ContentLanguage.Cantonese => matchInfo.LeagueNameCh,
@@ -64,7 +62,7 @@ public class MessageAnnouncementServiceImp : MessageAnnouncementService
             _ => matchInfo.LeagueName,
         };
 
-    private string GetTemplate(TicketType ticketType, string languageCode) => (ticketType, languageCode) switch
+    private static string GetTemplate(TicketType ticketType, string languageCode) => (ticketType, languageCode) switch
     {
         (TicketType.Running, ContentLanguage.English) => MessageAnnounceTemplate.RunningMsgEng,
         (TicketType.Running, ContentLanguage.Cantonese) => MessageAnnounceTemplate.RunningMsgCantonese,
