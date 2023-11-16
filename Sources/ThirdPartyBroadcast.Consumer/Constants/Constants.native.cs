@@ -81,12 +81,7 @@ public static class StatusType
     public const short Running = 0;
 }
 
-public static class DbName
-{
-    public const string DbTrans = "DBTXN";
-}
-
-public class ContentLanguage
+public static class ContentLanguage
 {
     public const string English = "en";
     public const string Cantonese = "zh-TW";
