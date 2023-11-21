@@ -55,16 +55,35 @@ public static class ActionId
     public const int LeapGamingRefund = 81044;
 }
 
-public static class ActionType
-{
-    public const string Calculate = "cal";
-
-    public const string Refund = "refund";
-}
-
 public static class ActionName
 {
+    public const string Calculate = "Cal";
+
     public const string ReSettle = "ReSettle";
 
     public const string Refund = "Refund";
+}
+
+public enum TicketType
+{
+    Running,
+    Settled
+}
+
+public static class MsgContentType
+{
+    public const short Running = 105;
+    public const short Settled = 110;
+}
+
+public static class StatusType
+{
+    public const short Running = 0;
+}
+
+public static class ContentLanguage
+{
+    public const string English = "en";
+    public const string Cantonese = "zh-TW";
+    public const string Mandarin = "zh-CN";
 }

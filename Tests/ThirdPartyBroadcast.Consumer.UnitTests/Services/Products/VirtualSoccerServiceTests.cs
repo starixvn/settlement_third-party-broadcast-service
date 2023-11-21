@@ -2,6 +2,7 @@
 
 using Criteria.VirtualSoccer;
 using Fanex.Settlement.ScaleOut.Request;
+using ThirdPartyBroadcast.Consumer.Services;
 
 public class VirtualSoccerServiceTests
 {
@@ -12,6 +13,7 @@ public class VirtualSoccerServiceTests
     private readonly IDynamicRepository repository;
 
     private readonly VirtualSoccerService service;
+
     private readonly LogDirectlyService logDirectlyService;
 
     public VirtualSoccerServiceTests()
@@ -20,16 +22,19 @@ public class VirtualSoccerServiceTests
         scaleOutSettleThirdPartyService = Substitute.For<ScaleOutSettleThirdPartyService>();
         repository = Substitute.For<IDynamicRepository>();
         logDirectlyService = Substitute.For<LogDirectlyService>();
+        var ticketSettleService = Substitute.For<TicketSettleService>();
+        var announcementService = Substitute.For<AnnouncementService>();
+
         var mapperConfig = new MapperConfigurationExpression();
         mapperConfig.AddProfile<ThirdPartyBroadcastMappingProfile>();
         var config = new MapperConfiguration(mapperConfig);
         var mapper = new Mapper(config);
-        service = new VirtualSoccerServiceImp(scaleOutSettleThirdPartyService, repository, mapper, calculateService, logDirectlyService);
+        service = new VirtualSoccerServiceImp(scaleOutSettleThirdPartyService, repository, mapper, calculateService, logDirectlyService, announcementService, ticketSettleService);
     }
 
     [Theory]
-    [InlineData(ActionType.Calculate, 1, 1, SpName.VirtualSports + "-CAL")]
-    [InlineData(ActionType.Refund, null, null, SpName.VirtualSports + "-REFUND")]
+    [InlineData(ActionName.Calculate, 1, 1, SpName.VirtualSports + "-CAL")]
+    [InlineData(ActionName.Refund, null, null, SpName.VirtualSports + "-REFUND")]
     public async Task Settle_ValidatePassed_DoSettle(string action, int? home, int? away, string command)
     {
         var request = new VirtualSoccerRequest
@@ -38,6 +43,8 @@ public class VirtualSoccerServiceTests
             Fta = away,
             Fth = home
         };
+
+        repository.GetAsync<MatchInfo>(Arg.Any<VisualSoccerGetMatchInfoCriteria>()).Returns(new MatchInfo { MatchId = request.MatchId });
 
         await service.Settle(request);
 

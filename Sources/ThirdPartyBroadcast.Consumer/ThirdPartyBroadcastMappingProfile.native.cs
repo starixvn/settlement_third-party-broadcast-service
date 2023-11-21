@@ -1,7 +1,6 @@
 ﻿namespace ThirdPartyBroadcast.Consumer;
 
 using Criteria;
-using Criteria.BetBuilder;
 using Criteria.BitCoin;
 using Criteria.HappyFive;
 using Criteria.LeapGaming;
@@ -25,7 +24,6 @@ public class ThirdPartyBroadcastMappingProfile : Profile
         CreateMap<VirtualBetRadarRequest, VirtualBetRadarCriteria>();
         CreateMap<VirtualSoccerRequest, VirtualSoccerCriteria>();
         CreateMap<VirtualSoccerRequest, VrSoccerUpdateMatchCriteria>();
-        CreateMap<BetBuilderRequest, UpdateMarketCriteria>();
         CreateMap<BetBuilderRequest, BetBuilderCriteria>();
         CreateMap<OutrightRequest, OutrightCriteria>();
         CreateMap<WriteLogCriteria, SendMailCriteria>().ForMember(dest => dest.AdminId, opt => opt.MapFrom(src => src.UserId));

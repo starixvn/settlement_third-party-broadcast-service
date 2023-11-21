@@ -55,7 +55,7 @@ public class NumberGameServiceImp : NumberGameService
             return $"Calculate Number Game for matchId: {request.MatchId}- [LIVE] - Sequence number: {request.DrawSeq}";
         }
 
-        return request.Action.ToLowerInvariant().Equals(ActionType.Calculate) ? $"Calculate Number Game for matchId: {request.MatchId}" : string.Empty;
+        return string.Equals(request.Action, ActionName.Calculate, StringComparison.OrdinalIgnoreCase) ? $"Calculate Number Game for matchId: {request.MatchId}" : string.Empty;
     }
 
     private async Task UpdateMatchInfo(NumberGameRequest request)

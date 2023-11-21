@@ -1,6 +1,7 @@
 ﻿namespace ThirdPartyBroadcast.Consumer.Services.Products;
 
 using Criteria.VirtualSoccer;
+using System;
 
 public interface VirtualSoccerService
 {
@@ -19,27 +20,60 @@ public class VirtualSoccerServiceImp : VirtualSoccerService
 
     private readonly LogDirectlyService logDirectlyService;
 
-    public VirtualSoccerServiceImp(ScaleOutSettleThirdPartyService scaleOutSettleThirdPartyService,
+    private readonly TicketSettleService ticketSettleService;
+
+    private readonly AnnouncementService announcementService;
+
+    public VirtualSoccerServiceImp(
+        ScaleOutSettleThirdPartyService scaleOutSettleThirdPartyService,
         IDynamicRepository repository,
         IMapper mapper,
         CalculateService calculateService,
-        LogDirectlyService logDirectlyService)
+        LogDirectlyService logDirectlyService,
+        AnnouncementService announcementService,
+        TicketSettleService ticketSettleService)
     {
         this.scaleOutSettleThirdPartyService = scaleOutSettleThirdPartyService;
         this.repository = repository;
         this.mapper = mapper;
         this.calculateService = calculateService;
         this.logDirectlyService = logDirectlyService;
+        this.announcementService = announcementService;
+        this.ticketSettleService = ticketSettleService;
     }
 
     public async Task<Result> Settle(VirtualSoccerRequest request)
     {
+        var matchInfo = await GetMatchInfo(request.MatchId);
+        var currentTickets = await ticketSettleService.GetTicketsByAction(request.MatchId, request.Action);
+
         await UpdateMatchInfo(request);
+
         var criteria = mapper.Map<VirtualSoccerRequest, VirtualSoccerCriteria>(request);
+
         var message = GenerateMessageLog(criteria);
         await logDirectlyService.WriteLog(criteria.MatchId, message);
 
-        return await calculateService.Execute(criteria);
+        var result = await HandleSettle(currentTickets, matchInfo, criteria);
+
+        return result;
+    }
+
+    private async Task<Result> HandleSettle(List<TicketSettleInfo> currentTickets, MatchInfo matchInfo, VirtualSoccerCriteria criteria)
+    {
+        var settleResult = await calculateService.Execute(criteria);
+
+        await announcementService.Handle(currentTickets, matchInfo, criteria.AdminId);
+
+        return settleResult;
+    }
+
+    private async Task<MatchInfo> GetMatchInfo(int matchId)
+    {
+        var matchInfo = await repository.GetAsync<MatchInfo>(new VisualSoccerGetMatchInfoCriteria { MatchId = matchId });
+        matchInfo.MatchId = matchId;
+
+        return matchInfo;
     }
 
     private static string GenerateMessageLog(VirtualSoccerCriteria criteria)
@@ -50,7 +84,7 @@ public class VirtualSoccerServiceImp : VirtualSoccerService
         var updateInfoRequest = mapper.Map<VirtualSoccerRequest, UpdateMatchInfo3RdRequest>(request);
         var criteria = mapper.Map<VirtualSoccerRequest, VrSoccerUpdateMatchCriteria>(request);
 
-        if (request.Action.ToLowerInvariant().Equals(ActionType.Calculate))
+        if (string.Equals(request.Action, ActionName.Calculate, StringComparison.OrdinalIgnoreCase))
         {
             updateInfoRequest.FTAway = request.Fta;
             updateInfoRequest.FTHome = request.Fth;

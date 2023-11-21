@@ -4,6 +4,7 @@ namespace ThirdPartyBroadcast.Consumer.Services.Products;
 
 using Criteria;
 using Criteria.LeapGaming;
+using Fanex.Data.Repository;
 
 public interface LeapGamingService
 {
@@ -22,6 +23,10 @@ public class LeapGamingServiceImp : LeapGamingService
 
     private readonly RecipientTicketsService recipientTicketsService;
 
+    private readonly TicketSettleService ticketSettleService;
+
+    private readonly AnnouncementService announcementService;
+
     private const int ErrorCodeNotExistValue = 1_000_003;
 
     private const string ErrorMsgNotExistValue = "The input score values are not valid!";
@@ -31,18 +36,21 @@ public class LeapGamingServiceImp : LeapGamingService
         CalculateService calculateService,
         LogDirectlyService logDirectlyService,
         IDynamicRepository repository,
-        RecipientTicketsService recipientTicketsService)
+        RecipientTicketsService recipientTicketsService,
+        TicketSettleService ticketSettleService,
+        AnnouncementService announcementService)
     {
         this.mapper = mapper;
         this.calculateService = calculateService;
         this.logDirectlyService = logDirectlyService;
         this.repository = repository;
         this.recipientTicketsService = recipientTicketsService;
+        this.ticketSettleService = ticketSettleService;
+        this.announcementService = announcementService;
     }
 
     public async Task<Result> Settle(LeapGamingRequest request)
     {
-        var criteria = mapper.Map<LeapGamingRequest, LeapGamingCriteria>(request);
         var validationResult = ValidateMatchScore(request);
         if (validationResult.ErrorCode > 0)
         {
@@ -50,32 +58,44 @@ public class LeapGamingServiceImp : LeapGamingService
         }
 
         var currentMatchInfo = await MatchStatus(request.MatchId);
+        var currentTickets = await ticketSettleService.GetTicketsByAction(request.MatchId, request.Action);
 
         await UpdateMatchInfo(request);
+
         var message = logDirectlyService.Message(request.MatchId);
         await logDirectlyService.WriteLog(request.MatchId, message);
 
-        var result = await calculateService.Execute(criteria);
-
-        await HandleAfterSettle(request, currentMatchInfo, result);
+        var result = await HandleSettle(currentTickets, currentMatchInfo, request);
 
         return result;
     }
 
-    private async Task HandleAfterSettle(LeapGamingRequest request, MatchInfo matchInfo, Result resultSettle)
+    private async Task<Result> HandleSettle(List<TicketSettleInfo> currentTickets, MatchInfo matchInfo, LeapGamingRequest request)
+    {
+        var criteria = mapper.Map<LeapGamingRequest, LeapGamingCriteria>(request);
+        var settleResult = await calculateService.Execute(criteria);
+
+        await WriteLogSettled(request, settleResult);
+
+        await SendMail(request.Action, matchInfo);
+
+        await announcementService.Handle(currentTickets, matchInfo, request.AdminId);
+
+        return settleResult;
+    }
+
+    private async Task WriteLogSettled(LeapGamingRequest request, Result resultSettle)
     {
         var criteria = CreateWriteLogCriteria(request, resultSettle);
 
         await repository.ExecuteAsync(criteria);
-
-        await SendMail(request.Action, matchInfo);
     }
 
     private static WriteLogCriteria CreateWriteLogCriteria(LeapGamingRequest request, Result resultSettle)
     {
         var resources = DeserializeResources(request.SelectedResources);
         var message = $"VS 3 - Calculate({request.Action}) {(resultSettle.ErrorCode > 0 ? resultSettle.ErrorMessage : string.Empty)}";
-        var actionId = request.Action.ToLowerInvariant().Equals(ActionType.Calculate) ? ActionId.LeapGamingCalc : ActionId.LeapGamingRefund;
+        var actionId = string.Equals(request.Action, ActionName.Calculate, StringComparison.OrdinalIgnoreCase) ? ActionId.LeapGamingCalc : ActionId.LeapGamingRefund;
         var criteria = new WriteLogCriteria(request.MatchId, message, actionId, request.AdminId, request.Ip);
         var htResult = resources.Items.Find(i => i.Id == ResourceId.HalfTimeResourceId);
         var ftResult = resources.Items.Find(i => i.Id == ResourceId.FullTimeResourceId);
@@ -133,7 +153,7 @@ public class LeapGamingServiceImp : LeapGamingService
     private async Task<MatchInfo> MatchStatus(int matchId)
     {
         var criteria = new LeapGamingGetMatchInfoCriteria { MatchId = matchId };
-        var match = await repository.GetAsync<MatchInfo>(criteria);
+        var match = await repository.GetAsync<MatchInfo>(criteria) ?? new MatchInfo();
         match.MatchId = matchId;
 
         return match;
@@ -144,13 +164,13 @@ public class LeapGamingServiceImp : LeapGamingService
         var eventStatusChecking = !string.IsNullOrWhiteSpace(matchInfo.EventStatus) &&
                                   string.Equals(matchInfo.EventStatus.ToLowerInvariant(), EventStatus.Completed);
 
-        if (action.ToLowerInvariant().Equals(ActionType.Refund) || eventStatusChecking)
+        if (string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase) || eventStatusChecking)
         {
             var criteria = new LeapGamingTicketCriteria { MatchId = matchInfo.MatchId };
             var (creditTickets, depositTickets) = await repository.FetchMultipleAsync<TicketInfo, TicketInfo>(criteria);
 
             var recipients = await GetRecipients();
-            var actionName = string.Equals(action, ActionType.Refund, StringComparison.OrdinalIgnoreCase)
+            var actionName = string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase)
                 ? ActionName.Refund
                 : ActionName.ReSettle;
 
@@ -175,7 +195,7 @@ public class LeapGamingServiceImp : LeapGamingService
 
     private static bool IsValidResult(ResourceItemModel result, string action)
     {
-        if (action.ToLowerInvariant() == ActionType.Refund)
+        if (string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase))
         {
             return result is { Home: "", Away: "" };
         }

@@ -1,4 +1,4 @@
-﻿namespace ThirdPartyBroadcast.Consumer.Criteria.BetBuilder;
+﻿namespace ThirdPartyBroadcast.Consumer.Criteria;
 
 public class BetBuilderCriteria : CalculateCriteria
 {

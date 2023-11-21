@@ -21,12 +21,15 @@ public class LeapGamingServiceTests
         logDirectlyService = Substitute.For<LogDirectlyService>();
         repository = Substitute.For<IDynamicRepository>();
         recipientTicketsService = Substitute.For<RecipientTicketsService>();
+        var ticketSettleService = Substitute.For<TicketSettleService>();
+        var announcementService = Substitute.For<AnnouncementService>();
+
         var mapperConfig = new MapperConfigurationExpression();
         mapperConfig.AddProfile<ThirdPartyBroadcastMappingProfile>();
         var config = new MapperConfiguration(mapperConfig);
         var mapper = new Mapper(config);
 
-        service = new LeapGamingServiceImp(mapper, calculateService, logDirectlyService, repository, recipientTicketsService);
+        service = new LeapGamingServiceImp(mapper, calculateService, logDirectlyService, repository, recipientTicketsService, ticketSettleService, announcementService);
     }
 
     [Fact]
