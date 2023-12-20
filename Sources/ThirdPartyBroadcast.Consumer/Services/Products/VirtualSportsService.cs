@@ -1,14 +1,14 @@
 ﻿namespace ThirdPartyBroadcast.Consumer.Services.Products;
 
-using Criteria.VirtualSoccer;
+using Criteria.VirtualSports;
 using System;
 
-public interface VirtualSoccerService
+public interface VirtualSportsService
 {
     Task<Result> Settle(VirtualSoccerRequest request);
 }
 
-public class VirtualSoccerServiceImp : VirtualSoccerService
+public class VirtualSportsServiceImp : VirtualSportsService
 {
     private readonly ScaleOutSettleThirdPartyService scaleOutSettleThirdPartyService;
 
@@ -24,7 +24,7 @@ public class VirtualSoccerServiceImp : VirtualSoccerService
 
     private readonly AnnouncementService announcementService;
 
-    public VirtualSoccerServiceImp(
+    public VirtualSportsServiceImp(
         ScaleOutSettleThirdPartyService scaleOutSettleThirdPartyService,
         IDynamicRepository repository,
         IMapper mapper,
@@ -49,40 +49,60 @@ public class VirtualSoccerServiceImp : VirtualSoccerService
 
         await UpdateMatchInfo(request);
 
-        var criteria = mapper.Map<VirtualSoccerRequest, VirtualSoccerCriteria>(request);
+        var message = GenerateMessageLog(request);
+        await logDirectlyService.WriteLog(request.MatchId, message);
 
-        var message = GenerateMessageLog(criteria);
-        await logDirectlyService.WriteLog(criteria.MatchId, message);
-
-        var result = await HandleSettle(currentTickets, matchInfo, criteria);
+        var result = await HandleSettle(currentTickets, matchInfo, request);
 
         return result;
     }
 
-    private async Task<Result> HandleSettle(List<TicketSettleInfo> currentTickets, MatchInfo matchInfo, VirtualSoccerCriteria criteria)
+    private async Task<Result> HandleSettle(List<TicketSettleInfo> currentTickets, MatchInfo matchInfo, VirtualSoccerRequest request)
     {
+        var criteria = mapper.Map<VirtualSoccerRequest, VirtualSportsCriteria>(request);
         var settleResult = await calculateService.Execute(criteria);
+
+        await SendMail(request.Action, matchInfo);
 
         await announcementService.Handle(currentTickets, matchInfo, criteria.AdminId);
 
         return settleResult;
     }
 
+    private async Task SendMail(string action, MatchInfo matchInfo)
+    {
+        var eventStatusChecking = !string.IsNullOrWhiteSpace(matchInfo.EventStatus) &&
+                                  string.Equals(matchInfo.EventStatus.ToLowerInvariant(), EventStatus.Completed);
+
+        if (string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase) || eventStatusChecking)
+        {
+            var criteria = new VirtualSportsTicketCriteria { MatchId = matchInfo.MatchId };
+            var (creditTickets, depositTickets) = await repository.FetchMultipleAsync<TicketInfo, TicketInfo>(criteria);
+
+            var actionName = string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase)
+                ? ActionName.Refund
+                : ActionName.ReSettle;
+
+            recipientTicketsService.CreditTickets(actionName, creditTickets.ToList(), recipients, matchInfo);
+            recipientTicketsService.DepositTickets(actionName, depositTickets.ToList(), recipients, matchInfo);
+        }
+    }
+
     private async Task<MatchInfo> GetMatchInfo(int matchId)
     {
-        var matchInfo = await repository.GetAsync<MatchInfo>(new VisualSoccerGetMatchInfoCriteria { MatchId = matchId });
+        var matchInfo = await repository.GetAsync<MatchInfo>(new VirtualSportsGetMatchInfoCriteria { MatchId = matchId });
         matchInfo.MatchId = matchId;
 
         return matchInfo;
     }
 
-    private static string GenerateMessageLog(VirtualSoccerCriteria criteria)
-        => $"NAP: Calculate {criteria.Action} for matchId: {criteria.MatchId} score: {criteria.Fth}-{criteria.Fta}";
+    private static string GenerateMessageLog(VirtualSoccerRequest request)
+        => $"NAP: Calculate {request.Action} for matchId: {request.MatchId} score: {request.Fth}-{request.Fta}";
 
     private async Task UpdateMatchInfo(VirtualSoccerRequest request)
     {
         var updateInfoRequest = mapper.Map<VirtualSoccerRequest, UpdateMatchInfo3RdRequest>(request);
-        var criteria = mapper.Map<VirtualSoccerRequest, VrSoccerUpdateMatchCriteria>(request);
+        var criteria = mapper.Map<VirtualSoccerRequest, VirtualSportsUpdateMatchCriteria>(request);
 
         if (string.Equals(request.Action, ActionName.Calculate, StringComparison.OrdinalIgnoreCase))
         {

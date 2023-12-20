@@ -7,6 +7,8 @@ public interface RecipientTicketsService
 
     void DepositTickets(string actionName, IReadOnlyCollection<TicketInfo> ticketInfos, Recipient recipient,
         MatchInfo matchInfos);
+
+    void CreditTickets(string actionName, int functionId, IReadOnlyCollection<TicketInfo> ticketInfos, MatchInfo matchInfos);
 }
 
 public class RecipientTicketsServiceImp : RecipientTicketsService
@@ -18,61 +20,89 @@ public class RecipientTicketsServiceImp : RecipientTicketsService
         this.sendMailService = sendMailService;
     }
 
-    public void CreditTickets(string actionName, IReadOnlyCollection<TicketInfo> ticketInfos, Recipient recipient, MatchInfo matchInfos)
+    public void CreditTickets(string actionName, IReadOnlyCollection<TicketInfo> ticketsInfo, Recipient recipient, MatchInfo matchInfos)
     {
-        if (ticketInfos.Count > 0)
+        if (ticketsInfo.Count < 1)
         {
-            var tickets = new List<TicketModel> {
-                new()
-                {
-                    TicketInfos = ticketInfos.ToList()
-                }
-            };
-
-            matchInfos.TotalTickets = tickets.SelectMany(i => i.TicketInfos).Distinct().Count();
-
-            var mailModel = new NotificationModel
-            {
-                MatchInfo = matchInfos,
-                Action = actionName,
-                To = recipient.CreditRecipients,
-                Copy = recipient.CopyRecipients,
-                Type = EmailType.Credit,
-                Ticket = tickets
-            };
-
-            sendMailService.SendMail(mailModel);
+            return;
         }
+
+        var mailModel = new NotificationModel
+        {
+            MatchInfo = matchInfos,
+            Action = actionName,
+            To = recipient.CreditRecipients,
+            Copy = recipient.CopyRecipients,
+            Type = EmailType.Credit,
+            TicketsInfo = ticketsInfo,
+            TotalTickets = ticketsInfo.Count()
+        };
+
+        sendMailService.SendMail(mailModel);
     }
 
-    public void DepositTickets(string actionName, IReadOnlyCollection<TicketInfo> ticketInfos, Recipient recipient, MatchInfo matchInfos)
+    public void DepositTickets(string actionName, IReadOnlyCollection<TicketInfo> ticketsInfo, Recipient recipient, MatchInfo matchInfos)
     {
-        if (ticketInfos.Count > 0)
+        if (ticketsInfo.Count < 1)
         {
-            var tickets = SplitTicketByLicensee(ticketInfos).ToList();
-            matchInfos.TotalTickets = tickets.SelectMany(i => i.TicketInfos).Distinct().Count();
-
-            var mailModel = new NotificationModel
-            {
-                MatchInfo = matchInfos,
-                Action = actionName,
-                To = recipient.DepositRecipients,
-                Copy = recipient.CopyRecipients,
-                Type = EmailType.Deposit,
-                Ticket = tickets
-            };
-
-            sendMailService.SendMail(mailModel);
+            return;
         }
+
+        var tickets = SplitTicketByLicensee(ticketsInfo).ToList();
+
+        var mailModel = new NotificationModel
+        {
+            MatchInfo = matchInfos,
+            Action = actionName,
+            To = recipient.DepositRecipients,
+            Copy = recipient.CopyRecipients,
+            Type = EmailType.Deposit,
+            TicketsInfo = tickets,
+            TotalTickets = ticketsInfo.Count()
+        };
+
+        sendMailService.SendMail(mailModel);
     }
 
-    private static IEnumerable<TicketModel> SplitTicketByLicensee(IReadOnlyCollection<TicketInfo> ticketInfos)
+    private static IEnumerable<TicketInfo> SplitTicketByLicensee(IReadOnlyCollection<TicketInfo> ticketInfos)
     {
         var distinctLicensees = ticketInfos.Select(ticket => ticket.SiteName).Distinct();
 
-        return distinctLicensees.Select(licensee => new TicketModel
+        return distinctLicensees.Select(licensee => new TicketInfo
         {
-            TicketInfos = ticketInfos.Where(ticket => ticket.SiteName == licensee).ToList()
+            TicketsInfo = ticketInfos.Where(ticket => ticket.SiteName == licensee).ToList()
         });
+    }
+
+    public void CreditTickets(string actionName, int functionId, IReadOnlyCollection<TicketInfo> ticketInfos, MatchInfo matchInfo)
+    {
+        //if (ticketInfos.Count < 1)
+        //{
+        //    return;
+        //}
+
+        //var tickets = new List<TicketModel> {
+        //    new()
+        //    {
+        //        TicketInfos = ticketInfos.ToList()
+        //    }
+        //};
+
+        //SendMail(actionName, EmailType.Credit, tickets, matchInfo);
+    }
+
+    private void SendMail(string actionName, string type, IReadOnlyCollection<TicketInfo> tickets, MatchInfo matchInfo)
+    {
+        //matchInfo.TotalTickets = tickets.SelectMany(i => i.TicketInfos).Distinct().Count();
+
+        //var mailModel = new NotificationModel
+        //{
+        //    MatchInfo = matchInfo,
+        //    Action = actionName,
+        //    Type = type,
+        //    Tickets = tickets
+        //};
+
+        //sendMailService.SendMail(mailModel);
     }
 }

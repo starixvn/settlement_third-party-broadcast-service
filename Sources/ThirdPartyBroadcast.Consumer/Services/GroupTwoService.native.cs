@@ -17,7 +17,7 @@ public class GroupTwoServiceImp : GroupTwoService
 {
     private readonly LogDirectlyService logDirectlyService;
 
-    private readonly VirtualSoccerService virtualSoccerService;
+    private readonly VirtualSportsService virtualSoccerService;
 
     private readonly VirtualBetRadarService virtualBetRadarService;
 
@@ -28,7 +28,7 @@ public class GroupTwoServiceImp : GroupTwoService
     public GroupTwoServiceImp(
          LogDirectlyService logDirectlyService,
          VirtualBetRadarService virtualBetRadarService,
-         VirtualSoccerService virtualSoccerService,
+         VirtualSportsService virtualSoccerService,
          LeapGamingService leapGamingService,
          PinGoalService pinGoalService)
     {

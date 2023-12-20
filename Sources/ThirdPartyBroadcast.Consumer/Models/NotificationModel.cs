@@ -10,7 +10,11 @@ public class NotificationModel
 
     public string Copy { get; set; }
 
-    public IEnumerable<TicketModel> Ticket { get; set; }
+    public int MailId { get; set; }
+
+    public int TotalTickets { get; set; }
+
+    public IEnumerable<TicketInfo> TicketsInfo { get; set; }
 
     public MatchInfo MatchInfo { get; set; }
 }

@@ -5,7 +5,7 @@ using Criteria.BitCoin;
 using Criteria.HappyFive;
 using Criteria.LeapGaming;
 using Criteria.VirtualBetRadar;
-using Criteria.VirtualSoccer;
+using Criteria.VirtualSports;
 using Requests;
 
 public class ThirdPartyBroadcastMappingProfile : Profile
@@ -22,8 +22,8 @@ public class ThirdPartyBroadcastMappingProfile : Profile
         CreateMap<FastMarketCriteria, EventTicketFastMarketRequest>();
         CreateMap<VirtualBetRadarRequest, BetRadarUpdateMatchCriteria>();
         CreateMap<VirtualBetRadarRequest, VirtualBetRadarCriteria>();
-        CreateMap<VirtualSoccerRequest, VirtualSoccerCriteria>();
-        CreateMap<VirtualSoccerRequest, VrSoccerUpdateMatchCriteria>();
+        CreateMap<VirtualSoccerRequest, VirtualSportsCriteria>();
+        CreateMap<VirtualSoccerRequest, VirtualSportsUpdateMatchCriteria>();
         CreateMap<BetBuilderRequest, BetBuilderCriteria>();
         CreateMap<OutrightRequest, OutrightCriteria>();
         CreateMap<WriteLogCriteria, SendMailCriteria>().ForMember(dest => dest.AdminId, opt => opt.MapFrom(src => src.UserId));

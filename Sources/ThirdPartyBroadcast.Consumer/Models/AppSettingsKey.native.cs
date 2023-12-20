@@ -6,5 +6,5 @@ public class AppSettingsKey
 
     public List<string> SiteDbServer { get; set; }
 
-    public RabbitMq RabbitMq { get; set; }
+    public MailFunction MailFunction { get; set; }
 }

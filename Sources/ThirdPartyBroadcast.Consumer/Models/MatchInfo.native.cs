@@ -24,8 +24,6 @@ public class MatchInfo
 
     public short? LeagueGroupId { get; set; }
 
-    public int TotalTickets { get; set; }
-
     public string TeamName => $"{RefDataService.GetTeamName(HomeId, ContentLanguage.English)} -vs- {RefDataService.GetTeamName(AwayId, ContentLanguage.English)}";
 
     public string TeamNameCh => GetTeamName(ContentLanguage.Cantonese);

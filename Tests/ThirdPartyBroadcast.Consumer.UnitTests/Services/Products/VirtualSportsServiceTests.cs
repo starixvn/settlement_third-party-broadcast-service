@@ -1,10 +1,10 @@
 ﻿namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products;
 
-using Criteria.VirtualSoccer;
+using Criteria.VirtualSports;
 using Fanex.Settlement.ScaleOut.Request;
 using ThirdPartyBroadcast.Consumer.Services;
 
-public class VirtualSoccerServiceTests
+public class VirtualSportsServiceTests
 {
     private readonly CalculateService calculateService;
 
@@ -12,11 +12,11 @@ public class VirtualSoccerServiceTests
 
     private readonly IDynamicRepository repository;
 
-    private readonly VirtualSoccerService service;
+    private readonly VirtualSportsService service;
 
     private readonly LogDirectlyService logDirectlyService;
 
-    public VirtualSoccerServiceTests()
+    public VirtualSportsServiceTests()
     {
         calculateService = Substitute.For<CalculateService>();
         scaleOutSettleThirdPartyService = Substitute.For<ScaleOutSettleThirdPartyService>();
@@ -29,7 +29,7 @@ public class VirtualSoccerServiceTests
         mapperConfig.AddProfile<ThirdPartyBroadcastMappingProfile>();
         var config = new MapperConfiguration(mapperConfig);
         var mapper = new Mapper(config);
-        service = new VirtualSoccerServiceImp(scaleOutSettleThirdPartyService, repository, mapper, calculateService, logDirectlyService, announcementService, ticketSettleService);
+        service = new VirtualSportsServiceImp(scaleOutSettleThirdPartyService, repository, mapper, calculateService, logDirectlyService, announcementService, ticketSettleService);
     }
 
     [Theory]
@@ -44,13 +44,13 @@ public class VirtualSoccerServiceTests
             Fth = home
         };
 
-        repository.GetAsync<MatchInfo>(Arg.Any<VisualSoccerGetMatchInfoCriteria>()).Returns(new MatchInfo { MatchId = request.MatchId });
+        repository.GetAsync<MatchInfo>(Arg.Any<VirtualSportsGetMatchInfoCriteria>()).Returns(new MatchInfo { MatchId = request.MatchId });
 
         await service.Settle(request);
 
         //Assert
-        await calculateService.Received().Execute(Arg.Any<VirtualSoccerCriteria>());
-        await repository.Received().ExecuteAsync(Arg.Any<VrSoccerUpdateMatchCriteria>());
+        await calculateService.Received().Execute(Arg.Any<VirtualSportsCriteria>());
+        await repository.Received().ExecuteAsync(Arg.Any<VirtualSportsUpdateMatchCriteria>());
         await scaleOutSettleThirdPartyService.Received()
             .UpdateMatchInfo3rd(Arg.Is<UpdateMatchInfo3RdRequest>(item => item.Command == command && item.FTAway == away && item.FTHome == home));
         await logDirectlyService.Received().WriteLog(Arg.Any<int>(), Arg.Any<string>());
