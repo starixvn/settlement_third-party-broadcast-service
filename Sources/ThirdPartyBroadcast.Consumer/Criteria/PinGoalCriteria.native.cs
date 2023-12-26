@@ -12,5 +12,7 @@ public class PinGoalCriteria : CalculateCriteria
 
     public string Action { get; set; }
 
+    public string BroadcastSessionId { get; } = Guid.NewGuid().ToString();
+
     public override string GetSettingKey() => $"NAP_Admin_Settlement_Profile_Push_{DbServer}";
 }
