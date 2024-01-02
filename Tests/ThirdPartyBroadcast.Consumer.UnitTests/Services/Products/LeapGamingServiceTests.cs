@@ -21,7 +21,7 @@ public class LeapGamingServiceTests
         logDirectlyService = Substitute.For<LogDirectlyService>();
         repository = Substitute.For<IDynamicRepository>();
         recipientTicketsService = Substitute.For<RecipientTicketsService>();
-        var ticketSettleService = Substitute.For<TicketSettleService>();
+        var matchService = Substitute.For<MatchService>();
         var announcementService = Substitute.For<AnnouncementService>();
 
         var mapperConfig = new MapperConfigurationExpression();
@@ -29,7 +29,7 @@ public class LeapGamingServiceTests
         var config = new MapperConfiguration(mapperConfig);
         var mapper = new Mapper(config);
 
-        service = new LeapGamingServiceImp(mapper, calculateService, logDirectlyService, repository, recipientTicketsService, ticketSettleService, announcementService);
+        service = new LeapGamingServiceImp(mapper, calculateService, logDirectlyService, repository, recipientTicketsService, matchService, announcementService);
     }
 
     [Fact]
@@ -88,7 +88,7 @@ public class LeapGamingServiceTests
             SelectedResources = selectedResources
         });
 
-        recipientTicketsService.Received(mailCount).CreditTickets(Arg.Any<string>(), Arg.Any<IReadOnlyCollection<TicketInfo>>(), Arg.Any<Recipient>(), Arg.Any<MatchInfo>());
-        recipientTicketsService.Received(mailCount).DepositTickets(Arg.Any<string>(), Arg.Any<IReadOnlyCollection<TicketInfo>>(), Arg.Any<Recipient>(), Arg.Any<MatchInfo>());
+        recipientTicketsService.Received(mailCount).CreditTickets(Arg.Any<string>(), string.Empty, Arg.Any<IReadOnlyCollection<TicketInfo>>(), Arg.Any<Recipient>(), Arg.Any<MatchInfo>());
+        recipientTicketsService.Received(mailCount).DepositTickets(Arg.Any<string>(), string.Empty, Arg.Any<IReadOnlyCollection<TicketInfo>>(), Arg.Any<Recipient>(), Arg.Any<MatchInfo>());
     }
 }

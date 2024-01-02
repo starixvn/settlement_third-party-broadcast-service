@@ -2,6 +2,7 @@
 
 using Criteria.VirtualSports;
 using Fanex.Settlement.ScaleOut.Request;
+using Microsoft.Extensions.Options;
 using ThirdPartyBroadcast.Consumer.Services;
 
 public class VirtualSportsServiceTests
@@ -22,14 +23,20 @@ public class VirtualSportsServiceTests
         scaleOutSettleThirdPartyService = Substitute.For<ScaleOutSettleThirdPartyService>();
         repository = Substitute.For<IDynamicRepository>();
         logDirectlyService = Substitute.For<LogDirectlyService>();
-        var ticketSettleService = Substitute.For<TicketSettleService>();
+        var matchService = Substitute.For<MatchService>();
         var announcementService = Substitute.For<AnnouncementService>();
 
         var mapperConfig = new MapperConfigurationExpression();
         mapperConfig.AddProfile<ThirdPartyBroadcastMappingProfile>();
         var config = new MapperConfiguration(mapperConfig);
         var mapper = new Mapper(config);
-        service = new VirtualSportsServiceImp(scaleOutSettleThirdPartyService, repository, mapper, calculateService, logDirectlyService, announcementService, ticketSettleService);
+
+        var appSettingsKey = new AppSettingsKey { SiteDbServer = new List<string> { "01", "02" }, MailFunction = new MailFunction { VirtualSport = new MailInfo { CreditMailId = 103 } } };
+        var options = Options.Create(appSettingsKey);
+
+        var sendMailService = Substitute.For<SendMailService>();
+
+        service = new VirtualSportsServiceImp(matchService, mapper, calculateService, announcementService, sendMailService, options);
     }
 
     [Theory]
@@ -48,7 +55,6 @@ public class VirtualSportsServiceTests
 
         await service.Settle(request);
 
-        //Assert
         await calculateService.Received().Execute(Arg.Any<VirtualSportsCriteria>());
         await repository.Received().ExecuteAsync(Arg.Any<VirtualSportsUpdateMatchCriteria>());
         await scaleOutSettleThirdPartyService.Received()

@@ -8,6 +8,7 @@ using Fanex.Logging.Extensions.AspNetCore;
 using Fanex.Logging.Extensions.Database;
 using Fanex.Logging.Sentry.RavenClient;
 using Fanex.MailDeliver.MailClient;
+using Fanex.MailDelivery.Client;
 using Fanex.RemotingRef;
 using Fanex.Settlement.Converter.Services;
 using Fanex.Settlement.ScaleOut;
@@ -57,10 +58,9 @@ public static class BroadcastConsumerInjection
         service.AddSingleton<SendMailService, SendMailServiceImp>();
         service.AddSingleton<RecipientTicketsService, RecipientTicketsServiceImp>();
         service.AddSingleton<PinGoalService, PinGoalServiceImp>();
-        service.AddTransient<TicketSettleService, TicketSettleServiceImp>();
         service.AddTransient<AnnouncementService, AnnouncementServiceImp>();
         service.AddTransient<MessageAnnouncementService, MessageAnnouncementServiceImp>();
-
+        service.AddTransient<MatchService, MatchServiceImp>();
         service.AddSingleton<IMaintenanceService, MaintenanceServiceImp>();
         service.AddSingleton(new UMClientConfiguration().Initialize(configuration));
         service.AddSingleton<IUMCacheService, UMCacheService>();
@@ -77,6 +77,10 @@ public static class BroadcastConsumerInjection
             .FromApplication("Settlement");
         service.AddSingleton<IRemotingRefService, RemotingRefService>();
         service.AddTransient<RefDataService, RefDataServiceImp>();
+
+        AppSettings.AppMailId = configuration.GetSection("MailServer:Id").Value;
+        AppSettings.AppMailAddress = configuration.GetSection("MailServer:Address").Value;
+        MailClientHandler.StartAsync();
     }
 
     private static void ConfigureAutoMapper(this IServiceCollection service)
@@ -129,9 +133,6 @@ public static class BroadcastConsumerInjection
         ExceptionHandler
             .UseConfig(new LoggingConfiguration())
             .UseGetDbExceptionInfo(DatabaseInfoGetters.GetDbExceptionInfo);
-
-        AppSettings.AppMailId = configuration.GetSection("MailServer:Id").Value;
-        AppSettings.AppMailAddress = configuration.GetSection("MailServer:Address").Value;
     }
 
     private static void ConfigureMassTransit(this IServiceCollection service, IConfiguration configuration)

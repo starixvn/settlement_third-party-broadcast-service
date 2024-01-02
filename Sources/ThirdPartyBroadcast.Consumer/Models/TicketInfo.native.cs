@@ -10,7 +10,7 @@ public class TicketInfo
 
     public string Username { get; set; }
 
-    public string TransDate { get; set; }
+    public DateTime TransDate { get; set; }
 
     public string SiteName { get; set; }
 

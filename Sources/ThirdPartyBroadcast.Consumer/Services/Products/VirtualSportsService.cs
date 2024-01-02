@@ -1,7 +1,10 @@
 ﻿namespace ThirdPartyBroadcast.Consumer.Services.Products;
 
 using Criteria.VirtualSports;
+using Microsoft.Extensions.Options;
+using Models;
 using System;
+using System.Collections.Generic;
 
 public interface VirtualSportsService
 {
@@ -10,47 +13,44 @@ public interface VirtualSportsService
 
 public class VirtualSportsServiceImp : VirtualSportsService
 {
-    private readonly ScaleOutSettleThirdPartyService scaleOutSettleThirdPartyService;
-
-    private readonly IDynamicRepository repository;
+    private readonly MatchService matchService;
 
     private readonly IMapper mapper;
 
     private readonly CalculateService calculateService;
 
-    private readonly LogDirectlyService logDirectlyService;
-
-    private readonly TicketSettleService ticketSettleService;
-
     private readonly AnnouncementService announcementService;
 
+    private readonly SendMailService sendMailService;
+
+    private readonly AppSettingsKey appSettingsKey;
+
+    private const string Subject = "Virtual Sports";
+
     public VirtualSportsServiceImp(
-        ScaleOutSettleThirdPartyService scaleOutSettleThirdPartyService,
-        IDynamicRepository repository,
+        MatchService matchService,
         IMapper mapper,
         CalculateService calculateService,
-        LogDirectlyService logDirectlyService,
         AnnouncementService announcementService,
-        TicketSettleService ticketSettleService)
+        SendMailService sendMailService,
+        IOptions<AppSettingsKey> appSettingsKey)
     {
-        this.scaleOutSettleThirdPartyService = scaleOutSettleThirdPartyService;
-        this.repository = repository;
+        this.matchService = matchService;
         this.mapper = mapper;
         this.calculateService = calculateService;
-        this.logDirectlyService = logDirectlyService;
         this.announcementService = announcementService;
-        this.ticketSettleService = ticketSettleService;
+        this.sendMailService = sendMailService;
+        this.appSettingsKey = appSettingsKey.Value;
     }
 
     public async Task<Result> Settle(VirtualSoccerRequest request)
     {
-        var matchInfo = await GetMatchInfo(request.MatchId);
-        var currentTickets = await ticketSettleService.GetTicketsByAction(request.MatchId, request.Action);
+        var matchInfo = await matchService.GetMatchInfoVirtualSports(request.MatchId);
+        var currentTickets = await matchService.GetTicketsByAction(request.MatchId, request.Action);
 
-        await UpdateMatchInfo(request);
+        await matchService.UpdateMatchInfoVirtualSports(request);
 
-        var message = GenerateMessageLog(request);
-        await logDirectlyService.WriteLog(request.MatchId, message);
+        await matchService.WriteLogVirtualSports(request);
 
         var result = await HandleSettle(currentTickets, matchInfo, request);
 
@@ -71,53 +71,77 @@ public class VirtualSportsServiceImp : VirtualSportsService
 
     private async Task SendMail(string action, MatchInfo matchInfo)
     {
-        var eventStatusChecking = !string.IsNullOrWhiteSpace(matchInfo.EventStatus) &&
-                                  string.Equals(matchInfo.EventStatus.ToLowerInvariant(), EventStatus.Completed);
-
-        if (string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase) || eventStatusChecking)
+        if (IsReSettleOrRefund(action, matchInfo.EventStatus))
         {
-            var criteria = new VirtualSportsTicketCriteria { MatchId = matchInfo.MatchId };
-            var (creditTickets, depositTickets) = await repository.FetchMultipleAsync<TicketInfo, TicketInfo>(criteria);
+            var (creditTickets, depositTickets) = await matchService.GetAllTicketsVirtualSports(matchInfo.MatchId);
 
-            var actionName = string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase)
-                ? ActionName.Refund
-                : ActionName.ReSettle;
-
-            recipientTicketsService.CreditTickets(actionName, creditTickets.ToList(), recipients, matchInfo);
-            recipientTicketsService.DepositTickets(actionName, depositTickets.ToList(), recipients, matchInfo);
+            var actionName = GetActionName(action);
+            await RecipientGroupCredit(actionName, matchInfo, creditTickets.ToList());
+            await RecipientGroupDeposit(actionName, matchInfo, depositTickets.ToList());
         }
     }
 
-    private async Task<MatchInfo> GetMatchInfo(int matchId)
+    private async Task RecipientGroupCredit(string actionName, MatchInfo matchInfo, IReadOnlyCollection<TicketInfo> ticketsInfo)
     {
-        var matchInfo = await repository.GetAsync<MatchInfo>(new VirtualSportsGetMatchInfoCriteria { MatchId = matchId });
-        matchInfo.MatchId = matchId;
+        if (ticketsInfo.Count < 1)
+        {
+            return;
+        }
 
-        return matchInfo;
+        var mailId = appSettingsKey.MailFunction.VirtualSport.CreditMailId;
+        var mailModel = new NotificationModel
+        {
+            Subject = Subject,
+            MatchInfo = matchInfo,
+            Action = actionName,
+            Type = EmailType.Credit,
+            MailId = mailId,
+            TicketsInfo = ticketsInfo,
+            TotalTickets = ticketsInfo.Count()
+        };
+
+        await sendMailService.SendMailByFunctionId(mailModel);
     }
 
-    private static string GenerateMessageLog(VirtualSoccerRequest request)
-        => $"NAP: Calculate {request.Action} for matchId: {request.MatchId} score: {request.Fth}-{request.Fta}";
-
-    private async Task UpdateMatchInfo(VirtualSoccerRequest request)
+    private async Task RecipientGroupDeposit(string actionName, MatchInfo matchInfo, IReadOnlyCollection<TicketInfo> ticketsInfo)
     {
-        var updateInfoRequest = mapper.Map<VirtualSoccerRequest, UpdateMatchInfo3RdRequest>(request);
-        var criteria = mapper.Map<VirtualSoccerRequest, VirtualSportsUpdateMatchCriteria>(request);
-
-        if (string.Equals(request.Action, ActionName.Calculate, StringComparison.OrdinalIgnoreCase))
+        if (ticketsInfo.Count < 1)
         {
-            updateInfoRequest.FTAway = request.Fta;
-            updateInfoRequest.FTHome = request.Fth;
-            criteria.Command = "C";
-            updateInfoRequest.Command = $"{SpName.VirtualSports}-CAL";
-        }
-        else
-        {
-            criteria.Command = "F";
-            updateInfoRequest.Command = $"{SpName.VirtualSports}-REFUND";
+            return;
         }
 
-        await scaleOutSettleThirdPartyService.UpdateMatchInfo3rd(updateInfoRequest);
-        await repository.ExecuteAsync(criteria);
+        var tickets = SplitTicketByLicensee(ticketsInfo).ToList();
+        var mailId = appSettingsKey.MailFunction.VirtualSport.DepositMailId;
+
+        var mailModel = new NotificationModel
+        {
+            Subject = Subject,
+            MatchInfo = matchInfo,
+            Action = actionName,
+            Type = EmailType.Deposit,
+            MailId = mailId,
+            TicketsInfo = tickets,
+            TotalTickets = ticketsInfo.Count()
+        };
+
+        await sendMailService.SendMailByFunctionId(mailModel);
     }
+
+    private static IEnumerable<TicketInfo> SplitTicketByLicensee(IReadOnlyCollection<TicketInfo> ticketInfos)
+    {
+        var distinctLicensees = ticketInfos.Select(ticket => ticket.SiteName).Distinct();
+
+        return distinctLicensees.Select(licensee => new TicketInfo
+        {
+            TicketsInfo = ticketInfos.Where(ticket => ticket.SiteName == licensee).ToList()
+        });
+    }
+
+    private static bool IsReSettleOrRefund(string action, string eventStatus) =>
+        (!string.IsNullOrWhiteSpace(eventStatus) && string.Equals(eventStatus.ToLowerInvariant(), EventStatus.Completed))
+        || string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase);
+
+    private static string GetActionName(string action) => string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase)
+        ? ActionName.Refund
+        : ActionName.ReSettle;
 }

@@ -23,7 +23,7 @@ public class LeapGamingServiceImp : LeapGamingService
 
     private readonly RecipientTicketsService recipientTicketsService;
 
-    private readonly TicketSettleService ticketSettleService;
+    private readonly MatchService matchService;
 
     private readonly AnnouncementService announcementService;
 
@@ -37,7 +37,7 @@ public class LeapGamingServiceImp : LeapGamingService
         LogDirectlyService logDirectlyService,
         IDynamicRepository repository,
         RecipientTicketsService recipientTicketsService,
-        TicketSettleService ticketSettleService,
+        MatchService matchService,
         AnnouncementService announcementService)
     {
         this.mapper = mapper;
@@ -45,7 +45,7 @@ public class LeapGamingServiceImp : LeapGamingService
         this.logDirectlyService = logDirectlyService;
         this.repository = repository;
         this.recipientTicketsService = recipientTicketsService;
-        this.ticketSettleService = ticketSettleService;
+        this.matchService = matchService;
         this.announcementService = announcementService;
     }
 
@@ -58,7 +58,7 @@ public class LeapGamingServiceImp : LeapGamingService
         }
 
         var currentMatchInfo = await MatchStatus(request.MatchId);
-        var currentTickets = await ticketSettleService.GetTicketsByAction(request.MatchId, request.Action);
+        var currentTickets = await matchService.GetTicketsByAction(request.MatchId, request.Action);
 
         await UpdateMatchInfo(request);
 
@@ -153,10 +153,7 @@ public class LeapGamingServiceImp : LeapGamingService
     private async Task<MatchInfo> MatchStatus(int matchId)
     {
         var criteria = new LeapGamingGetMatchInfoCriteria { MatchId = matchId };
-        var match = await repository.GetAsync<MatchInfo>(criteria) ?? new MatchInfo();
-        match.MatchId = matchId;
-
-        return match;
+        return await repository.GetAsync<MatchInfo>(criteria);
     }
 
     private async Task SendMail(string action, MatchInfo matchInfo)
@@ -174,8 +171,9 @@ public class LeapGamingServiceImp : LeapGamingService
                 ? ActionName.Refund
                 : ActionName.ReSettle;
 
-            recipientTicketsService.CreditTickets(actionName, creditTickets.ToList(), recipients, matchInfo);
-            recipientTicketsService.DepositTickets(actionName, depositTickets.ToList(), recipients, matchInfo);
+            const string subject = "Virtual Sports 3";
+            recipientTicketsService.CreditTickets(actionName, subject, creditTickets.ToList(), recipients, matchInfo);
+            recipientTicketsService.DepositTickets(actionName, subject, depositTickets.ToList(), recipients, matchInfo);
         }
     }
 

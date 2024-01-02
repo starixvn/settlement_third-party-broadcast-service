@@ -14,25 +14,25 @@ public class AnnouncementServiceImp : AnnouncementService
 
     private readonly XmlConvertService xmlConvertService;
 
-    private readonly TicketSettleService ticketSettleService;
+    private readonly MatchService matchService;
 
     private readonly MessageAnnouncementService messageAnnouncementService;
 
     public AnnouncementServiceImp(
         IDynamicRepository repository,
         XmlConvertService xmlConvertService,
-        TicketSettleService ticketSettleService,
+        MatchService matchService,
         MessageAnnouncementService messageAnnouncementService)
     {
         this.repository = repository;
         this.xmlConvertService = xmlConvertService;
-        this.ticketSettleService = ticketSettleService;
+        this.matchService = matchService;
         this.messageAnnouncementService = messageAnnouncementService;
     }
 
     public async Task Handle(List<TicketSettleInfo> currentTickets, MatchInfo matchInfo, int adminId)
     {
-        var settledTickets = await ticketSettleService.GetTicketsByTransIds(matchInfo.MatchId, currentTickets);
+        var settledTickets = await matchService.GetTicketsByTransIds(matchInfo.MatchId, currentTickets);
 
         if (settledTickets.Count > 0)
         {

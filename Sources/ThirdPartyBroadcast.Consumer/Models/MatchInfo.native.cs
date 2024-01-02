@@ -12,7 +12,7 @@ public class MatchInfo
 
     public int SportType { get; set; }
 
-    public string SportName { get; set; }
+    public string SportName => RefDataService.GetSportName(SportType, ContentLanguage.English);
 
     public DateTime KickOffTime { get; set; }
 

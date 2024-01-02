@@ -2,13 +2,11 @@
 
 public interface RecipientTicketsService
 {
-    void CreditTickets(string actionName, IReadOnlyCollection<TicketInfo> ticketInfos, Recipient recipient,
+    void CreditTickets(string actionName, string subject, IReadOnlyCollection<TicketInfo> ticketInfos, Recipient recipient,
         MatchInfo matchInfos);
 
-    void DepositTickets(string actionName, IReadOnlyCollection<TicketInfo> ticketInfos, Recipient recipient,
+    void DepositTickets(string actionName, string subject, IReadOnlyCollection<TicketInfo> ticketInfos, Recipient recipient,
         MatchInfo matchInfos);
-
-    void CreditTickets(string actionName, int functionId, IReadOnlyCollection<TicketInfo> ticketInfos, MatchInfo matchInfos);
 }
 
 public class RecipientTicketsServiceImp : RecipientTicketsService
@@ -20,7 +18,7 @@ public class RecipientTicketsServiceImp : RecipientTicketsService
         this.sendMailService = sendMailService;
     }
 
-    public void CreditTickets(string actionName, IReadOnlyCollection<TicketInfo> ticketsInfo, Recipient recipient, MatchInfo matchInfos)
+    public void CreditTickets(string actionName, string subject, IReadOnlyCollection<TicketInfo> ticketsInfo, Recipient recipient, MatchInfo matchInfos)
     {
         if (ticketsInfo.Count < 1)
         {
@@ -29,6 +27,7 @@ public class RecipientTicketsServiceImp : RecipientTicketsService
 
         var mailModel = new NotificationModel
         {
+            Subject = subject,
             MatchInfo = matchInfos,
             Action = actionName,
             To = recipient.CreditRecipients,
@@ -41,7 +40,7 @@ public class RecipientTicketsServiceImp : RecipientTicketsService
         sendMailService.SendMail(mailModel);
     }
 
-    public void DepositTickets(string actionName, IReadOnlyCollection<TicketInfo> ticketsInfo, Recipient recipient, MatchInfo matchInfos)
+    public void DepositTickets(string actionName, string subject, IReadOnlyCollection<TicketInfo> ticketsInfo, Recipient recipient, MatchInfo matchInfos)
     {
         if (ticketsInfo.Count < 1)
         {
@@ -52,6 +51,7 @@ public class RecipientTicketsServiceImp : RecipientTicketsService
 
         var mailModel = new NotificationModel
         {
+            Subject = subject,
             MatchInfo = matchInfos,
             Action = actionName,
             To = recipient.DepositRecipients,
@@ -72,37 +72,5 @@ public class RecipientTicketsServiceImp : RecipientTicketsService
         {
             TicketsInfo = ticketInfos.Where(ticket => ticket.SiteName == licensee).ToList()
         });
-    }
-
-    public void CreditTickets(string actionName, int functionId, IReadOnlyCollection<TicketInfo> ticketInfos, MatchInfo matchInfo)
-    {
-        //if (ticketInfos.Count < 1)
-        //{
-        //    return;
-        //}
-
-        //var tickets = new List<TicketModel> {
-        //    new()
-        //    {
-        //        TicketInfos = ticketInfos.ToList()
-        //    }
-        //};
-
-        //SendMail(actionName, EmailType.Credit, tickets, matchInfo);
-    }
-
-    private void SendMail(string actionName, string type, IReadOnlyCollection<TicketInfo> tickets, MatchInfo matchInfo)
-    {
-        //matchInfo.TotalTickets = tickets.SelectMany(i => i.TicketInfos).Distinct().Count();
-
-        //var mailModel = new NotificationModel
-        //{
-        //    MatchInfo = matchInfo,
-        //    Action = actionName,
-        //    Type = type,
-        //    Tickets = tickets
-        //};
-
-        //sendMailService.SendMail(mailModel);
     }
 }
