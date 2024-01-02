@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="appsettings.KLDR.json" />
     <None Remove="appsettings.PROD.json" />
     <None Remove="appsettings.SIT.json" />
     <None Remove="appsettings.UAT.json" />
@@ -16,6 +17,9 @@
   </ItemGroup>
 	
   <ItemGroup>
+    <Content Include="appsettings.KLDR.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="appsettings.LOCAL.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
