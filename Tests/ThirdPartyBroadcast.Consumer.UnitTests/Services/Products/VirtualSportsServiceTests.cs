@@ -1,7 +1,6 @@
 ﻿namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products;
 
 using Criteria.VirtualSports;
-using Fanex.Settlement.ScaleOut.Request;
 using Microsoft.Extensions.Options;
 using ThirdPartyBroadcast.Consumer.Services;
 
@@ -9,21 +8,14 @@ public class VirtualSportsServiceTests
 {
     private readonly CalculateService calculateService;
 
-    private readonly ScaleOutSettleThirdPartyService scaleOutSettleThirdPartyService;
-
-    private readonly IDynamicRepository repository;
-
     private readonly VirtualSportsService service;
 
-    private readonly LogDirectlyService logDirectlyService;
+    private readonly MatchService matchService;
 
     public VirtualSportsServiceTests()
     {
         calculateService = Substitute.For<CalculateService>();
-        scaleOutSettleThirdPartyService = Substitute.For<ScaleOutSettleThirdPartyService>();
-        repository = Substitute.For<IDynamicRepository>();
-        logDirectlyService = Substitute.For<LogDirectlyService>();
-        var matchService = Substitute.For<MatchService>();
+        matchService = Substitute.For<MatchService>();
         var announcementService = Substitute.For<AnnouncementService>();
 
         var mapperConfig = new MapperConfigurationExpression();
@@ -51,14 +43,13 @@ public class VirtualSportsServiceTests
             Fth = home
         };
 
-        repository.GetAsync<MatchInfo>(Arg.Any<VirtualSportsGetMatchInfoCriteria>()).Returns(new MatchInfo { MatchId = request.MatchId });
+        matchService.GetMatchInfoVirtualSports(Arg.Any<int>()).Returns(new MatchInfo { MatchId = request.MatchId, EventStatus = string.Empty });
+        matchService.GetAllTicketsVirtualSports(Arg.Any<int>()).Returns((new List<TicketInfo>(), new List<TicketInfo>()));
 
         await service.Settle(request);
 
         await calculateService.Received().Execute(Arg.Any<VirtualSportsCriteria>());
-        await repository.Received().ExecuteAsync(Arg.Any<VirtualSportsUpdateMatchCriteria>());
-        await scaleOutSettleThirdPartyService.Received()
-            .UpdateMatchInfo3rd(Arg.Is<UpdateMatchInfo3RdRequest>(item => item.Command == command && item.FTAway == away && item.FTHome == home));
-        await logDirectlyService.Received().WriteLog(Arg.Any<int>(), Arg.Any<string>());
+        await matchService.Received().UpdateMatchInfoVirtualSports(Arg.Any<VirtualSoccerRequest>());
+        await matchService.Received().WriteLogVirtualSports(Arg.Any<VirtualSoccerRequest>());
     }
 }

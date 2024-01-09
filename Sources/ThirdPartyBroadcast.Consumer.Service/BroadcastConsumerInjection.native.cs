@@ -56,7 +56,6 @@ public static class BroadcastConsumerInjection
         service.AddSingleton<VirtualSportsService, VirtualSportsServiceImp>();
         service.AddSingleton<LeapGamingService, LeapGamingServiceImp>();
         service.AddSingleton<SendMailService, SendMailServiceImp>();
-        service.AddSingleton<RecipientTicketsService, RecipientTicketsServiceImp>();
         service.AddSingleton<PinGoalService, PinGoalServiceImp>();
         service.AddTransient<AnnouncementService, AnnouncementServiceImp>();
         service.AddTransient<MessageAnnouncementService, MessageAnnouncementServiceImp>();

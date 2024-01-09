@@ -97,7 +97,7 @@ public class VirtualSportsServiceImp : VirtualSportsService
             Type = EmailType.Credit,
             MailId = mailId,
             TicketsInfo = ticketsInfo,
-            TotalTickets = ticketsInfo.Count()
+            TotalTickets = ticketsInfo.Count
         };
 
         await sendMailService.SendMailByFunctionId(mailModel);
@@ -121,7 +121,7 @@ public class VirtualSportsServiceImp : VirtualSportsService
             Type = EmailType.Deposit,
             MailId = mailId,
             TicketsInfo = tickets,
-            TotalTickets = ticketsInfo.Count()
+            TotalTickets = ticketsInfo.Count
         };
 
         await sendMailService.SendMailByFunctionId(mailModel);

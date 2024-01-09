@@ -21,13 +21,15 @@ public class LeapGamingServiceImp : LeapGamingService
 
     private readonly IDynamicRepository repository;
 
-    private readonly RecipientTicketsService recipientTicketsService;
+    private readonly SendMailService sendMailService;
 
     private readonly MatchService matchService;
 
     private readonly AnnouncementService announcementService;
 
     private const int ErrorCodeNotExistValue = 1_000_003;
+
+    private const string Subject = "Virtual Sports 3";
 
     private const string ErrorMsgNotExistValue = "The input score values are not valid!";
 
@@ -36,7 +38,7 @@ public class LeapGamingServiceImp : LeapGamingService
         CalculateService calculateService,
         LogDirectlyService logDirectlyService,
         IDynamicRepository repository,
-        RecipientTicketsService recipientTicketsService,
+        SendMailService sendMailService,
         MatchService matchService,
         AnnouncementService announcementService)
     {
@@ -44,7 +46,7 @@ public class LeapGamingServiceImp : LeapGamingService
         this.calculateService = calculateService;
         this.logDirectlyService = logDirectlyService;
         this.repository = repository;
-        this.recipientTicketsService = recipientTicketsService;
+        this.sendMailService = sendMailService;
         this.matchService = matchService;
         this.announcementService = announcementService;
     }
@@ -158,24 +160,82 @@ public class LeapGamingServiceImp : LeapGamingService
 
     private async Task SendMail(string action, MatchInfo matchInfo)
     {
-        var eventStatusChecking = !string.IsNullOrWhiteSpace(matchInfo.EventStatus) &&
-                                  string.Equals(matchInfo.EventStatus.ToLowerInvariant(), EventStatus.Completed);
-
-        if (string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase) || eventStatusChecking)
+        if (IsReSettleOrRefund(action, matchInfo.EventStatus))
         {
             var criteria = new LeapGamingTicketCriteria { MatchId = matchInfo.MatchId };
             var (creditTickets, depositTickets) = await repository.FetchMultipleAsync<TicketInfo, TicketInfo>(criteria);
 
             var recipients = await GetRecipients();
-            var actionName = string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase)
-                ? ActionName.Refund
-                : ActionName.ReSettle;
+            var actionName = GetActionName(action);
 
-            const string subject = "Virtual Sports 3";
-            recipientTicketsService.CreditTickets(actionName, subject, creditTickets.ToList(), recipients, matchInfo);
-            recipientTicketsService.DepositTickets(actionName, subject, depositTickets.ToList(), recipients, matchInfo);
+            CreditTickets(actionName, Subject, creditTickets.ToList(), recipients, matchInfo);
+            DepositTickets(actionName, Subject, depositTickets.ToList(), recipients, matchInfo);
         }
     }
+
+    private void CreditTickets(string actionName, string subject, IReadOnlyCollection<TicketInfo> ticketsInfo, Recipient recipient, MatchInfo matchInfos)
+    {
+        if (ticketsInfo.Count < 1)
+        {
+            return;
+        }
+
+        var mailModel = new NotificationModel
+        {
+            Subject = subject,
+            MatchInfo = matchInfos,
+            Action = actionName,
+            To = recipient.CreditRecipients,
+            Copy = recipient.CopyRecipients,
+            Type = EmailType.Credit,
+            TicketsInfo = ticketsInfo,
+            TotalTickets = ticketsInfo.Count()
+        };
+
+        sendMailService.SendMail(mailModel);
+    }
+
+    private void DepositTickets(string actionName, string subject, IReadOnlyCollection<TicketInfo> ticketsInfo, Recipient recipient, MatchInfo matchInfos)
+    {
+        if (ticketsInfo.Count < 1)
+        {
+            return;
+        }
+
+        var tickets = SplitTicketByLicensee(ticketsInfo).ToList();
+
+        var mailModel = new NotificationModel
+        {
+            Subject = subject,
+            MatchInfo = matchInfos,
+            Action = actionName,
+            To = recipient.DepositRecipients,
+            Copy = recipient.CopyRecipients,
+            Type = EmailType.Deposit,
+            TicketsInfo = tickets,
+            TotalTickets = ticketsInfo.Count()
+        };
+
+        sendMailService.SendMail(mailModel);
+    }
+
+    private static IEnumerable<TicketInfo> SplitTicketByLicensee(IReadOnlyCollection<TicketInfo> ticketInfos)
+    {
+        var distinctLicensees = ticketInfos.Select(ticket => ticket.SiteName).Distinct();
+
+        return distinctLicensees.Select(licensee => new TicketInfo
+        {
+            TicketsInfo = ticketInfos.Where(ticket => ticket.SiteName == licensee).ToList()
+        });
+    }
+
+    private static bool IsReSettleOrRefund(string action, string eventStatus) =>
+        (!string.IsNullOrWhiteSpace(eventStatus) && string.Equals(eventStatus.ToLowerInvariant(), EventStatus.Completed))
+        || string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase);
+
+    private static string GetActionName(string action) => string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase)
+        ? ActionName.Refund
+        : ActionName.ReSettle;
 
     private async Task<Recipient> GetRecipients()
     {

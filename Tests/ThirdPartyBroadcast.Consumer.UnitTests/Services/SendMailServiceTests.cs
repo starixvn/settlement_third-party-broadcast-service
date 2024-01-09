@@ -15,9 +15,13 @@ public class SendMailServiceTests
             .SetBasePath(AppContext.BaseDirectory)
             .AddJsonFile("appsettings.json", false, true)
             .Build();
-        RefDataTypeContainer
-            .ConnectTo(new Uri(configuration.GetSection("Fanex.RemotingRef.Service.Url").Value))
-            .FromApplication("Settlement");
+        var remotingRefUrl = configuration.GetSection("Fanex.RemotingRef.Service.Url").Value;
+        if (remotingRefUrl != null)
+        {
+            RefDataTypeContainer
+                .ConnectTo(new Uri(remotingRefUrl))
+                .FromApplication("Settlement");
+        }
 
         MailClientHandler.StartAsync("appsettings.json");
         service = new SendMailServiceImp();
