@@ -26,35 +26,29 @@ public class CalculateServiceImp : CalculateService
 
     public async Task<Result> Execute(CalculateCriteria criteria)
     {
-        var results = new List<Result>();
-        foreach (var server in appSettingsKey.SiteDbServer)
-        {
-            criteria.DbServer = server;
-            await repository.ExecuteAsync(criteria);
-            results = ResultMessage(results, server, criteria);
-        }
-
+        var tasks = appSettingsKey
+            .SiteDbServer
+            .Select(s => CalculateByServer(s, criteria))
+            .ToList();
+        var results = await Task.WhenAll(tasks.ToArray());
+        var resultFailed = results.Where(r => r.ErrorCode > 0).ToList();
         return new Result
         {
-            ErrorCode = results.Count,
-            ErrorMessage = string.Join(" | ", results.Select(r => r.ErrorMessage).ToArray())
+            ErrorCode = resultFailed.Count,
+            ErrorMessage = string.Join(" | ", resultFailed.Select(r => r.ErrorMessage).ToArray())
         };
     }
 
-    private static List<Result> ResultMessage(List<Result> results, string server, CalculateCriteria criteria)
+    private async Task<Result> CalculateByServer(string server, CalculateCriteria criteria)
     {
-        if (criteria.ErrCode > 0)
+        criteria.DbServer = server;
+        await repository.ExecuteAsync(criteria);
+
+        return new Result
         {
-            var result = new Result
-            {
-                ErrorCode = criteria.ErrCode,
-                ErrorMessage = $"{server}: {criteria.ErrCode} - {criteria.ErrMsg}"
-            };
-
-            results.Add(result);
-        }
-
-        return results;
+            ErrorCode = criteria.ErrCode,
+            ErrorMessage = $"{server}: {criteria.ErrCode} - {criteria.ErrMsg}"
+        };
     }
 
     public async Task<Result> ExecuteValidationMultiServer(BaseCriteria criteria)
