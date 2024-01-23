@@ -7,7 +7,7 @@ public class LeapGamingServiceTests
 {
     private readonly CalculateService calculateService;
 
-    private readonly LogDirectlyService logDirectlyService;
+    private readonly MatchService matchService;
 
     private readonly IDynamicRepository repository;
 
@@ -16,10 +16,9 @@ public class LeapGamingServiceTests
     public LeapGamingServiceTests()
     {
         calculateService = Substitute.For<CalculateService>();
-        logDirectlyService = Substitute.For<LogDirectlyService>();
         repository = Substitute.For<IDynamicRepository>();
         var sendMailService = Substitute.For<SendMailService>();
-        var matchService = Substitute.For<MatchService>();
+        matchService = Substitute.For<MatchService>();
         var announcementService = Substitute.For<AnnouncementService>();
 
         var mapperConfig = new MapperConfigurationExpression();
@@ -27,7 +26,12 @@ public class LeapGamingServiceTests
         var config = new MapperConfiguration(mapperConfig);
         var mapper = new Mapper(config);
 
-        service = new LeapGamingServiceImp(mapper, calculateService, logDirectlyService, repository, sendMailService, matchService, announcementService);
+        service = new LeapGamingServiceImp(mapper, calculateService, repository, sendMailService, matchService, announcementService);
+    }
+
+    public LeapGamingServiceTests(LeapGamingService service)
+    {
+        this.service = service;
     }
 
     [Fact]
@@ -42,7 +46,7 @@ public class LeapGamingServiceTests
     [Fact]
     public async Task Settle_ValidationPassed_UpdateAndSettleMatch()
     {
-        repository.GetAsync<MatchInfo>(Arg.Any<LeapGamingGetMatchInfoCriteria>()).Returns(new MatchInfo());
+        matchService.GetMatchInfoLeapGaming(Arg.Any<int>()).Returns(new MatchInfo());
         calculateService.Execute(Arg.Any<LeapGamingCriteria>()).Returns(new Result());
 
         var fakeData = new IEnumerable<object>[3];
@@ -60,8 +64,8 @@ public class LeapGamingServiceTests
             SelectedResources = "<Resources> <Resource Id=\"00\" Home=\"1\" Away=\"1\"/> <Resource Id=\"01\" Home=\"1\" Away=\"1\"/></Resources>"
         });
 
-        await repository.Received().ExecuteAsync(Arg.Any<UpdateMatchCriteria>());
-        await logDirectlyService.Received().WriteLog(1, string.Empty);
+        await matchService.Received().UpdateMatchInfoLeapGaming(Arg.Any<LeapGamingRequest>());
+        await matchService.Received().WriteLogLeapGaming(1);
         await calculateService.Received().Execute(Arg.Any<LeapGamingCriteria>());
     }
 }

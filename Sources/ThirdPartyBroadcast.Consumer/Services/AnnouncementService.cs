@@ -8,28 +8,13 @@ public interface AnnouncementService
     Task Handle(List<TicketSettleInfo> currentTickets, MatchInfo matchInfo, int adminId);
 }
 
-public class AnnouncementServiceImp : AnnouncementService
+public class AnnouncementServiceImp(
+    IDynamicRepository repository,
+    XmlConvertService xmlConvertService,
+    MatchService matchService,
+    MessageAnnouncementService messageAnnouncementService)
+    : AnnouncementService
 {
-    private readonly IDynamicRepository repository;
-
-    private readonly XmlConvertService xmlConvertService;
-
-    private readonly MatchService matchService;
-
-    private readonly MessageAnnouncementService messageAnnouncementService;
-
-    public AnnouncementServiceImp(
-        IDynamicRepository repository,
-        XmlConvertService xmlConvertService,
-        MatchService matchService,
-        MessageAnnouncementService messageAnnouncementService)
-    {
-        this.repository = repository;
-        this.xmlConvertService = xmlConvertService;
-        this.matchService = matchService;
-        this.messageAnnouncementService = messageAnnouncementService;
-    }
-
     public async Task Handle(List<TicketSettleInfo> currentTickets, MatchInfo matchInfo, int adminId)
     {
         var settledTickets = await matchService.GetTicketsByTransIds(matchInfo.MatchId, currentTickets);

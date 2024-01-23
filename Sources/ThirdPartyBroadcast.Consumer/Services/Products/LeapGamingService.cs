@@ -14,7 +14,6 @@ public interface LeapGamingService
 public class LeapGamingServiceImp(
     IMapper mapper,
     CalculateService calculateService,
-    LogDirectlyService logDirectlyService,
     IDynamicRepository repository,
     SendMailService sendMailService,
     MatchService matchService,
@@ -35,13 +34,12 @@ public class LeapGamingServiceImp(
             return validationResult;
         }
 
-        var currentMatchInfo = await MatchStatus(request.MatchId);
+        var currentMatchInfo = await matchService.GetMatchInfoLeapGaming(request.MatchId);
         var currentTickets = await matchService.GetTicketsByAction(request.MatchId, request.Action);
 
-        await UpdateMatchInfo(request);
+        await matchService.UpdateMatchInfoLeapGaming(request);
 
-        var message = logDirectlyService.Message(request.MatchId);
-        await logDirectlyService.WriteLog(request.MatchId, message);
+        await matchService.WriteLogLeapGaming(request.MatchId);
 
         var result = await HandleSettle(currentTickets, currentMatchInfo, request);
 
@@ -86,13 +84,6 @@ public class LeapGamingServiceImp(
         return criteria;
     }
 
-    private async Task UpdateMatchInfo(LeapGamingRequest request)
-    {
-        var requestUpdate = mapper.Map<LeapGamingRequest, UpdateMatchCriteria>(request);
-        requestUpdate.Command = EventStatus.Completed;
-        await repository.ExecuteAsync(requestUpdate);
-    }
-
     private static Result ValidateMatchScore(LeapGamingRequest request)
     {
         try
@@ -126,12 +117,6 @@ public class LeapGamingServiceImp(
         using var sr = new StringReader(selectedResourced);
 
         return (ResourcesModel)serializer.Deserialize(sr);
-    }
-
-    private async Task<MatchInfo> MatchStatus(int matchId)
-    {
-        var criteria = new LeapGamingGetMatchInfoCriteria { MatchId = matchId };
-        return await repository.GetAsync<MatchInfo>(criteria);
     }
 
     private async Task SendMail(string action, MatchInfo matchInfo)
