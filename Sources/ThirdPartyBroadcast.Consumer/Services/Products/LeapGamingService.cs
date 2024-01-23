@@ -11,45 +11,21 @@ public interface LeapGamingService
     Task<Result> Settle(LeapGamingRequest request);
 }
 
-public class LeapGamingServiceImp : LeapGamingService
+public class LeapGamingServiceImp(
+    IMapper mapper,
+    CalculateService calculateService,
+    LogDirectlyService logDirectlyService,
+    IDynamicRepository repository,
+    SendMailService sendMailService,
+    MatchService matchService,
+    AnnouncementService announcementService)
+    : LeapGamingService
 {
-    private readonly IMapper mapper;
-
-    private readonly CalculateService calculateService;
-
-    private readonly LogDirectlyService logDirectlyService;
-
-    private readonly IDynamicRepository repository;
-
-    private readonly SendMailService sendMailService;
-
-    private readonly MatchService matchService;
-
-    private readonly AnnouncementService announcementService;
-
     private const int ErrorCodeNotExistValue = 1_000_003;
 
     private const string Subject = "Virtual Sports 3";
 
     private const string ErrorMsgNotExistValue = "The input score values are not valid!";
-
-    public LeapGamingServiceImp(
-        IMapper mapper,
-        CalculateService calculateService,
-        LogDirectlyService logDirectlyService,
-        IDynamicRepository repository,
-        SendMailService sendMailService,
-        MatchService matchService,
-        AnnouncementService announcementService)
-    {
-        this.mapper = mapper;
-        this.calculateService = calculateService;
-        this.logDirectlyService = logDirectlyService;
-        this.repository = repository;
-        this.sendMailService = sendMailService;
-        this.matchService = matchService;
-        this.announcementService = announcementService;
-    }
 
     public async Task<Result> Settle(LeapGamingRequest request)
     {
@@ -189,7 +165,7 @@ public class LeapGamingServiceImp : LeapGamingService
             Copy = recipient.CopyRecipients,
             Type = EmailType.Credit,
             TicketsInfo = ticketsInfo,
-            TotalTickets = ticketsInfo.Count()
+            TotalTickets = ticketsInfo.Count
         };
 
         sendMailService.SendMail(mailModel);
@@ -213,7 +189,7 @@ public class LeapGamingServiceImp : LeapGamingService
             Copy = recipient.CopyRecipients,
             Type = EmailType.Deposit,
             TicketsInfo = tickets,
-            TotalTickets = ticketsInfo.Count()
+            TotalTickets = ticketsInfo.Count
         };
 
         sendMailService.SendMail(mailModel);

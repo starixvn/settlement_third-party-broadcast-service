@@ -11,37 +11,18 @@ public interface VirtualSportsService
     Task<Result> Settle(VirtualSoccerRequest request);
 }
 
-public class VirtualSportsServiceImp : VirtualSportsService
+public class VirtualSportsServiceImp(
+    MatchService matchService,
+    IMapper mapper,
+    CalculateService calculateService,
+    AnnouncementService announcementService,
+    SendMailService sendMailService,
+    IOptions<AppSettingsKey> appSettingsKey)
+    : VirtualSportsService
 {
-    private readonly MatchService matchService;
-
-    private readonly IMapper mapper;
-
-    private readonly CalculateService calculateService;
-
-    private readonly AnnouncementService announcementService;
-
-    private readonly SendMailService sendMailService;
-
-    private readonly AppSettingsKey appSettingsKey;
-
     private const string Subject = "Virtual Sports";
 
-    public VirtualSportsServiceImp(
-        MatchService matchService,
-        IMapper mapper,
-        CalculateService calculateService,
-        AnnouncementService announcementService,
-        SendMailService sendMailService,
-        IOptions<AppSettingsKey> appSettingsKey)
-    {
-        this.matchService = matchService;
-        this.mapper = mapper;
-        this.calculateService = calculateService;
-        this.announcementService = announcementService;
-        this.sendMailService = sendMailService;
-        this.appSettingsKey = appSettingsKey.Value;
-    }
+    private MailFunction MailFunction => appSettingsKey.Value.MailFunction;
 
     public async Task<Result> Settle(VirtualSoccerRequest request)
     {
@@ -88,7 +69,7 @@ public class VirtualSportsServiceImp : VirtualSportsService
             return;
         }
 
-        var mailId = appSettingsKey.MailFunction.VirtualSport.CreditMailId;
+        var mailId = MailFunction.VirtualSport.CreditMailId;
         var mailModel = new NotificationModel
         {
             Subject = Subject,
@@ -111,7 +92,7 @@ public class VirtualSportsServiceImp : VirtualSportsService
         }
 
         var tickets = SplitTicketByLicensee(ticketsInfo).ToList();
-        var mailId = appSettingsKey.MailFunction.VirtualSport.DepositMailId;
+        var mailId = MailFunction.VirtualSport.DepositMailId;
 
         var mailModel = new NotificationModel
         {
