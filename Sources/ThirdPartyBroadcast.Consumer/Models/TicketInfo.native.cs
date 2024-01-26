@@ -8,9 +8,11 @@ public class TicketInfo
 
     public int CustId { get; set; }
 
-    public string UserName { get; set; }
+    public string Username { get; set; }
 
-    public string TransDate { get; set; }
+    public DateTime TransDate { get; set; }
 
     public string SiteName { get; set; }
+
+    public IEnumerable<TicketInfo> TicketsInfo { get; set; }
 }

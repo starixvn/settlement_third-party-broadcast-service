@@ -22,7 +22,7 @@ public class VirtualBetRadarServiceImp : VirtualBetRadarService
 
     private readonly LogDirectlyService logDirectlyService;
 
-    private readonly TicketSettleService ticketSettleService;
+    private readonly MatchService matchService;
 
     private readonly AnnouncementService announcementService;
 
@@ -31,14 +31,14 @@ public class VirtualBetRadarServiceImp : VirtualBetRadarService
         IMapper mapper,
         CalculateService calculateService,
         LogDirectlyService logDirectlyService,
-        TicketSettleService ticketSettleService,
+        MatchService matchService,
         AnnouncementService announcementService)
     {
         this.repository = repository;
         this.mapper = mapper;
         this.calculateService = calculateService;
         this.logDirectlyService = logDirectlyService;
-        this.ticketSettleService = ticketSettleService;
+        this.matchService = matchService;
         this.announcementService = announcementService;
     }
 
@@ -54,7 +54,7 @@ public class VirtualBetRadarServiceImp : VirtualBetRadarService
         }
 
         var currentMatchInfo = await GetMatchStatus(request.MatchId);
-        var currentTickets = await ticketSettleService.GetTicketsByAction(request.MatchId, request.Action);
+        var currentTickets = await matchService.GetTicketsByAction(request.MatchId, request.Action);
 
         await UpdateMatchInfo(request);
 

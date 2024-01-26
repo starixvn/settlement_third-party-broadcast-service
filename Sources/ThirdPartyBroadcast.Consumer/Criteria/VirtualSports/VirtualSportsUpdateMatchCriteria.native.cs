@@ -1,6 +1,6 @@
-﻿namespace ThirdPartyBroadcast.Consumer.Criteria.VirtualSoccer;
+﻿namespace ThirdPartyBroadcast.Consumer.Criteria.VirtualSports;
 
-public class VrSoccerUpdateMatchCriteria : NonQueryCommand
+public class VirtualSportsUpdateMatchCriteria : NonQueryCommand
 {
     public int MatchId { get; set; }
 

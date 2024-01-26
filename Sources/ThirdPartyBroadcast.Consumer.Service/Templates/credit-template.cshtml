@@ -6,9 +6,9 @@
 
 <table>
     <tr style="background-color:#0095CC;">
-        <th style="width:150px;">Sport Type</th>
+        <th style="width:150px;">Sport Id</th>
         <th style="width:250px;">Sport Name</th>
-        <th style="width:150px;">Match ID</th>
+        <th style="width:150px;">Match Id</th>
         <th style="width:250px;">Event Date</th>
     </tr>
     <tr>
@@ -29,26 +29,26 @@
         <th style="width:60px">No.</th>
         <th style="width:150px">Ticket Number</th>
         <th style="width:150px">Ticket Type</th>
-        <th style="width:150px">Cust ID</th>
-        <th style="width:200px">User Name</th>
-        <th style="width:250px">Trans Date</th>
+        <th style="width:150px">Cust Id</th>
+        <th style="width:200px">Username</th>
+        <th style="width:250px">TransDate</th>
     </tr>
     @{
-    var list = Model.Ticket[0].TicketInfos;
-
-    for (int i = 0; i < list.Count; i++)
+        var i = 1;
+    }
+    @foreach (var item in Model.TicketsInfo)
     {
-    <tr>
-        <td>@(i + 1)</td>
-        <td>@list[i].TransId</td>
-        <td>@list[i].TicketType</td>
-        <td>@list[i].CustId</td>
-        <td>@list[i].UserName</td>
-        <td>@list[i].TransDate</td>
-    </tr>
+        <tr>
+            <td>@i</td>
+            <td>@item.TransId</td>
+            <td>@item.TicketType</td>
+            <td>@item.CustId</td>
+            <td>@item.Username</td>
+            <td>@item.TransDate</td>
+        </tr>
+        i++;
     }
-    <tr><td colspan="6" style="text-align:left;"><b>Total Tickets: @Model.Ticket[0].TotalTicket</b></td></tr>
-    }
+    <tr><td colspan="6" style="text-align:left;"><b>Total Tickets: @Model.TotalTickets</b></td></tr>
 </table>
 
 <style>

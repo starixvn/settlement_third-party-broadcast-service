@@ -12,7 +12,7 @@ public class MatchInfo
 
     public int SportType { get; set; }
 
-    public string SportName { get; set; }
+    public string SportName => RefDataService.GetSportName(SportType, ContentLanguage.English);
 
     public DateTime KickOffTime { get; set; }
 
@@ -23,8 +23,6 @@ public class MatchInfo
     public int AwayId { get; set; }
 
     public short? LeagueGroupId { get; set; }
-
-    public int TotalTickets { get; set; }
 
     public string TeamName => $"{RefDataService.GetTeamName(HomeId, ContentLanguage.English)} -vs- {RefDataService.GetTeamName(AwayId, ContentLanguage.English)}";
 

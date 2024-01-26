@@ -7,21 +7,18 @@ public class LeapGamingServiceTests
 {
     private readonly CalculateService calculateService;
 
-    private readonly LogDirectlyService logDirectlyService;
+    private readonly MatchService matchService;
 
     private readonly IDynamicRepository repository;
 
     private readonly LeapGamingService service;
 
-    private readonly RecipientTicketsService recipientTicketsService;
-
     public LeapGamingServiceTests()
     {
         calculateService = Substitute.For<CalculateService>();
-        logDirectlyService = Substitute.For<LogDirectlyService>();
         repository = Substitute.For<IDynamicRepository>();
-        recipientTicketsService = Substitute.For<RecipientTicketsService>();
-        var ticketSettleService = Substitute.For<TicketSettleService>();
+        var sendMailService = Substitute.For<SendMailService>();
+        matchService = Substitute.For<MatchService>();
         var announcementService = Substitute.For<AnnouncementService>();
 
         var mapperConfig = new MapperConfigurationExpression();
@@ -29,7 +26,12 @@ public class LeapGamingServiceTests
         var config = new MapperConfiguration(mapperConfig);
         var mapper = new Mapper(config);
 
-        service = new LeapGamingServiceImp(mapper, calculateService, logDirectlyService, repository, recipientTicketsService, ticketSettleService, announcementService);
+        service = new LeapGamingServiceImp(mapper, calculateService, repository, sendMailService, matchService, announcementService);
+    }
+
+    public LeapGamingServiceTests(LeapGamingService service)
+    {
+        this.service = service;
     }
 
     [Fact]
@@ -44,7 +46,7 @@ public class LeapGamingServiceTests
     [Fact]
     public async Task Settle_ValidationPassed_UpdateAndSettleMatch()
     {
-        repository.GetAsync<MatchInfo>(Arg.Any<LeapGamingGetMatchInfoCriteria>()).Returns(new MatchInfo());
+        matchService.GetMatchInfoLeapGaming(Arg.Any<int>()).Returns(new MatchInfo());
         calculateService.Execute(Arg.Any<LeapGamingCriteria>()).Returns(new Result());
 
         var fakeData = new IEnumerable<object>[3];
@@ -62,33 +64,8 @@ public class LeapGamingServiceTests
             SelectedResources = "<Resources> <Resource Id=\"00\" Home=\"1\" Away=\"1\"/> <Resource Id=\"01\" Home=\"1\" Away=\"1\"/></Resources>"
         });
 
-        await repository.Received().ExecuteAsync(Arg.Any<UpdateMatchCriteria>());
-        await logDirectlyService.Received().WriteLog(1, string.Empty);
+        await matchService.Received().UpdateMatchInfoLeapGaming(Arg.Any<LeapGamingRequest>());
+        await matchService.Received().WriteLogLeapGaming(1);
         await calculateService.Received().Execute(Arg.Any<LeapGamingCriteria>());
-    }
-
-    [Theory]
-    [InlineData("CAL", "Completed", "<Resources> <Resource Id=\"00\" Home=\"1\" Away=\"1\"/> <Resource Id=\"01\" Home=\"1\" Away=\"1\"/></Resources>", 1)]
-    [InlineData("CAL", "Running", "<Resources> <Resource Id=\"00\" Home=\"1\" Away=\"1\"/> <Resource Id=\"01\" Home=\"1\" Away=\"1\"/></Resources>", 0)]
-    [InlineData("REFUND", "Running", "<Resources> <Resource Id=\"00\" Home=\"\" Away=\"\"/> <Resource Id=\"01\" Home=\"\" Away=\"\"/></Resources>", 1)]
-    public async Task Settle_ActionReCalOrRefund_SendMail(string action, string eventStatus, string selectedResources, int mailCount)
-    {
-        repository.GetAsync<MatchInfo>(Arg.Any<LeapGamingGetMatchInfoCriteria>()).Returns(new MatchInfo() { EventStatus = eventStatus });
-        calculateService.Execute(Arg.Any<LeapGamingCriteria>()).Returns(new Result());
-
-        var credit = new List<TicketInfo> { new() { CustId = 1 } };
-        var deposit = new List<TicketInfo> { new() { CustId = 1 } };
-        repository
-            .FetchMultipleAsync<TicketInfo, TicketInfo>(Arg.Any<LeapGamingTicketCriteria>()).Returns((credit, deposit));
-
-        await service.Settle(new LeapGamingRequest
-        {
-            Action = action,
-            MatchId = 1,
-            SelectedResources = selectedResources
-        });
-
-        recipientTicketsService.Received(mailCount).CreditTickets(Arg.Any<string>(), Arg.Any<IReadOnlyCollection<TicketInfo>>(), Arg.Any<Recipient>(), Arg.Any<MatchInfo>());
-        recipientTicketsService.Received(mailCount).DepositTickets(Arg.Any<string>(), Arg.Any<IReadOnlyCollection<TicketInfo>>(), Arg.Any<Recipient>(), Arg.Any<MatchInfo>());
     }
 }

@@ -5,6 +5,7 @@ namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products;
 using AutoMapper;
 using Criteria.VirtualBetRadar;
 using Fanex.Data.Repository;
+using ThirdPartyBroadcast.Consumer.Services;
 
 public class VirtualBetRadarServiceTests
 {
@@ -13,8 +14,11 @@ public class VirtualBetRadarServiceTests
     private readonly IDynamicRepository repository;
 
     private readonly VirtualBetRadarService service;
+
     private readonly LogDirectlyService logService;
-    private readonly TicketSettleService ticketSettleService;
+
+    private readonly MatchService matchService;
+
     private readonly AnnouncementService announcementService;
 
     public VirtualBetRadarServiceTests()
@@ -22,14 +26,14 @@ public class VirtualBetRadarServiceTests
         calculateService = Substitute.For<CalculateService>();
         repository = Substitute.For<IDynamicRepository>();
         logService = Substitute.For<LogDirectlyService>();
-        ticketSettleService = Substitute.For<TicketSettleService>();
+        matchService = Substitute.For<MatchService>();
         announcementService = Substitute.For<AnnouncementService>();
 
         var mapperConfig = new MapperConfigurationExpression();
         mapperConfig.AddProfile<ThirdPartyBroadcastMappingProfile>();
         var config = new MapperConfiguration(mapperConfig);
         var mapper = new Mapper(config);
-        service = new VirtualBetRadarServiceImp(repository, mapper, calculateService, logService, ticketSettleService, announcementService);
+        service = new VirtualBetRadarServiceImp(repository, mapper, calculateService, logService, matchService, announcementService);
     }
 
     [Theory]
@@ -54,7 +58,7 @@ public class VirtualBetRadarServiceTests
         };
 
         var mapperMock = Substitute.For<IMapper>();
-        var serviceMock = new VirtualBetRadarServiceImp(repository, mapperMock, calculateService, logService, ticketSettleService, announcementService);
+        var serviceMock = new VirtualBetRadarServiceImp(repository, mapperMock, calculateService, logService, matchService, announcementService);
         calculateService.ExecuteValidationMultiServer(Arg.Any<BetRadarValidationCriteria>()).Returns(new Result());
         await repository.ExecuteAsync(Arg.Any<BetRadarUpdateMatchCriteria>());
         calculateService.Execute(Arg.Any<VirtualBetRadarCriteria>()).Returns(new Result());

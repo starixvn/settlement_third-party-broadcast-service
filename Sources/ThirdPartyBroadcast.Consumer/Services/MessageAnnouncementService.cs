@@ -9,15 +9,8 @@ public interface MessageAnnouncementService
     List<MessageAnnounenceItem> CreateMessageItems(IEnumerable<TicketSettleInfo> settledTickets, int messageId);
 }
 
-public class MessageAnnouncementServiceImp : MessageAnnouncementService
+public class MessageAnnouncementServiceImp(RefDataService refDataService) : MessageAnnouncementService
 {
-    private readonly RefDataService refDataService;
-
-    public MessageAnnouncementServiceImp(RefDataService refDataService)
-    {
-        this.refDataService = refDataService;
-    }
-
     public MessageAnnouncementInsertCriteria CreateMessageCriteria(MatchInfo matchInfo, TicketType ticketType, int adminId)
     {
         matchInfo.RefDataService = refDataService;

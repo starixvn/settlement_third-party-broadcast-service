@@ -1,6 +1,6 @@
-﻿namespace ThirdPartyBroadcast.Consumer.Criteria.VirtualSoccer;
+﻿namespace ThirdPartyBroadcast.Consumer.Criteria.VirtualSports;
 
-public class VirtualSoccerCriteria : CalculateCriteria
+public class VirtualSportsCriteria : CalculateCriteria
 {
     public int Fth { get; set; }
 

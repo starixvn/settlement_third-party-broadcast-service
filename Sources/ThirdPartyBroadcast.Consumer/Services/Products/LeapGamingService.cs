@@ -11,43 +11,20 @@ public interface LeapGamingService
     Task<Result> Settle(LeapGamingRequest request);
 }
 
-public class LeapGamingServiceImp : LeapGamingService
+public class LeapGamingServiceImp(
+    IMapper mapper,
+    CalculateService calculateService,
+    IDynamicRepository repository,
+    SendMailService sendMailService,
+    MatchService matchService,
+    AnnouncementService announcementService)
+    : LeapGamingService
 {
-    private readonly IMapper mapper;
-
-    private readonly CalculateService calculateService;
-
-    private readonly LogDirectlyService logDirectlyService;
-
-    private readonly IDynamicRepository repository;
-
-    private readonly RecipientTicketsService recipientTicketsService;
-
-    private readonly TicketSettleService ticketSettleService;
-
-    private readonly AnnouncementService announcementService;
-
     private const int ErrorCodeNotExistValue = 1_000_003;
 
-    private const string ErrorMsgNotExistValue = "The input score values are not valid!";
+    private const string Subject = "Virtual Sports 3";
 
-    public LeapGamingServiceImp(
-        IMapper mapper,
-        CalculateService calculateService,
-        LogDirectlyService logDirectlyService,
-        IDynamicRepository repository,
-        RecipientTicketsService recipientTicketsService,
-        TicketSettleService ticketSettleService,
-        AnnouncementService announcementService)
-    {
-        this.mapper = mapper;
-        this.calculateService = calculateService;
-        this.logDirectlyService = logDirectlyService;
-        this.repository = repository;
-        this.recipientTicketsService = recipientTicketsService;
-        this.ticketSettleService = ticketSettleService;
-        this.announcementService = announcementService;
-    }
+    private const string ErrorMsgNotExistValue = "The input score values are not valid!";
 
     public async Task<Result> Settle(LeapGamingRequest request)
     {
@@ -57,13 +34,12 @@ public class LeapGamingServiceImp : LeapGamingService
             return validationResult;
         }
 
-        var currentMatchInfo = await MatchStatus(request.MatchId);
-        var currentTickets = await ticketSettleService.GetTicketsByAction(request.MatchId, request.Action);
+        var currentMatchInfo = await matchService.GetMatchInfoLeapGaming(request.MatchId);
+        var currentTickets = await matchService.GetTicketsByAction(request.MatchId, request.Action);
 
-        await UpdateMatchInfo(request);
+        await matchService.UpdateMatchInfoLeapGaming(request);
 
-        var message = logDirectlyService.Message(request.MatchId);
-        await logDirectlyService.WriteLog(request.MatchId, message);
+        await matchService.WriteLogLeapGaming(request.MatchId);
 
         var result = await HandleSettle(currentTickets, currentMatchInfo, request);
 
@@ -108,13 +84,6 @@ public class LeapGamingServiceImp : LeapGamingService
         return criteria;
     }
 
-    private async Task UpdateMatchInfo(LeapGamingRequest request)
-    {
-        var requestUpdate = mapper.Map<LeapGamingRequest, UpdateMatchCriteria>(request);
-        requestUpdate.Command = EventStatus.Completed;
-        await repository.ExecuteAsync(requestUpdate);
-    }
-
     private static Result ValidateMatchScore(LeapGamingRequest request)
     {
         try
@@ -150,34 +119,84 @@ public class LeapGamingServiceImp : LeapGamingService
         return (ResourcesModel)serializer.Deserialize(sr);
     }
 
-    private async Task<MatchInfo> MatchStatus(int matchId)
-    {
-        var criteria = new LeapGamingGetMatchInfoCriteria { MatchId = matchId };
-        var match = await repository.GetAsync<MatchInfo>(criteria) ?? new MatchInfo();
-        match.MatchId = matchId;
-
-        return match;
-    }
-
     private async Task SendMail(string action, MatchInfo matchInfo)
     {
-        var eventStatusChecking = !string.IsNullOrWhiteSpace(matchInfo.EventStatus) &&
-                                  string.Equals(matchInfo.EventStatus.ToLowerInvariant(), EventStatus.Completed);
-
-        if (string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase) || eventStatusChecking)
+        if (IsReSettleOrRefund(action, matchInfo.EventStatus))
         {
             var criteria = new LeapGamingTicketCriteria { MatchId = matchInfo.MatchId };
             var (creditTickets, depositTickets) = await repository.FetchMultipleAsync<TicketInfo, TicketInfo>(criteria);
 
             var recipients = await GetRecipients();
-            var actionName = string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase)
-                ? ActionName.Refund
-                : ActionName.ReSettle;
+            var actionName = GetActionName(action);
 
-            recipientTicketsService.CreditTickets(actionName, creditTickets.ToList(), recipients, matchInfo);
-            recipientTicketsService.DepositTickets(actionName, depositTickets.ToList(), recipients, matchInfo);
+            CreditTickets(actionName, Subject, creditTickets.ToList(), recipients, matchInfo);
+            DepositTickets(actionName, Subject, depositTickets.ToList(), recipients, matchInfo);
         }
     }
+
+    private void CreditTickets(string actionName, string subject, IReadOnlyCollection<TicketInfo> ticketsInfo, Recipient recipient, MatchInfo matchInfos)
+    {
+        if (ticketsInfo.Count < 1)
+        {
+            return;
+        }
+
+        var mailModel = new NotificationModel
+        {
+            Subject = subject,
+            MatchInfo = matchInfos,
+            Action = actionName,
+            To = recipient.CreditRecipients,
+            Copy = recipient.CopyRecipients,
+            Type = EmailType.Credit,
+            TicketsInfo = ticketsInfo,
+            TotalTickets = ticketsInfo.Count
+        };
+
+        sendMailService.SendMail(mailModel);
+    }
+
+    private void DepositTickets(string actionName, string subject, IReadOnlyCollection<TicketInfo> ticketsInfo, Recipient recipient, MatchInfo matchInfos)
+    {
+        if (ticketsInfo.Count < 1)
+        {
+            return;
+        }
+
+        var tickets = SplitTicketByLicensee(ticketsInfo).ToList();
+
+        var mailModel = new NotificationModel
+        {
+            Subject = subject,
+            MatchInfo = matchInfos,
+            Action = actionName,
+            To = recipient.DepositRecipients,
+            Copy = recipient.CopyRecipients,
+            Type = EmailType.Deposit,
+            TicketsInfo = tickets,
+            TotalTickets = ticketsInfo.Count
+        };
+
+        sendMailService.SendMail(mailModel);
+    }
+
+    private static IEnumerable<TicketInfo> SplitTicketByLicensee(IReadOnlyCollection<TicketInfo> ticketInfos)
+    {
+        var distinctLicensees = ticketInfos.Select(ticket => ticket.SiteName).Distinct();
+
+        return distinctLicensees.Select(licensee => new TicketInfo
+        {
+            TicketsInfo = ticketInfos.Where(ticket => ticket.SiteName == licensee).ToList()
+        });
+    }
+
+    private static bool IsReSettleOrRefund(string action, string eventStatus) =>
+        (!string.IsNullOrWhiteSpace(eventStatus) && string.Equals(eventStatus.ToLowerInvariant(), EventStatus.Completed))
+        || string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase);
+
+    private static string GetActionName(string action) => string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase)
+        ? ActionName.Refund
+        : ActionName.ReSettle;
 
     private async Task<Recipient> GetRecipients()
     {

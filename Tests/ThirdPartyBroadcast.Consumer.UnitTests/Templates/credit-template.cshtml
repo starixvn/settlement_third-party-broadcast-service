@@ -1,0 +1,81 @@
+﻿<p>
+    <b>
+        1. @Model.Action Match Info:
+    </b>
+</p>
+
+<table>
+    <tr style="background-color:#0095CC;">
+        <th style="width:150px;">Sport Id</th>
+        <th style="width:250px;">Sport Name</th>
+        <th style="width:150px;">Match Id</th>
+        <th style="width:250px;">Event Date</th>
+    </tr>
+    <tr>
+        <td>@Model.MatchInfo.SportType</td>
+        <td>@Model.MatchInfo.SportName</td>
+        <td>@Model.MatchInfo.MatchId</td>
+        <td>@Model.MatchInfo.KickOffTime</td>
+    </tr>
+</table>
+<p>
+    <b>
+        2. @Model.Action Ticket Numbers List:
+    </b>
+</p>
+
+<table>
+    <tr style="background-color:#0095CC">
+        <th style="width:60px">No.</th>
+        <th style="width:150px">Ticket Number</th>
+        <th style="width:150px">Ticket Type</th>
+        <th style="width:150px">Cust Id</th>
+        <th style="width:200px">Username</th>
+        <th style="width:250px">TransDate</th>
+    </tr>
+    @{
+        var i = 1;
+    }
+    @foreach (var item in Model.TicketsInfo)
+    {
+        <tr>
+            <td>@i</td>
+            <td>@item.TransId</td>
+            <td>@item.TicketType</td>
+            <td>@item.CustId</td>
+            <td>@item.Username</td>
+            <td>@item.TransDate</td>
+        </tr>
+        i++;
+    }
+    <tr><td colspan="6" style="text-align:left;"><b>Total Tickets: @Model.TotalTickets</b></td></tr>
+</table>
+
+<style>
+    body {
+        font-family: tahoma;
+        font-size: 12px;
+    }
+
+    table {
+        border-collapse: collapse;
+    }
+
+    table, td, th {
+        border: 1px solid black;
+        text-align: center;
+    }
+
+    th {
+        padding: 4px;
+        color: white;
+        font-family: tahoma;
+        font-size: 12px;
+    }
+
+    td {
+        padding: 4px;
+        font-family: tahoma;
+        font-size: 12px;
+    }
+</style>

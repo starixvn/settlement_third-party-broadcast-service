@@ -1,4 +1,6 @@
-﻿using Fanex.MailDeliver.Model;
+﻿using Fanex.MailDeliver.MailClient.Model;
+using Fanex.MailDelivery.Client;
+using Fanex.MailDelivery.Core.Models;
 using RazorEngine;
 using RazorEngine.Templating;
 
@@ -7,6 +9,8 @@ namespace ThirdPartyBroadcast.Consumer.Services;
 public interface SendMailService
 {
     void SendMail(NotificationModel item);
+
+    Task SendMailByFunctionId(NotificationModel item);
 }
 
 public class SendMailServiceImp : SendMailService
@@ -27,10 +31,23 @@ public class SendMailServiceImp : SendMailService
         mailClient.SendMail(mailRecord);
     }
 
+    public async Task SendMailByFunctionId(NotificationModel item)
+    {
+        var mail = new Mail
+        {
+            Subject = Subject(item),
+            Title = "NAP - Settlement System",
+            Body = MailBody(item),
+            MailingListId = item.MailId
+        };
+
+        await MailClientHandler.SendFunctionMailAsync(mail);
+    }
+
     private static string Subject(NotificationModel item)
     {
         var to = string.Equals(item.Type, EmailType.Credit) ? "MBC" : "Licensee";
-        return $"[Virtual Sports 3] {item.Action} Ticket Numbers ({to}) -- {item.Action} MatchID: {item.MatchInfo.MatchId} ({item.MatchInfo.SportName})";
+        return $"[{item.Subject}] {item.Action} Ticket Numbers ({to}) -- {item.Action} MatchId: {item.MatchInfo.MatchId} ({item.MatchInfo.SportName})";
     }
 
     private static string MailBody(NotificationModel item)

@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 
@@ -20,12 +20,35 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Templates\credit-template.cshtml" />
+    <None Remove="Templates\deposit-template.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\..\Sources\ThirdPartyBroadcast.Consumer.Service\appsettings.Development.json" Link="appsettings.Development.json" />
+    <Content Include="..\..\Sources\ThirdPartyBroadcast.Consumer.Service\appsettings.json" Link="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\Sources\ThirdPartyBroadcast.Consumer.Service\appsettings.LOCAL.json" Link="appsettings.LOCAL.json" />
+    <Content Include="..\..\Sources\ThirdPartyBroadcast.Consumer.Service\appsettings.PROD.json" Link="appsettings.PROD.json" />
+    <Content Include="..\..\Sources\ThirdPartyBroadcast.Consumer.Service\appsettings.SIT.json" Link="appsettings.SIT.json" />
+    <Content Include="..\..\Sources\ThirdPartyBroadcast.Consumer.Service\appsettings.UAT.json" Link="appsettings.UAT.json" />
+    <Content Include="Templates\credit-template.cshtml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Templates\deposit-template.cshtml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Fanex.Caching" Version="2.2.4" />
+    <PackageReference Include="Fanex.RemotingRef" Version="1.5.2" />
     <PackageReference Include="Fanex.Settlement.Converter" Version="1.0.0.1" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.2" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
     <PackageReference Include="NSubstitute" Version="5.1.0" />
-    <PackageReference Include="xunit" Version="2.5.1" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.1">
+    <PackageReference Include="xunit" Version="2.6.6" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.6">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>

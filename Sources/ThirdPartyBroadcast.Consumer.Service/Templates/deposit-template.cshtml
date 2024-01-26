@@ -6,9 +6,9 @@
 
 <table>
     <tr style="background-color:#0095CC;">
-        <th style="width:150px;">Sport Type</th>
+        <th style="width:150px;">Sport Id</th>
         <th style="width:250px;">Sport Name</th>
-        <th style="width:150px;">Match ID</th>
+        <th style="width:150px;">Match Id</th>
         <th style="width:250px;">Event Date</th>
         <th style="width:150px;">Total Tickets</th>
     </tr>
@@ -17,7 +17,7 @@
         <td>@Model.MatchInfo.SportName</td>
         <td>@Model.MatchInfo.MatchId</td>
         <td>@Model.MatchInfo.KickOffTime</td>
-        <td>@Model.MatchInfo.TotalTickets</td>
+        <td>@Model.TotalTickets</td>
     </tr>
 </table>
 <p>
@@ -31,25 +31,28 @@
         <th style="width:60px">No.</th>
         <th style="width:150px">Ticket Number</th>
         <th style="width:150px">Ticket Type</th>
-        <th style="width:150px">Cust ID</th>
-        <th style="width:200px">User Name</th>
-        <th style="width:250px">Trans Date</th>
+        <th style="width:150px">Cust Id</th>
+        <th style="width:200px">Username</th>
+        <th style="width:250px">TransDate</th>
     </tr>
-    @foreach (var ticketItem in Model.Ticket){
-    <tr><td colspan="6" style="text-align:center;background-color:#FFFFAA"><b>Licensee: @ticketItem.SiteName </b></td></tr>
-    var list = ticketItem.TicketInfos;
-    for (int i = 0; i < list.Count; i++)
+    @foreach (var ticketItem in Model.TicketsInfo)
     {
-    <tr>
-        <td>@(i + 1)</td>
-        <td>@list[i].TransId</td>
-        <td>@list[i].TicketType</td>
-        <td>@list[i].CustId</td>
-        <td>@list[i].UserName</td>
-        <td>@list[i].TransDate</td>
-    </tr>
-    }
-    <tr><td colspan="6" style="text-align:left;"><b>Total Tickets: @ticketItem.TotalTicket</b></td></tr>
+        var i = 1;
+        var listTicketsInfo = ticketItem.TicketsInfo;
+        <tr><td colspan="6" style="text-align:center;background-color:#FFFFAA"><b>Licensee: @listTicketsInfo[0].SiteName </b></td></tr>
+        @foreach (var item in listTicketsInfo)
+        {
+            <tr>
+                <td>@i</td>
+                <td>@item.TransId</td>
+                <td>@item.TicketType</td>
+                <td>@item.CustId</td>
+                <td>@item.Username</td>
+                <td>@item.TransDate</td>
+            </tr>
+            i++;
+        }
+        <tr><td colspan="6" style="text-align:left;"><b>Total Tickets: @listTicketsInfo.Count</b></td></tr>
     }
 </table>
 

@@ -7,6 +7,8 @@ namespace ThirdPartyBroadcast.Consumer.Services
         string GetLeagueName(int leagueId, string languageCode);
 
         string GetTeamName(int teamId, string languageCode);
+
+        string GetSportName(int sportId, string languageCode);
     }
 
     public class RefDataServiceImp : RefDataService
@@ -26,6 +28,11 @@ namespace ThirdPartyBroadcast.Consumer.Services
         public string GetTeamName(int teamId, string languageCode)
         {
             return remotingRefService.GetTeamName(teamId.ToString(), languageCode, string.Empty);
+        }
+
+        public string GetSportName(int sportId, string languageCode)
+        {
+            return remotingRefService.GetSportName(sportId.ToString(), languageCode, string.Empty);
         }
     }
 }

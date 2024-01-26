@@ -12,5 +12,5 @@ public class TicketSettleCriteria : CriteriaBase
 
     public override string GetSettingKey() => $"NAP_Set_VS_TicketInfo_Sel_{DbServer}";
 
-    public override bool IsValid() => true;
+    public override bool IsValid() => MatchId > 0 || !string.IsNullOrWhiteSpace(TransIDs);
 }
