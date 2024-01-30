@@ -101,3 +101,8 @@ public static class ContentLanguage
     public const string Cantonese = "zh-TW";
     public const string Mandarin = "zh-CN";
 }
+
+public static class SportType
+{
+    public const short VirtualCockFighting = 188;
+}

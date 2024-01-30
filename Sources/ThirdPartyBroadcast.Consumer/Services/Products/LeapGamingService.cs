@@ -22,19 +22,17 @@ public class LeapGamingServiceImp(
 {
     private const int ErrorCodeNotExistValue = 1_000_003;
 
-    private const string Subject = "Virtual Sports";
-
     private const string ErrorMsgNotExistValue = "The input score values are not valid!";
 
     public async Task<Result> Settle(LeapGamingRequest request)
     {
-        var validationResult = ValidateMatchScore(request);
+        var currentMatchInfo = await matchService.GetMatchInfoLeapGaming(request.MatchId);
+        var validationResult = ValidateMatchScore(request, currentMatchInfo);
         if (validationResult.ErrorCode > 0)
         {
             return validationResult;
         }
 
-        var currentMatchInfo = await matchService.GetMatchInfoLeapGaming(request.MatchId);
         var currentTickets = await matchService.GetTicketsByAction(request.MatchId, request.Action);
 
         await matchService.UpdateMatchInfoLeapGaming(request);
@@ -51,7 +49,7 @@ public class LeapGamingServiceImp(
         var criteria = mapper.Map<LeapGamingRequest, LeapGamingCriteria>(request);
         var settleResult = await calculateService.Execute(criteria);
 
-        await WriteLogSettled(request, settleResult);
+        await WriteLogSettled(request, settleResult, matchInfo);
 
         await SendMail(request.Action, matchInfo);
 
@@ -60,17 +58,17 @@ public class LeapGamingServiceImp(
         return settleResult;
     }
 
-    private async Task WriteLogSettled(LeapGamingRequest request, Result resultSettle)
+    private async Task WriteLogSettled(LeapGamingRequest request, Result resultSettle, MatchInfo matchInfo)
     {
-        var criteria = CreateWriteLogCriteria(request, resultSettle);
+        var criteria = CreateWriteLogCriteria(request, resultSettle, matchInfo);
 
         await repository.ExecuteAsync(criteria);
     }
 
-    private static WriteLogCriteria CreateWriteLogCriteria(LeapGamingRequest request, Result resultSettle)
+    private static WriteLogCriteria CreateWriteLogCriteria(LeapGamingRequest request, Result resultSettle, MatchInfo matchInfo)
     {
         var resources = DeserializeResources(request.SelectedResources);
-        var message = $"VS 3 - Calculate({request.Action}) {(resultSettle.ErrorCode > 0 ? resultSettle.ErrorMessage : string.Empty)}";
+        var message = $"{matchInfo.SportName}- Calculate({request.Action}) {(resultSettle.ErrorCode > 0 ? resultSettle.ErrorMessage : string.Empty)}";
         var actionId = string.Equals(request.Action, ActionName.Calculate, StringComparison.OrdinalIgnoreCase) ? ActionId.LeapGamingCalc : ActionId.LeapGamingRefund;
         var criteria = new WriteLogCriteria(request.MatchId, message, actionId, request.AdminId, request.Ip);
         var htResult = resources.Items.Find(i => i.Id == ResourceId.HalfTimeResourceId);
@@ -84,13 +82,13 @@ public class LeapGamingServiceImp(
         return criteria;
     }
 
-    private static Result ValidateMatchScore(LeapGamingRequest request)
+    private static Result ValidateMatchScore(LeapGamingRequest request, MatchInfo matchInfo)
     {
         try
         {
             var resources = DeserializeResources(request.SelectedResources);
 
-            if (resources == null || resources.Items.Count == 0 || !ValidateResult(resources.Items, request.Action))
+            if (resources == null || resources.Items.Count == 0 || !ValidateResult(resources.Items, request.Action, matchInfo))
             {
                 return new Result
                 {
@@ -129,12 +127,12 @@ public class LeapGamingServiceImp(
             var recipients = await GetRecipients();
             var actionName = GetActionName(action);
 
-            CreditTickets(actionName, Subject, creditTickets.ToList(), recipients, matchInfo);
-            DepositTickets(actionName, Subject, depositTickets.ToList(), recipients, matchInfo);
+            CreditTickets(actionName, creditTickets.ToList(), recipients, matchInfo);
+            DepositTickets(actionName, depositTickets.ToList(), recipients, matchInfo);
         }
     }
 
-    private void CreditTickets(string actionName, string subject, IReadOnlyCollection<TicketInfo> ticketsInfo, Recipient recipient, MatchInfo matchInfos)
+    private void CreditTickets(string actionName, IReadOnlyCollection<TicketInfo> ticketsInfo, Recipient recipient, MatchInfo matchInfos)
     {
         if (ticketsInfo.Count < 1)
         {
@@ -143,7 +141,6 @@ public class LeapGamingServiceImp(
 
         var mailModel = new NotificationModel
         {
-            Subject = subject,
             MatchInfo = matchInfos,
             Action = actionName,
             To = recipient.CreditRecipients,
@@ -156,7 +153,7 @@ public class LeapGamingServiceImp(
         sendMailService.SendMail(mailModel);
     }
 
-    private void DepositTickets(string actionName, string subject, IReadOnlyCollection<TicketInfo> ticketsInfo, Recipient recipient, MatchInfo matchInfos)
+    private void DepositTickets(string actionName, IReadOnlyCollection<TicketInfo> ticketsInfo, Recipient recipient, MatchInfo matchInfos)
     {
         if (ticketsInfo.Count < 1)
         {
@@ -167,7 +164,6 @@ public class LeapGamingServiceImp(
 
         var mailModel = new NotificationModel
         {
-            Subject = subject,
             MatchInfo = matchInfos,
             Action = actionName,
             To = recipient.DepositRecipients,
@@ -204,12 +200,28 @@ public class LeapGamingServiceImp(
         return await repository.GetAsync<Recipient>(criteria);
     }
 
-    private static bool ValidateResult(IReadOnlyCollection<ResourceItemModel> items, string action)
+    private static bool ValidateResult(IReadOnlyCollection<ResourceItemModel> items, string action, MatchInfo match)
+    {
+        if (match?.SportType == SportType.VirtualCockFighting)
+        {
+            return ValidateFtResult(items, action);
+        }
+
+        return ValidateHtResult(items, action) && ValidateFtResult(items, action);
+    }
+
+    private static bool ValidateHtResult(IReadOnlyCollection<ResourceItemModel> items, string action)
     {
         var htResult = items.FirstOrDefault(i => i.Id == ResourceId.HalfTimeResourceId);
+
+        return IsValidResult(htResult, action);
+    }
+
+    private static bool ValidateFtResult(IReadOnlyCollection<ResourceItemModel> items, string action)
+    {
         var ftResult = items.FirstOrDefault(i => i.Id == ResourceId.FullTimeResourceId);
 
-        return IsValidResult(htResult, action) && IsValidResult(ftResult, action);
+        return IsValidResult(ftResult, action);
     }
 
     private static bool IsValidResult(ResourceItemModel result, string action)

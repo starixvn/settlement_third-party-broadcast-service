@@ -20,8 +20,6 @@ public class VirtualSportsServiceImp(
     IOptions<AppSettingsKey> appSettingsKey)
     : VirtualSportsService
 {
-    private const string Subject = "Virtual Sports";
-
     private MailFunction MailFunction => appSettingsKey.Value.MailFunction;
 
     public async Task<Result> Settle(VirtualSoccerRequest request)
@@ -72,7 +70,6 @@ public class VirtualSportsServiceImp(
         var mailId = MailFunction.VirtualSport.CreditMailId;
         var mailModel = new NotificationModel
         {
-            Subject = Subject,
             MatchInfo = matchInfo,
             Action = actionName,
             Type = EmailType.Credit,
@@ -96,7 +93,6 @@ public class VirtualSportsServiceImp(
 
         var mailModel = new NotificationModel
         {
-            Subject = Subject,
             MatchInfo = matchInfo,
             Action = actionName,
             Type = EmailType.Deposit,

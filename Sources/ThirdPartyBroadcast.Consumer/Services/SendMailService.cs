@@ -22,7 +22,7 @@ public class SendMailServiceImp : SendMailService
             MailTo = item.To,
             MailCc = item.Copy,
             Title = "NAP - Settlement System",
-            Subject = Subject(item),
+            Subject = " Virtual Sport",
             Body = MailBody(item)
         };
 
@@ -35,19 +35,13 @@ public class SendMailServiceImp : SendMailService
     {
         var mail = new Mail
         {
-            Subject = Subject(item),
+            Subject = "Virtual Sport",
             Title = "NAP - Settlement System",
             Body = MailBody(item),
             MailingListId = item.MailId
         };
 
         await MailClientHandler.SendFunctionMailAsync(mail);
-    }
-
-    private static string Subject(NotificationModel item)
-    {
-        var to = string.Equals(item.Type, EmailType.Credit) ? "MBC" : "Licensee";
-        return $"[{item.Subject}] {item.Action} Ticket Numbers ({to}) -- {item.Action} MatchId: {item.MatchInfo.MatchId} ({item.MatchInfo.SportName})";
     }
 
     private static string MailBody(NotificationModel item)
