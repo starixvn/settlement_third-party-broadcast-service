@@ -5,6 +5,8 @@ namespace ThirdPartyBroadcast.Consumer.Services.Products;
 using Criteria;
 using Criteria.LeapGaming;
 using Fanex.Data.Repository;
+using Microsoft.Extensions.Options;
+using ThirdPartyBroadcast.Consumer.Models;
 
 public interface LeapGamingService
 {
@@ -17,9 +19,12 @@ public class LeapGamingServiceImp(
     IDynamicRepository repository,
     SendMailService sendMailService,
     MatchService matchService,
-    AnnouncementService announcementService)
+    AnnouncementService announcementService,
+    IOptions<AppSettingsKey> appSettingsKey)
     : LeapGamingService
 {
+    private MailFunction MailFunction => appSettingsKey.Value.MailFunction;
+
     private const int ErrorCodeNotExistValue = 1_000_003;
 
     private const string ErrorMsgNotExistValue = "The input score values are not valid!";
@@ -71,13 +76,13 @@ public class LeapGamingServiceImp(
         var message = $"{matchInfo.SportName}- Calculate({request.Action}) {(resultSettle.ErrorCode > 0 ? resultSettle.ErrorMessage : string.Empty)}";
         var actionId = string.Equals(request.Action, ActionName.Calculate, StringComparison.OrdinalIgnoreCase) ? ActionId.LeapGamingCalc : ActionId.LeapGamingRefund;
         var criteria = new WriteLogCriteria(request.MatchId, message, actionId, request.AdminId, request.Ip);
-        var htResult = resources.Items.Find(i => i.Id == ResourceId.HalfTimeResourceId);
-        var ftResult = resources.Items.Find(i => i.Id == ResourceId.FullTimeResourceId);
+        var htResult = resources.Items.Find(i => i.Id == ResourceId.HalfTimeResourceId) ?? new ResourceItemModel();
+        var ftResult = resources.Items.Find(i => i.Id == ResourceId.FullTimeResourceId) ?? new ResourceItemModel();
 
-        criteria.FinalAwayScore = int.TryParse(ftResult!.Away, out var away) ? away : 0;
-        criteria.FinalHomeScore = int.TryParse(ftResult!.Home, out var home) ? home : 0;
-        criteria.HtAwayScore = int.TryParse(htResult!.Away, out var htAway) ? htAway : 0;
-        criteria.HtHomeScore = int.TryParse(htResult!.Home, out var htHome) ? htHome : 0;
+        criteria.FinalAwayScore = int.TryParse(ftResult.Away, out var away) ? away : 0;
+        criteria.FinalHomeScore = int.TryParse(ftResult.Home, out var home) ? home : 0;
+        criteria.HtAwayScore = int.TryParse(htResult.Away, out var htAway) ? htAway : 0;
+        criteria.HtHomeScore = int.TryParse(htResult.Home, out var htHome) ? htHome : 0;
 
         return criteria;
     }
@@ -124,36 +129,35 @@ public class LeapGamingServiceImp(
             var criteria = new LeapGamingTicketCriteria { MatchId = matchInfo.MatchId };
             var (creditTickets, depositTickets) = await repository.FetchMultipleAsync<TicketInfo, TicketInfo>(criteria);
 
-            var recipients = await GetRecipients();
             var actionName = GetActionName(action);
 
-            CreditTickets(actionName, creditTickets.ToList(), recipients, matchInfo);
-            DepositTickets(actionName, depositTickets.ToList(), recipients, matchInfo);
+            await RecipientGroupCredit(actionName, matchInfo, creditTickets.ToList());
+            await RecipientGroupDeposit(actionName, matchInfo, depositTickets.ToList());
         }
     }
 
-    private void CreditTickets(string actionName, IReadOnlyCollection<TicketInfo> ticketsInfo, Recipient recipient, MatchInfo matchInfos)
+    private async Task RecipientGroupCredit(string actionName, MatchInfo matchInfo, IReadOnlyCollection<TicketInfo> ticketsInfo)
     {
         if (ticketsInfo.Count < 1)
         {
             return;
         }
 
+        var mailId = MailFunction.VirtualSport.CreditMailId;
         var mailModel = new NotificationModel
         {
-            MatchInfo = matchInfos,
+            MatchInfo = matchInfo,
             Action = actionName,
-            To = recipient.CreditRecipients,
-            Copy = recipient.CopyRecipients,
             Type = EmailType.Credit,
+            MailId = mailId,
             TicketsInfo = ticketsInfo,
             TotalTickets = ticketsInfo.Count
         };
 
-        sendMailService.SendMail(mailModel);
+        await sendMailService.SendMailByFunctionId(mailModel);
     }
 
-    private void DepositTickets(string actionName, IReadOnlyCollection<TicketInfo> ticketsInfo, Recipient recipient, MatchInfo matchInfos)
+    private async Task RecipientGroupDeposit(string actionName, MatchInfo matchInfo, IReadOnlyCollection<TicketInfo> ticketsInfo)
     {
         if (ticketsInfo.Count < 1)
         {
@@ -161,19 +165,19 @@ public class LeapGamingServiceImp(
         }
 
         var tickets = SplitTicketByLicensee(ticketsInfo).ToList();
+        var mailId = MailFunction.VirtualSport.DepositMailId;
 
         var mailModel = new NotificationModel
         {
-            MatchInfo = matchInfos,
+            MatchInfo = matchInfo,
             Action = actionName,
-            To = recipient.DepositRecipients,
-            Copy = recipient.CopyRecipients,
             Type = EmailType.Deposit,
+            MailId = mailId,
             TicketsInfo = tickets,
             TotalTickets = ticketsInfo.Count
         };
 
-        sendMailService.SendMail(mailModel);
+        await sendMailService.SendMailByFunctionId(mailModel);
     }
 
     private static IEnumerable<TicketInfo> SplitTicketByLicensee(IReadOnlyCollection<TicketInfo> ticketInfos)
@@ -193,12 +197,6 @@ public class LeapGamingServiceImp(
     private static string GetActionName(string action) => string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase)
         ? ActionName.Refund
         : ActionName.ReSettle;
-
-    private async Task<Recipient> GetRecipients()
-    {
-        var criteria = new MailRecipientsCriteria();
-        return await repository.GetAsync<Recipient>(criteria);
-    }
 
     private static bool ValidateResult(IReadOnlyCollection<ResourceItemModel> items, string action, MatchInfo match)
     {

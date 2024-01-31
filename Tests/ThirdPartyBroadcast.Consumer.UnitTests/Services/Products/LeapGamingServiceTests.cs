@@ -1,4 +1,5 @@
-﻿using ThirdPartyBroadcast.Consumer.Criteria;
+﻿using Microsoft.Extensions.Options;
+using ThirdPartyBroadcast.Consumer.Criteria;
 using ThirdPartyBroadcast.Consumer.Criteria.LeapGaming;
 
 namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products;
@@ -26,7 +27,10 @@ public class LeapGamingServiceTests
         var config = new MapperConfiguration(mapperConfig);
         var mapper = new Mapper(config);
 
-        service = new LeapGamingServiceImp(mapper, calculateService, repository, sendMailService, matchService, announcementService);
+        var appSettingsKey = new AppSettingsKey { SiteDbServer = new List<string> { "01", "02" }, MailFunction = new MailFunction { VirtualSport = new MailInfo { CreditMailId = 103 } } };
+        var options = Options.Create(appSettingsKey);
+
+        service = new LeapGamingServiceImp(mapper, calculateService, repository, sendMailService, matchService, announcementService, options);
     }
 
     public LeapGamingServiceTests(LeapGamingService service)

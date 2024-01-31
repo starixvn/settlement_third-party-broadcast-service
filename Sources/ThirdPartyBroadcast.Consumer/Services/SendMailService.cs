@@ -8,29 +8,11 @@ namespace ThirdPartyBroadcast.Consumer.Services;
 
 public interface SendMailService
 {
-    void SendMail(NotificationModel item);
-
     Task SendMailByFunctionId(NotificationModel item);
 }
 
 public class SendMailServiceImp : SendMailService
 {
-    public void SendMail(NotificationModel item)
-    {
-        var mailRecord = new MailRecord
-        {
-            MailTo = item.To,
-            MailCc = item.Copy,
-            Title = "NAP - Settlement System",
-            Subject = " Virtual Sport",
-            Body = MailBody(item)
-        };
-
-        using var mailClient = new Fanex.MailDeliver.MailClient.API.MailDeliver();
-
-        mailClient.SendMail(mailRecord);
-    }
-
     public async Task SendMailByFunctionId(NotificationModel item)
     {
         var mail = new Mail

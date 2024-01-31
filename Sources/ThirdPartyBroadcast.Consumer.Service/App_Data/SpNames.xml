@@ -20,7 +20,6 @@
 		<Setting Key="NAP_Set_MatchSelInfo" SpName="NAP_Set_MatchSelInfo" DbName="DBPRO.bodb02.bodbAdminNet" />
 		<Setting Key="NAP_Set_Match_s178_Sel" SpName="NAP_Set_Match_s178_Sel" DbName="DBPRO.bodb02.bodbAdminNet" />
 		<Setting Key="NAP_Set_Match_s180_Sel" SpName="NAP_Set_Match_s180_Sel" DbName="DBPRO.bodb02.bodbAdminNet" />
-		<Setting Key="NAP_Admin_MailingList_Sel" SpName="NAP_Admin_MailingList_Sel" DbName="DBTXN.bodb02.bodbAdminNet" />
 		<Setting Key="NAP_Admin_SendNotify_VS_Betradar" SpName="NAP_Admin_SendNotify_VS_Betradar" DbName="DBTXN.bodb02.bodbAdminNet" />
 		<Setting Key="NAP_Admin_SendNotify_s178" SpName="NAP_Admin_SendNotify_s178" DbName="DBTXN.bodb02.bodbAdminNet" />
 		<Setting Key="NAP_Admin_SendNotify_VS" SpName="NAP_Admin_SendNotify_VS" DbName="DBTXN.bodb02.bodbAdminNet" />
