@@ -17,7 +17,7 @@ public class SendMailServiceImp : SendMailService
     {
         var mail = new Mail
         {
-            Subject = "Virtual Sport",
+            Subject = Subject(item),
             Title = "NAP - Settlement System",
             Body = MailBody(item),
             MailingListId = item.MailId
@@ -38,5 +38,11 @@ public class SendMailServiceImp : SendMailService
         }
 
         return Engine.Razor.RunCompile(File.ReadAllText(template), templateKey, model: item);
+    }
+
+    private static string Subject(NotificationModel item)
+    {
+        var to = string.Equals(item.Type, EmailType.Credit) ? "MBC" : "Licensee";
+        return $"[Virtual Sports] {item.Action} Ticket Numbers ({to}) -- {item.Action} MatchId: {item.MatchInfo.MatchId} ({item.MatchInfo.SportName})";
     }
 }
