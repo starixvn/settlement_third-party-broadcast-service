@@ -1,5 +1,4 @@
-﻿using Fanex.MailDeliver.MailClient.Model;
-using Fanex.MailDelivery.Client;
+﻿using Fanex.MailDelivery.Client;
 using Fanex.MailDelivery.Core.Models;
 using RazorEngine;
 using RazorEngine.Templating;

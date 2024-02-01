@@ -21,7 +21,6 @@
 		<Setting Key="NAP_Set_Match_s178_Sel" SpName="NAP_Set_Match_s178_Sel" DbName="DBPRO.bodb02.bodbAdminNet" />
 		<Setting Key="NAP_Set_Match_s180_Sel" SpName="NAP_Set_Match_s180_Sel" DbName="DBPRO.bodb02.bodbAdminNet" />
 		<Setting Key="NAP_Admin_SendNotify_VS_Betradar" SpName="NAP_Admin_SendNotify_VS_Betradar" DbName="DBTXN.bodb02.bodbAdminNet" />
-		<Setting Key="NAP_Admin_SendNotify_s178" SpName="NAP_Admin_SendNotify_s178" DbName="DBTXN.bodb02.bodbAdminNet" />
 		<Setting Key="NAP_Admin_SendNotify_VS" SpName="NAP_Admin_SendNotify_VS" DbName="DBTXN.bodb02.bodbAdminNet" />
 		<Setting Key="NAP_SpecialDelete_Message_Insert" SpName="NAP_SpecialDelete_Message_Insert" DbName="DB061.bodb_Message.bodbAdminNet" />
 		<Setting Key="NAP_SpecialDelete_BatchMessage_Upload" SpName="NAP_SpecialDelete_BatchMessage_Upload" DbName="DB061.bodb_Message.bodbAdminNet" />

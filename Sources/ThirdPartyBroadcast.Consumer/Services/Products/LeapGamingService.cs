@@ -6,7 +6,7 @@ using Criteria;
 using Criteria.LeapGaming;
 using Fanex.Data.Repository;
 using Microsoft.Extensions.Options;
-using ThirdPartyBroadcast.Consumer.Models;
+using Models;
 
 public interface LeapGamingService
 {
