@@ -126,8 +126,7 @@ public class LeapGamingServiceImp(
     {
         if (IsReSettleOrRefund(action, matchInfo.EventStatus))
         {
-            var criteria = new LeapGamingTicketCriteria { MatchId = matchInfo.MatchId };
-            var (creditTickets, depositTickets) = await repository.FetchMultipleAsync<TicketInfo, TicketInfo>(criteria);
+            var (creditTickets, depositTickets) = await matchService.GetAllTicketsVirtualSports(matchInfo.MatchId);
 
             var actionName = GetActionName(action);
 
