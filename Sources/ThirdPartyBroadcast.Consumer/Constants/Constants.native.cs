@@ -55,8 +55,10 @@ public static class ActionId
     public const int LeapGamingRefund = 81044;
 
     public const int NgCal = 115;
+    public const int CockFightingCalc = 81050;
 
     public const int NgCalHt = 118;
+    public const int CockFightingRefund = 81051;
 
     public const int NgRefund = 117;
 

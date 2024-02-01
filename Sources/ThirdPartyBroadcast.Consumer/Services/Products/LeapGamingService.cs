@@ -74,7 +74,7 @@ public class LeapGamingServiceImp(
     {
         var resources = DeserializeResources(request.SelectedResources);
         var message = $"{matchInfo.SportName}- Calculate({request.Action}) {(resultSettle.ErrorCode > 0 ? resultSettle.ErrorMessage : string.Empty)}";
-        var actionId = string.Equals(request.Action, ActionName.Calculate, StringComparison.OrdinalIgnoreCase) ? ActionId.LeapGamingCalc : ActionId.LeapGamingRefund;
+        var actionId = GetActionId(request, matchInfo);
         var criteria = new WriteLogCriteria(request.MatchId, message, actionId, request.AdminId, request.Ip);
         var htResult = resources.Items.Find(i => i.Id == ResourceId.HalfTimeResourceId) ?? new ResourceItemModel();
         var ftResult = resources.Items.Find(i => i.Id == ResourceId.FullTimeResourceId) ?? new ResourceItemModel();
@@ -85,6 +85,15 @@ public class LeapGamingServiceImp(
         criteria.HtHomeScore = int.TryParse(htResult.Home, out var htHome) ? htHome : 0;
 
         return criteria;
+    }
+
+    private static int GetActionId(LeapGamingRequest request, MatchInfo matchInfo)
+    {
+        if (matchInfo.SportType == SportType.VirtualCockFighting)
+        {
+            return string.Equals(request.Action, ActionName.Calculate, StringComparison.OrdinalIgnoreCase) ? ActionId.CockFightingCalc : ActionId.CockFightingRefund;
+        }
+        return string.Equals(request.Action, ActionName.Calculate, StringComparison.OrdinalIgnoreCase) ? ActionId.LeapGamingCalc : ActionId.LeapGamingRefund;
     }
 
     private static Result ValidateMatchScore(LeapGamingRequest request, MatchInfo matchInfo)

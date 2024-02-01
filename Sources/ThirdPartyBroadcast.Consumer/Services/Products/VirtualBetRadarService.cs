@@ -12,36 +12,15 @@ public interface VirtualBetRadarService
     Task<Result> Settle(VirtualBetRadarRequest request);
 }
 
-public class VirtualBetRadarServiceImp : VirtualBetRadarService
+public class VirtualBetRadarServiceImp(
+    IDynamicRepository repository,
+    IMapper mapper,
+    CalculateService calculateService,
+    LogDirectlyService logDirectlyService,
+    MatchService matchService,
+    AnnouncementService announcementService)
+    : VirtualBetRadarService
 {
-    private readonly IDynamicRepository repository;
-
-    private readonly IMapper mapper;
-
-    private readonly CalculateService calculateService;
-
-    private readonly LogDirectlyService logDirectlyService;
-
-    private readonly MatchService matchService;
-
-    private readonly AnnouncementService announcementService;
-
-    public VirtualBetRadarServiceImp(
-        IDynamicRepository repository,
-        IMapper mapper,
-        CalculateService calculateService,
-        LogDirectlyService logDirectlyService,
-        MatchService matchService,
-        AnnouncementService announcementService)
-    {
-        this.repository = repository;
-        this.mapper = mapper;
-        this.calculateService = calculateService;
-        this.logDirectlyService = logDirectlyService;
-        this.matchService = matchService;
-        this.announcementService = announcementService;
-    }
-
     public async Task<Result> Settle(VirtualBetRadarRequest request)
     {
         var betRadarValidationCriteria = mapper.Map<VirtualBetRadarRequest, BetRadarValidationCriteria>(request);

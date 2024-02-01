@@ -11,6 +11,4 @@ public class LeapGamingRequest
     public string Ip { get; set; } = string.Empty;
 
     public string Action { get; set; } = "CAL";
-
-    public bool IsReSettledTickets { get; set; } = true;
 }
