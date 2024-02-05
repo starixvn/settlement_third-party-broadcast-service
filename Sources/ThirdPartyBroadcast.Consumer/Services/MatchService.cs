@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using ThirdPartyBroadcast.Consumer.Criteria;
 using ThirdPartyBroadcast.Consumer.Criteria.LeapGaming;
+using ThirdPartyBroadcast.Consumer.Criteria.VirtualBetRadar;
 using ThirdPartyBroadcast.Consumer.Criteria.VirtualSports;
 
 namespace ThirdPartyBroadcast.Consumer.Services;
@@ -11,15 +12,21 @@ public interface MatchService
 
     Task<MatchInfo> GetMatchInfoLeapGaming(int matchId);
 
+    Task<MatchInfo> GetMatchInfoBetRadar(int matchId);
+
     Task UpdateMatchInfoVirtualSports(VirtualSoccerRequest request);
 
     Task UpdateMatchInfoLeapGaming(LeapGamingRequest request);
+
+    Task UpdateMatchInfoBetRadar(VirtualBetRadarRequest request);
 
     Task<(IEnumerable<TicketInfo> creditTickets, IEnumerable<TicketInfo> depositTickets)> GetAllTicketsVirtualSports(int matchId);
 
     Task WriteLogVirtualSports(VirtualSoccerRequest request);
 
     Task WriteLogLeapGaming(int matchId);
+
+    Task WriteLogBetRadar(VirtualBetRadarRequest request);
 
     Task<List<TicketSettleInfo>> GetTicketsByAction(int matchId, string action);
 
@@ -44,6 +51,14 @@ public class MatchServiceImp(
     }
 
     public async Task<MatchInfo> GetMatchInfoLeapGaming(int matchId)
+    {
+        var criteria = new LeapGamingGetMatchInfoCriteria { MatchId = matchId };
+        var match = await repository.GetAsync<MatchInfo>(criteria);
+        match.RefDataService = refDataService;
+        return match;
+    }
+
+    public async Task<MatchInfo> GetMatchInfoBetRadar(int matchId)
     {
         var criteria = new LeapGamingGetMatchInfoCriteria { MatchId = matchId };
         var match = await repository.GetAsync<MatchInfo>(criteria);
@@ -80,6 +95,12 @@ public class MatchServiceImp(
         await repository.ExecuteAsync(requestUpdate);
     }
 
+    public async Task UpdateMatchInfoBetRadar(VirtualBetRadarRequest request)
+    {
+        var criteria = mapper.Map<VirtualBetRadarRequest, BetRadarUpdateMatchCriteria>(request);
+        await repository.ExecuteAsync(criteria);
+    }
+
     public async Task<(IEnumerable<TicketInfo> creditTickets, IEnumerable<TicketInfo> depositTickets)> GetAllTicketsVirtualSports(int matchId)
     {
         var criteria = new VirtualSportsTicketCriteria { MatchId = matchId };
@@ -96,6 +117,15 @@ public class MatchServiceImp(
     {
         var message = logDirectlyService.Message(matchId);
         await logDirectlyService.WriteLog(matchId, message);
+    }
+
+    public async Task WriteLogBetRadar(VirtualBetRadarRequest request)
+    {
+        var message = $@"NAP: VS BetRadar - Calculate {request.Action} for matchId: {request.MatchId}
+              Scores: FT=[{request.Fth}-{request.Fta}]; HT=[{request.Hth}-{request.Hta}]
+              Resource Results: {request.ResourceResult}";
+
+        await logDirectlyService.WriteLog(request.MatchId, message);
     }
 
     public async Task<List<TicketSettleInfo>> GetTicketsByAction(int matchId, string action)
