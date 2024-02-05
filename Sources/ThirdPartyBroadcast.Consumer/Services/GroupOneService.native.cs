@@ -18,40 +18,16 @@ public interface GroupOneService
     Task SettleFastMarket(string productType, string data);
 }
 
-public class GroupOneServiceImp : GroupOneService
+public class GroupOneServiceImp(
+    OutrightService outrightService,
+    BitCoinService bitCoinService,
+    LogDirectlyService logDirectlyService,
+    HappyFiveService happyFiveService,
+    NumberGameService numberGameService,
+    BetBuilderService betBuilderService,
+    FastMarketService fastMarketService)
+    : GroupOneService
 {
-    private readonly LogDirectlyService logDirectlyService;
-
-    private readonly OutrightService outrightService;
-
-    private readonly BitCoinService bitCoinService;
-
-    private readonly HappyFiveService happyFiveService;
-
-    private readonly NumberGameService numberGameService;
-
-    private readonly BetBuilderService betBuilderService;
-
-    private readonly FastMarketService fastMarketService;
-
-    public GroupOneServiceImp(
-        OutrightService outrightService,
-        BitCoinService bitCoinService,
-        LogDirectlyService logDirectlyService,
-        HappyFiveService happyFiveService,
-        NumberGameService numberGameService,
-        BetBuilderService betBuilderService,
-        FastMarketService fastMarketService)
-    {
-        this.outrightService = outrightService;
-        this.bitCoinService = bitCoinService;
-        this.logDirectlyService = logDirectlyService;
-        this.happyFiveService = happyFiveService;
-        this.numberGameService = numberGameService;
-        this.betBuilderService = betBuilderService;
-        this.fastMarketService = fastMarketService;
-    }
-
     public async Task SettleOutright(string productType, string data)
     {
         var request = JsonConvert.DeserializeObject<OutrightRequest>(data);

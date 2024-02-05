@@ -12,39 +12,16 @@ public interface BetBuilderService
     Task<Result> Settle(BetBuilderRequest request);
 }
 
-public class BetBuilderServiceImp : BetBuilderService
+public class BetBuilderServiceImp(
+    ScaleOutSettleThirdPartyService scaleOutSettleThirdPartyService,
+    ScaleOutSettleService scaleOutSettleService,
+    CalculateService calculateService,
+    IMapper mapper,
+    XmlConvertService xmlConvertService,
+    IDynamicRepository repository,
+    LogDirectlyService logDirectlyService)
+    : BetBuilderService
 {
-    private readonly ScaleOutSettleThirdPartyService scaleOutSettleThirdPartyService;
-
-    private readonly ScaleOutSettleService scaleOutSettleService;
-
-    private readonly CalculateService calculateService;
-
-    private readonly IMapper mapper;
-
-    private readonly XmlConvertService xmlConvertService;
-
-    private readonly IDynamicRepository repository;
-
-    private readonly LogDirectlyService logDirectlyService;
-
-    public BetBuilderServiceImp(ScaleOutSettleThirdPartyService scaleOutSettleThirdPartyService,
-            ScaleOutSettleService scaleOutSettleService,
-            CalculateService calculateService,
-            IMapper mapper,
-            XmlConvertService xmlConvertService,
-            IDynamicRepository repository,
-            LogDirectlyService logDirectlyService)
-    {
-        this.scaleOutSettleThirdPartyService = scaleOutSettleThirdPartyService;
-        this.scaleOutSettleService = scaleOutSettleService;
-        this.calculateService = calculateService;
-        this.mapper = mapper;
-        this.xmlConvertService = xmlConvertService;
-        this.repository = repository;
-        this.logDirectlyService = logDirectlyService;
-    }
-
     public async Task<Result> Settle(BetBuilderRequest request)
     {
         var (validationResult, invalidMarketIds) = await ValidationBeforeSettle(request);
