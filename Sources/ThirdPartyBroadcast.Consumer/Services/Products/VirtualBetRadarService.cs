@@ -35,7 +35,7 @@ public class VirtualBetRadarServiceImp(
             return resultValidation;
         }
 
-        var currentMatchInfo = await matchService.GetMatchInfoBetRadar(request.MatchId);
+        var currentMatchInfo = await matchService.GetMatchInfo(request.MatchId);
         var currentTickets = await matchService.GetTicketsByAction(request.MatchId, request.Action);
 
         await matchService.UpdateMatchInfoBetRadar(request);
@@ -70,7 +70,7 @@ public class VirtualBetRadarServiceImp(
 
     private async Task SendMail(string action, MatchInfo matchInfo)
     {
-        if (IsReSettleOrRefund(action, matchInfo.EventStatus))
+        if (matchService.IsReSettleOrRefund(action, matchInfo.EventStatus))
         {
             var (creditTickets, depositTickets) = await matchService.GetAllTicketsVirtualSports(matchInfo.MatchId);
 
@@ -109,7 +109,7 @@ public class VirtualBetRadarServiceImp(
             return;
         }
 
-        var tickets = SplitTicketByLicensee(ticketsInfo).ToList();
+        var tickets = matchService.SplitTicketByLicensee(ticketsInfo).ToList();
         var mailId = MailFunction.VirtualSport.DepositMailId;
 
         var mailModel = new NotificationModel
@@ -139,7 +139,7 @@ public class VirtualBetRadarServiceImp(
             FinalHomeScore = request.Fth,
             HtAwayScore = request.Hta,
             HtHomeScore = request.Hth,
-            Remark = $"VS BetRadar - Calculate ({request.Action}) {(settleResult.ErrorCode > 0 ? settleResult.ErrorMessage : string.Empty)}" //check
+            Remark = $"VS BetRadar - Calculate ({request.Action}) {(settleResult.ErrorCode > 0 ? settleResult.ErrorMessage : string.Empty)}"
         };
         return criteria;
     }
@@ -147,18 +147,4 @@ public class VirtualBetRadarServiceImp(
     private static int ActionIdValue(string actionName) => string.Equals(actionName, ActionName.Calculate, StringComparison.OrdinalIgnoreCase)
         ? ActionId.VirtualBetRadarCalc
         : ActionId.VirtualBetRadarRefund;
-
-    private static IEnumerable<TicketInfo> SplitTicketByLicensee(IReadOnlyCollection<TicketInfo> ticketInfos)
-    {
-        var distinctLicensees = ticketInfos.Select(ticket => ticket.SiteName).Distinct();
-
-        return distinctLicensees.Select(licensee => new TicketInfo
-        {
-            TicketsInfo = ticketInfos.Where(ticket => ticket.SiteName == licensee).ToList()
-        });
-    }
-
-    private static bool IsReSettleOrRefund(string action, string eventStatus) =>
-        (!string.IsNullOrWhiteSpace(eventStatus) && string.Equals(eventStatus.ToLowerInvariant(), EventStatus.Completed))
-        || string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase);
 }

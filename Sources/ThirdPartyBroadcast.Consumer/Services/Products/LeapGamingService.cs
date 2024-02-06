@@ -133,7 +133,7 @@ public class LeapGamingServiceImp(
 
     private async Task SendMail(string action, MatchInfo matchInfo)
     {
-        if (IsReSettleOrRefund(action, matchInfo.EventStatus))
+        if (matchService.IsReSettleOrRefund(action, matchInfo.EventStatus))
         {
             var (creditTickets, depositTickets) = await matchService.GetAllTicketsVirtualSports(matchInfo.MatchId);
 
@@ -172,7 +172,7 @@ public class LeapGamingServiceImp(
             return;
         }
 
-        var tickets = SplitTicketByLicensee(ticketsInfo).ToList();
+        var tickets = matchService.SplitTicketByLicensee(ticketsInfo).ToList();
         var mailId = MailFunction.VirtualSport.DepositMailId;
 
         var mailModel = new NotificationModel
@@ -187,20 +187,6 @@ public class LeapGamingServiceImp(
 
         await sendMailService.SendMailByFunctionId(mailModel);
     }
-
-    private static IEnumerable<TicketInfo> SplitTicketByLicensee(IReadOnlyCollection<TicketInfo> ticketInfos)
-    {
-        var distinctLicensees = ticketInfos.Select(ticket => ticket.SiteName).Distinct();
-
-        return distinctLicensees.Select(licensee => new TicketInfo
-        {
-            TicketsInfo = ticketInfos.Where(ticket => ticket.SiteName == licensee).ToList()
-        });
-    }
-
-    private static bool IsReSettleOrRefund(string action, string eventStatus) =>
-        (!string.IsNullOrWhiteSpace(eventStatus) && string.Equals(eventStatus.ToLowerInvariant(), EventStatus.Completed))
-        || string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase);
 
     private static string GetActionName(string action) => string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase)
         ? ActionName.Refund

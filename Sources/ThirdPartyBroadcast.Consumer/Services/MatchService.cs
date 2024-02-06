@@ -8,11 +8,11 @@ namespace ThirdPartyBroadcast.Consumer.Services;
 
 public interface MatchService
 {
+    Task<MatchInfo> GetMatchInfo(int matchId);
+
     Task<MatchInfo> GetMatchInfoVirtualSports(int matchId);
 
     Task<MatchInfo> GetMatchInfoLeapGaming(int matchId);
-
-    Task<MatchInfo> GetMatchInfoBetRadar(int matchId);
 
     Task UpdateMatchInfoVirtualSports(VirtualSoccerRequest request);
 
@@ -31,6 +31,10 @@ public interface MatchService
     Task<List<TicketSettleInfo>> GetTicketsByAction(int matchId, string action);
 
     Task<List<TicketSettleInfo>> GetTicketsByTransIds(int matchId, List<TicketSettleInfo> tickets);
+
+    bool IsReSettleOrRefund(string action, string eventStatus);
+
+    IEnumerable<TicketInfo> SplitTicketByLicensee(IReadOnlyCollection<TicketInfo> ticketInfos);
 }
 
 public class MatchServiceImp(
@@ -42,6 +46,14 @@ public class MatchServiceImp(
     IOptions<AppSettingsKey> appSettingsKey)
     : MatchService
 {
+    public async Task<MatchInfo> GetMatchInfo(int matchId)
+    {
+        var criteria = new GetMatchCriteria { MatchId = matchId };
+        var match = await repository.GetAsync<MatchInfo>(criteria);
+        match.RefDataService = refDataService;
+        return match;
+    }
+
     public async Task<MatchInfo> GetMatchInfoVirtualSports(int matchId)
     {
         var criteria = new VirtualSportsGetMatchInfoCriteria { MatchId = matchId };
@@ -51,14 +63,6 @@ public class MatchServiceImp(
     }
 
     public async Task<MatchInfo> GetMatchInfoLeapGaming(int matchId)
-    {
-        var criteria = new LeapGamingGetMatchInfoCriteria { MatchId = matchId };
-        var match = await repository.GetAsync<MatchInfo>(criteria);
-        match.RefDataService = refDataService;
-        return match;
-    }
-
-    public async Task<MatchInfo> GetMatchInfoBetRadar(int matchId)
     {
         var criteria = new LeapGamingGetMatchInfoCriteria { MatchId = matchId };
         var match = await repository.GetAsync<MatchInfo>(criteria);
@@ -162,5 +166,19 @@ public class MatchServiceImp(
         }
 
         return result;
+    }
+
+    public bool IsReSettleOrRefund(string action, string eventStatus) =>
+        (!string.IsNullOrWhiteSpace(eventStatus) && string.Equals(eventStatus.ToLowerInvariant(), EventStatus.Completed))
+        || string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase);
+
+    public IEnumerable<TicketInfo> SplitTicketByLicensee(IReadOnlyCollection<TicketInfo> ticketInfos)
+    {
+        var distinctLicensees = ticketInfos.Select(ticket => ticket.SiteName).Distinct();
+
+        return distinctLicensees.Select(licensee => new TicketInfo
+        {
+            TicketsInfo = ticketInfos.Where(ticket => ticket.SiteName == licensee).ToList()
+        });
     }
 }
