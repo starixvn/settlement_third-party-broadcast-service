@@ -53,6 +53,11 @@ public static class ActionId
     public const int LeapGamingCalc = 81043;
 
     public const int LeapGamingRefund = 81044;
+
+    public const int NgCal = 115;
+    public const int NgCalHt = 118;
+    public const int NgRefund = 117;
+    public const int NgRefundFt = 119;
 }
 
 public static class ActionName
