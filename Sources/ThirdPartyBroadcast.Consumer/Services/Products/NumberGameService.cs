@@ -60,14 +60,7 @@ public class NumberGameServiceImp : NumberGameService
 
     private static WriteLogCriteria CreateWriteLogCriteria(NumberGameCriteria criteria, Result resultSettle)
     {
-        var actionId = criteria.Action.ToUpperInvariant() switch
-        {
-            ActionName.Calculate => ActionId.NgCal,
-            ActionName.CalculateHt => ActionId.NgCalHt,
-            ActionName.Refund => ActionId.NgRefund,
-            ActionName.RefundFt => ActionId.NgRefundFt,
-            _ => 0,
-        };
+        var actionId = GetLogActionId(criteria);
 
         var message = $"NumberGame - Calculate({criteria.Action}) " +
             $"{(criteria.IsLive ? "- [LIVE] -" : string.Empty)} Sequence number: {criteria.DrawSeq}" +
@@ -76,6 +69,23 @@ public class NumberGameServiceImp : NumberGameService
         var logCriteria = new WriteLogCriteria(criteria.MatchId, message, actionId, criteria.AdminId, criteria.Ip);
 
         return logCriteria;
+    }
+
+    private static int GetLogActionId(NumberGameCriteria criteria)
+    {
+        if (criteria.IsLive)
+        {
+            return ActionId.NgIsLive;
+        }
+
+        return criteria.Action.ToUpperInvariant() switch
+        {
+            "CAL" => ActionId.NgCal,
+            "CAL-HT" => ActionId.NgCalHt,
+            "REFUND" => ActionId.NgRefund,
+            "REFUND-FT" => ActionId.NgRefundFt,
+            _ => 0,
+        };
     }
 
     private async Task WriteLog(NumberGameRequest request)
