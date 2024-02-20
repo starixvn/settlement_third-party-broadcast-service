@@ -16,7 +16,5 @@ public class NumberGameRequest
 
     public bool IsLive { get; set; }
 
-    public bool IsLoop { get; set; }
-
     public bool IsLoopTempTable { get; set; }
 }
