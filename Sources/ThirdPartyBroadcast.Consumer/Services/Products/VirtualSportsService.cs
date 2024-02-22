@@ -24,7 +24,7 @@ public class VirtualSportsServiceImp(
 
     public async Task<Result> Settle(VirtualSoccerRequest request)
     {
-        var matchInfo = await matchService.GetMatchInfoVirtualSports(request.MatchId);
+        var matchInfo = await matchService.GetMatchInfo(request.MatchId);
         var currentTickets = await matchService.GetTicketsByAction(request.MatchId, request.Action);
 
         await matchService.UpdateMatchInfoVirtualSports(request);

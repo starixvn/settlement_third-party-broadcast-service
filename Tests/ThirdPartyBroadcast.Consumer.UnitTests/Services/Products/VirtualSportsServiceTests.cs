@@ -36,14 +36,14 @@ public class VirtualSportsServiceTests
     [Fact]
     public async Task Settle_ValidatePassed_InvokeAllMethod()
     {
-        matchService.GetMatchInfoVirtualSports(Arg.Any<int>()).Returns(new MatchInfo { EventStatus = string.Empty });
+        matchService.GetMatchInfo(Arg.Any<int>()).Returns(new MatchInfo { EventStatus = string.Empty });
         matchService.GetAllTicketsVirtualSports(Arg.Any<int>()).Returns((new List<TicketInfo>(), new List<TicketInfo>()));
 
         await service.Settle(new VirtualSoccerRequest());
 
         Received.InOrder(() =>
         {
-            matchService.GetMatchInfoVirtualSports(Arg.Any<int>());
+            matchService.GetMatchInfo(Arg.Any<int>());
             matchService.GetTicketsByAction(Arg.Any<int>(), Arg.Any<string>());
             matchService.UpdateMatchInfoVirtualSports(Arg.Any<VirtualSoccerRequest>());
             matchService.WriteLogVirtualSports(Arg.Any<VirtualSoccerRequest>());

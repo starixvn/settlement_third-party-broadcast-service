@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Options;
 using ThirdPartyBroadcast.Consumer.Criteria;
-using ThirdPartyBroadcast.Consumer.Criteria.LeapGaming;
 using ThirdPartyBroadcast.Consumer.Criteria.VirtualBetRadar;
 using ThirdPartyBroadcast.Consumer.Criteria.VirtualSports;
 
@@ -9,10 +8,6 @@ namespace ThirdPartyBroadcast.Consumer.Services;
 public interface MatchService
 {
     Task<MatchInfo> GetMatchInfo(int matchId);
-
-    Task<MatchInfo> GetMatchInfoVirtualSports(int matchId);
-
-    Task<MatchInfo> GetMatchInfoLeapGaming(int matchId);
 
     Task UpdateMatchInfoVirtualSports(VirtualSoccerRequest request);
 
@@ -49,22 +44,6 @@ public class MatchServiceImp(
     public async Task<MatchInfo> GetMatchInfo(int matchId)
     {
         var criteria = new GetMatchCriteria { MatchId = matchId };
-        var match = await repository.GetAsync<MatchInfo>(criteria);
-        match.RefDataService = refDataService;
-        return match;
-    }
-
-    public async Task<MatchInfo> GetMatchInfoVirtualSports(int matchId)
-    {
-        var criteria = new VirtualSportsGetMatchInfoCriteria { MatchId = matchId };
-        var match = await repository.GetAsync<MatchInfo>(criteria);
-        match.RefDataService = refDataService;
-        return match;
-    }
-
-    public async Task<MatchInfo> GetMatchInfoLeapGaming(int matchId)
-    {
-        var criteria = new LeapGamingGetMatchInfoCriteria { MatchId = matchId };
         var match = await repository.GetAsync<MatchInfo>(criteria);
         match.RefDataService = refDataService;
         return match;

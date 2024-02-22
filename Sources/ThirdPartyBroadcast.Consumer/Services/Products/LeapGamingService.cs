@@ -31,7 +31,7 @@ public class LeapGamingServiceImp(
 
     public async Task<Result> Settle(LeapGamingRequest request)
     {
-        var currentMatchInfo = await matchService.GetMatchInfoLeapGaming(request.MatchId);
+        var currentMatchInfo = await matchService.GetMatchInfo(request.MatchId);
         var validationResult = ValidateMatchScore(request, currentMatchInfo);
         if (validationResult.ErrorCode > 0)
         {

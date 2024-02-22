@@ -17,8 +17,6 @@
 		<Setting Key="WriteLog_UserLog_Settle" SpName="WriteLog_UserLog_Settle" DbName="DBLOG.bodb_CustomerLog.bodbAdminNet" />
 		<Setting Key="NAP_UserLog_WriteLogPreSettlement" SpName="NAP_UserLog_WriteLogPreSettlement" DbName="DBUserLog.LogTDB.bodbAdminNet" />
 		<Setting Key="NAP_Set_MatchSelInfo" SpName="NAP_Set_MatchSelInfo" DbName="DBPRO.bodb02.bodbAdminNet" />
-		<Setting Key="NAP_Set_Match_s178_Sel" SpName="NAP_Set_Match_s178_Sel" DbName="DBPRO.bodb02.bodbAdminNet" />
-		<Setting Key="NAP_Set_Match_s180_Sel" SpName="NAP_Set_Match_s180_Sel" DbName="DBPRO.bodb02.bodbAdminNet" />
 		<Setting Key="NAP_Set_Match_VS_Sel" SpName="NAP_Set_Match_VS_Sel" DbName="DBPRO.bodb02.bodbAdminNet" />
 		<Setting Key="NAP_Admin_SendNotify_VS" SpName="NAP_Admin_SendNotify_VS" DbName="DBTXN.bodb02.bodbAdminNet" />
 		<Setting Key="NAP_SpecialDelete_Message_Insert" SpName="NAP_SpecialDelete_Message_Insert" DbName="DB061.bodb_Message.bodbAdminNet" />

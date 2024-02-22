@@ -50,7 +50,7 @@ public class LeapGamingServiceTests
             MatchId = 1,
             RefDataService = new RefDataServiceImp(new RemotingRefService())
         };
-        matchService.GetMatchInfoLeapGaming(Arg.Any<int>()).Returns(matchInfo);
+        matchService.GetMatchInfo(Arg.Any<int>()).Returns(matchInfo);
         calculateService.Execute(Arg.Any<LeapGamingCriteria>()).Returns(new Result());
 
         await service.Settle(new LeapGamingRequest
@@ -62,7 +62,7 @@ public class LeapGamingServiceTests
 
         Received.InOrder(() =>
         {
-            matchService.GetMatchInfoLeapGaming(Arg.Any<int>());
+            matchService.GetMatchInfo(Arg.Any<int>());
             matchService.GetTicketsByAction(Arg.Any<int>(), Arg.Any<string>());
             matchService.UpdateMatchInfoLeapGaming(Arg.Any<LeapGamingRequest>());
             matchService.WriteLogLeapGaming(Arg.Any<int>());
