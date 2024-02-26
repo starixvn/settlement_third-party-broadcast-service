@@ -22,7 +22,7 @@ public class LeapGamingServiceImp(
 {
     private const int ErrorCodeNotExistValue = 1_000_003;
 
-    private const string Subject = "Virtual Sports 3";
+    private const string Subject = "Virtual Sports";
 
     private const string ErrorMsgNotExistValue = "The input score values are not valid!";
 
