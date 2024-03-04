@@ -8,15 +8,12 @@ public interface NumberGameService
 }
 
 public class NumberGameServiceImp(
-    private readonly IDynamicRepository repository;
-
     IMapper mapper,
     ScaleOutSettleThirdPartyService scaleOutSettleThirdPartyService,
     CalculateService calculateService,
-        LogDirectlyService logDirectlyService,
-        IDynamicRepository repository)
+    LogDirectlyService logDirectlyService,
+    IDynamicRepository repository) : NumberGameService
 {
-        this.repository = repository;
     public async Task<Result> Settle(NumberGameRequest request)
     {
         if (!request.IsLive)

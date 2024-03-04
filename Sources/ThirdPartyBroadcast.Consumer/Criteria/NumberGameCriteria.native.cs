@@ -7,6 +7,7 @@ public class NumberGameCriteria : CalculateCriteria
     public bool IsLive { get; set; }
 
     public string Action { get; set; }
+
     public bool IsLoopTempTable { get; set; }
 
     public override string GetSettingKey() => $"NAP_Admin_Settlement_s161_{DbServer}";
