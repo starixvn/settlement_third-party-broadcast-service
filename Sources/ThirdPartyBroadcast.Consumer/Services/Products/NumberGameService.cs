@@ -17,16 +17,20 @@ public class NumberGameServiceImp : NumberGameService
 
     private readonly LogDirectlyService logDirectlyService;
 
+    private readonly IDynamicRepository repository;
+
     public NumberGameServiceImp(
         IMapper mapper,
         ScaleOutSettleThirdPartyService scaleOutSettleThirdPartyService,
         CalculateService calculateService,
-        LogDirectlyService logDirectlyService)
+        LogDirectlyService logDirectlyService,
+        IDynamicRepository repository)
     {
         this.mapper = mapper;
         this.scaleOutSettleThirdPartyService = scaleOutSettleThirdPartyService;
         this.calculateService = calculateService;
         this.logDirectlyService = logDirectlyService;
+        this.repository = repository;
     }
 
     public async Task<Result> Settle(NumberGameRequest request)
@@ -39,7 +43,44 @@ public class NumberGameServiceImp : NumberGameService
         await WriteLog(request);
 
         var criteria = mapper.Map<NumberGameRequest, NumberGameCriteria>(request);
-        return await calculateService.Execute(criteria);
+
+        var startSettle = DateTime.Now;
+        var settledResult = await calculateService.Execute(criteria);
+        var endSettle = DateTime.Now;
+
+        await WriteLogSettled(criteria, settledResult, startSettle, endSettle);
+
+        return settledResult;
+    }
+
+    private async Task WriteLogSettled(NumberGameCriteria criteria, Result resultSettle, DateTime start, DateTime end)
+    {
+        var actionId = GetLogActionId(criteria);
+
+        var message = $"NumberGame - Calculate({criteria.Action}) Start at {start} and End at {end}" +
+            $"{(criteria.IsLive ? "- [LIVE] -" : string.Empty)} Sequence number: {criteria.DrawSeq}" +
+            $" {(resultSettle.ErrorCode > 0 ? resultSettle.ErrorMessage : string.Empty)}";
+
+        var logCriteria = new WriteLogCriteria(criteria.MatchId, message, actionId, criteria.AdminId, criteria.Ip);
+
+        await repository.ExecuteAsync(logCriteria);
+    }
+
+    private static int GetLogActionId(NumberGameCriteria criteria)
+    {
+        if (criteria.IsLive)
+        {
+            return ActionId.NgIsLive;
+        }
+
+        return criteria.Action.ToUpperInvariant() switch
+        {
+            "CAL" => ActionId.NgCal,
+            "CAL-HT" => ActionId.NgCalHt,
+            "REFUND" => ActionId.NgRefund,
+            "REFUND-FT" => ActionId.NgRefundFt,
+            _ => 0,
+        };
     }
 
     private async Task WriteLog(NumberGameRequest request)

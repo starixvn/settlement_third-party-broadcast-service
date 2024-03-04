@@ -53,6 +53,16 @@ public static class ActionId
     public const int LeapGamingCalc = 81043;
 
     public const int LeapGamingRefund = 81044;
+
+    public const int NgCal = 115;
+
+    public const int NgCalHt = 118;
+
+    public const int NgRefund = 117;
+
+    public const int NgRefundFt = 119;
+
+    public const int NgIsLive = 116;
 }
 
 public static class ActionName
@@ -62,6 +72,10 @@ public static class ActionName
     public const string ReSettle = "ReSettle";
 
     public const string Refund = "Refund";
+
+    public const string CalculateHt = "Cal-HT";
+
+    public const string RefundFt = "Refund-FT";
 }
 
 public enum TicketType
