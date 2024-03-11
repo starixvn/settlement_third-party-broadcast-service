@@ -6,7 +6,5 @@ public class LeapGamingCriteria : CalculateCriteria
 
     public string SelectedResources { get; set; }
 
-    public bool IsReSettledTickets { get; set; }
-
     public override string GetSettingKey() => $"NAP_Admin_Settlement_s178_{DbServer}";
 }

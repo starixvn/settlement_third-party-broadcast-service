@@ -11,14 +11,13 @@ public class NumberGameServiceTests
 
     private readonly NumberGameService service;
     private readonly LogDirectlyService logDirectlyService;
-    private readonly IDynamicRepository repository;
 
     public NumberGameServiceTests()
     {
         calculateService = Substitute.For<CalculateService>();
         scaleOutSettleThirdPartyService = Substitute.For<ScaleOutSettleThirdPartyService>();
         logDirectlyService = Substitute.For<LogDirectlyService>();
-        repository = Substitute.For<IDynamicRepository>();
+        var repository = Substitute.For<IDynamicRepository>();
 
         var mapperConfig = new MapperConfigurationExpression();
         mapperConfig.AddProfile<ThirdPartyBroadcastMappingProfile>();

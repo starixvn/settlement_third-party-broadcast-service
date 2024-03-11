@@ -1,4 +1,5 @@
-﻿using ThirdPartyBroadcast.Consumer.Criteria;
+﻿using Fanex.RemotingRef;
+using Microsoft.Extensions.Options;
 using ThirdPartyBroadcast.Consumer.Criteria.LeapGaming;
 
 namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products;
@@ -9,29 +10,27 @@ public class LeapGamingServiceTests
 
     private readonly MatchService matchService;
 
-    private readonly IDynamicRepository repository;
-
     private readonly LeapGamingService service;
+
+    private readonly AnnouncementService announcementService;
 
     public LeapGamingServiceTests()
     {
         calculateService = Substitute.For<CalculateService>();
-        repository = Substitute.For<IDynamicRepository>();
+        var repository = Substitute.For<IDynamicRepository>();
         var sendMailService = Substitute.For<SendMailService>();
         matchService = Substitute.For<MatchService>();
-        var announcementService = Substitute.For<AnnouncementService>();
+        announcementService = Substitute.For<AnnouncementService>();
 
         var mapperConfig = new MapperConfigurationExpression();
         mapperConfig.AddProfile<ThirdPartyBroadcastMappingProfile>();
         var config = new MapperConfiguration(mapperConfig);
         var mapper = new Mapper(config);
 
-        service = new LeapGamingServiceImp(mapper, calculateService, repository, sendMailService, matchService, announcementService);
-    }
+        var appSettingsKey = new AppSettingsKey { SiteDbServer = ["01", "02"], MailFunction = new MailFunction { VirtualSport = new MailInfo { CreditMailId = 103 } } };
+        var options = Options.Create(appSettingsKey);
 
-    public LeapGamingServiceTests(LeapGamingService service)
-    {
-        this.service = service;
+        service = new LeapGamingServiceImp(mapper, calculateService, repository, sendMailService, matchService, announcementService, options);
     }
 
     [Fact]
@@ -40,22 +39,19 @@ public class LeapGamingServiceTests
         var result = await service.Settle(new LeapGamingRequest { SelectedResources = "<Resources> <score Id=\"00\" Home=\"1\" Away=\"1\"/> <score Id=\"01\" Home=\"1\" Away=\"1\"/></Resources>" });
 
         Assert.True(result.ErrorCode > 0);
-        await repository.DidNotReceive().ExecuteAsync(Arg.Any<UpdateMatchCriteria>());
+        await calculateService.DidNotReceive().Execute(Arg.Any<LeapGamingCriteria>());
     }
 
     [Fact]
-    public async Task Settle_ValidationPassed_UpdateAndSettleMatch()
+    public async Task Settle_ValidationPassed_InvokeAllMethod()
     {
-        matchService.GetMatchInfoLeapGaming(Arg.Any<int>()).Returns(new MatchInfo());
+        var matchInfo = new MatchInfo
+        {
+            MatchId = 1,
+            RefDataService = new RefDataServiceImp(new RemotingRefService())
+        };
+        matchService.GetMatchInfo(Arg.Any<int>()).Returns(matchInfo);
         calculateService.Execute(Arg.Any<LeapGamingCriteria>()).Returns(new Result());
-
-        var fakeData = new IEnumerable<object>[3];
-        fakeData[0] = new List<MatchInfo> { new() };
-        fakeData[1] = new List<TicketInfo> { new() { CustId = 1 } };
-        fakeData[2] = new List<TicketInfo> { new() { CustId = 1 } };
-        repository
-            .FetchMultipleAsync(Arg.Any<LeapGamingTicketCriteria>(),
-                Arg.Any<Type[]>()).Returns(fakeData);
 
         await service.Settle(new LeapGamingRequest
         {
@@ -64,8 +60,14 @@ public class LeapGamingServiceTests
             SelectedResources = "<Resources> <Resource Id=\"00\" Home=\"1\" Away=\"1\"/> <Resource Id=\"01\" Home=\"1\" Away=\"1\"/></Resources>"
         });
 
-        await matchService.Received().UpdateMatchInfoLeapGaming(Arg.Any<LeapGamingRequest>());
-        await matchService.Received().WriteLogLeapGaming(1);
-        await calculateService.Received().Execute(Arg.Any<LeapGamingCriteria>());
+        Received.InOrder(() =>
+        {
+            matchService.GetMatchInfo(Arg.Any<int>());
+            matchService.GetTicketsByAction(Arg.Any<int>(), Arg.Any<string>());
+            matchService.UpdateMatchInfoLeapGaming(Arg.Any<LeapGamingRequest>());
+            matchService.WriteLogLeapGaming(Arg.Any<int>());
+            calculateService.Execute(Arg.Any<LeapGamingCriteria>());
+            announcementService.Handle(Arg.Any<List<TicketSettleInfo>>(), Arg.Any<MatchInfo>(), Arg.Any<int>());
+        });
     }
 }

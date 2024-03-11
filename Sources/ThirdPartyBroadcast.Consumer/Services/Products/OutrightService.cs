@@ -7,24 +7,12 @@ public interface OutrightService
     Task<Result> Settle(OutrightRequest request);
 }
 
-public class OutrightServiceImp : OutrightService
+public class OutrightServiceImp(
+    IMapper mapper,
+    CalculateService calculateService,
+    ScaleOutSettleThirdPartyService scaleOutSettleThirdPartyService)
+    : OutrightService
 {
-    private readonly IMapper mapper;
-
-    private readonly CalculateService calculateService;
-
-    private readonly ScaleOutSettleThirdPartyService scaleOutSettleThirdPartyService;
-
-    public OutrightServiceImp(
-        IMapper mapper,
-        CalculateService calculateService,
-        ScaleOutSettleThirdPartyService scaleOutSettleThirdPartyService)
-    {
-        this.mapper = mapper;
-        this.calculateService = calculateService;
-        this.scaleOutSettleThirdPartyService = scaleOutSettleThirdPartyService;
-    }
-
     public async Task<Result> Settle(OutrightRequest request)
     {
         var validation = await ValidateBeforeSettle(request);

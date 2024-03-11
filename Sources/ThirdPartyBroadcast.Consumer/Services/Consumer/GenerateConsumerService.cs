@@ -5,41 +5,30 @@ public interface GenerateConsumerService
     Task SettleByProduct(string productType, string data);
 }
 
-public class GenerateConsumerServiceImp : GenerateConsumerService
+public class GenerateConsumerServiceImp(
+    GroupOneService groupOneService,
+    GroupTwoService groupTwoService,
+    LogDirectlyService logDirectlyService)
+    : GenerateConsumerService
 {
-    private readonly GroupOneService groupOneService;
-
-    private readonly GroupTwoService groupTwoService;
-
-    private readonly LogDirectlyService logDirectlyService;
-
-    private static List<string> ProductsGroupOne => new()
-    {
+    private static List<string> ProductsGroupOne =>
+    [
         ProductType.Outright,
         ProductType.BitCoin,
         ProductType.NumberGame,
         ProductType.BetBuilder,
         ProductType.FastMarket,
         ProductType.HappyFive
-    };
+    ];
 
-    private static List<string> ProductsGroupTwo => new()
-    {
+    private static List<string> ProductsGroupTwo =>
+    [
         ProductType.VirtualBetRadar,
         ProductType.VirtualSports,
         ProductType.LeapGaming,
+        ProductType.CockFighting,
         ProductType.PinGoal
-    };
-
-    public GenerateConsumerServiceImp(
-        GroupOneService groupOneService,
-        GroupTwoService groupTwoService,
-        LogDirectlyService logDirectlyService)
-    {
-        this.groupOneService = groupOneService;
-        this.groupTwoService = groupTwoService;
-        this.logDirectlyService = logDirectlyService;
-    }
+    ];
 
     public async Task SettleByProduct(string productType, string data)
     {
@@ -94,6 +83,7 @@ public class GenerateConsumerServiceImp : GenerateConsumerService
                 await groupTwoService.SettleVirtualBetRadar(productType, data);
                 break;
 
+            case ProductType.CockFighting:
             case ProductType.LeapGaming:
                 await groupTwoService.SettleLeapGaming(productType, data);
                 break;

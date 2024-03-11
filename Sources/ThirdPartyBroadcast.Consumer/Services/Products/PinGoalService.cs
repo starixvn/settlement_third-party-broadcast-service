@@ -9,28 +9,13 @@ public interface PinGoalService
     Task<Result> Settle(PinGoalRequest request);
 }
 
-public class PinGoalServiceImp : PinGoalService
+public class PinGoalServiceImp(
+    ScaleOutSettleService scaleOutSettleService,
+    IMapper mapper,
+    CalculateService calculateService,
+    LogDirectlyService logDirectlyService)
+    : PinGoalService
 {
-    private readonly ScaleOutSettleService scaleOutSettleService;
-
-    private readonly IMapper mapper;
-
-    private readonly CalculateService calculateService;
-
-    private readonly LogDirectlyService logDirectlyService;
-
-    public PinGoalServiceImp(
-        ScaleOutSettleService scaleOutSettleService,
-        IMapper mapper,
-        CalculateService calculateService,
-        LogDirectlyService logDirectlyService)
-    {
-        this.scaleOutSettleService = scaleOutSettleService;
-        this.mapper = mapper;
-        this.calculateService = calculateService;
-        this.logDirectlyService = logDirectlyService;
-    }
-
     public async Task<Result> Settle(PinGoalRequest request)
     {
         var criteria = mapper.Map<PinGoalRequest, PinGoalCriteria>(request);

@@ -11,15 +11,8 @@ namespace ThirdPartyBroadcast.Consumer.Services
         string GetSportName(int sportId, string languageCode);
     }
 
-    public class RefDataServiceImp : RefDataService
+    public class RefDataServiceImp(IRemotingRefService remotingRefService) : RefDataService
     {
-        private readonly IRemotingRefService remotingRefService;
-
-        public RefDataServiceImp(IRemotingRefService remotingRefService)
-        {
-            this.remotingRefService = remotingRefService;
-        }
-
         public string GetLeagueName(int leagueId, string languageCode)
         {
             return remotingRefService.GetLeagueName(leagueId.ToString(), languageCode, string.Empty);

@@ -67,7 +67,6 @@ public class SendMailServiceTests
 
         var model = new NotificationModel
         {
-            Subject = "Virtual Sports",
             Type = EmailType.Credit,
             Action = ActionName.Refund,
             MailId = 103,
@@ -147,7 +146,6 @@ public class SendMailServiceTests
 
         var model = new NotificationModel
         {
-            Subject = "Virtual Sports",
             Type = EmailType.Deposit,
             Action = ActionName.Refund,
             MailId = 103,

@@ -7,32 +7,13 @@ public interface NumberGameService
     Task<Result> Settle(NumberGameRequest request);
 }
 
-public class NumberGameServiceImp : NumberGameService
+public class NumberGameServiceImp(
+    IMapper mapper,
+    ScaleOutSettleThirdPartyService scaleOutSettleThirdPartyService,
+    CalculateService calculateService,
+    LogDirectlyService logDirectlyService,
+    IDynamicRepository repository) : NumberGameService
 {
-    private readonly IMapper mapper;
-
-    private readonly ScaleOutSettleThirdPartyService scaleOutSettleThirdPartyService;
-
-    private readonly CalculateService calculateService;
-
-    private readonly LogDirectlyService logDirectlyService;
-
-    private readonly IDynamicRepository repository;
-
-    public NumberGameServiceImp(
-        IMapper mapper,
-        ScaleOutSettleThirdPartyService scaleOutSettleThirdPartyService,
-        CalculateService calculateService,
-        LogDirectlyService logDirectlyService,
-        IDynamicRepository repository)
-    {
-        this.mapper = mapper;
-        this.scaleOutSettleThirdPartyService = scaleOutSettleThirdPartyService;
-        this.calculateService = calculateService;
-        this.logDirectlyService = logDirectlyService;
-        this.repository = repository;
-    }
-
     public async Task<Result> Settle(NumberGameRequest request)
     {
         if (!request.IsLive)

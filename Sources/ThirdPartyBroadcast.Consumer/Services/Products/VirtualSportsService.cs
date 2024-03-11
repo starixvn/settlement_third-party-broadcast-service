@@ -20,13 +20,11 @@ public class VirtualSportsServiceImp(
     IOptions<AppSettingsKey> appSettingsKey)
     : VirtualSportsService
 {
-    private const string Subject = "Virtual Sports";
-
     private MailFunction MailFunction => appSettingsKey.Value.MailFunction;
 
     public async Task<Result> Settle(VirtualSoccerRequest request)
     {
-        var matchInfo = await matchService.GetMatchInfoVirtualSports(request.MatchId);
+        var matchInfo = await matchService.GetMatchInfo(request.MatchId);
         var currentTickets = await matchService.GetTicketsByAction(request.MatchId, request.Action);
 
         await matchService.UpdateMatchInfoVirtualSports(request);
@@ -52,7 +50,7 @@ public class VirtualSportsServiceImp(
 
     private async Task SendMail(string action, MatchInfo matchInfo)
     {
-        if (IsReSettleOrRefund(action, matchInfo.EventStatus))
+        if (matchService.IsReSettleOrRefund(action, matchInfo.EventStatus))
         {
             var (creditTickets, depositTickets) = await matchService.GetAllTicketsVirtualSports(matchInfo.MatchId);
 
@@ -72,7 +70,6 @@ public class VirtualSportsServiceImp(
         var mailId = MailFunction.VirtualSport.CreditMailId;
         var mailModel = new NotificationModel
         {
-            Subject = Subject,
             MatchInfo = matchInfo,
             Action = actionName,
             Type = EmailType.Credit,
@@ -91,12 +88,11 @@ public class VirtualSportsServiceImp(
             return;
         }
 
-        var tickets = SplitTicketByLicensee(ticketsInfo).ToList();
+        var tickets = matchService.SplitTicketByLicensee(ticketsInfo).ToList();
         var mailId = MailFunction.VirtualSport.DepositMailId;
 
         var mailModel = new NotificationModel
         {
-            Subject = Subject,
             MatchInfo = matchInfo,
             Action = actionName,
             Type = EmailType.Deposit,
@@ -107,20 +103,6 @@ public class VirtualSportsServiceImp(
 
         await sendMailService.SendMailByFunctionId(mailModel);
     }
-
-    private static IEnumerable<TicketInfo> SplitTicketByLicensee(IReadOnlyCollection<TicketInfo> ticketInfos)
-    {
-        var distinctLicensees = ticketInfos.Select(ticket => ticket.SiteName).Distinct();
-
-        return distinctLicensees.Select(licensee => new TicketInfo
-        {
-            TicketsInfo = ticketInfos.Where(ticket => ticket.SiteName == licensee).ToList()
-        });
-    }
-
-    private static bool IsReSettleOrRefund(string action, string eventStatus) =>
-        (!string.IsNullOrWhiteSpace(eventStatus) && string.Equals(eventStatus.ToLowerInvariant(), EventStatus.Completed))
-        || string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase);
 
     private static string GetActionName(string action) => string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase)
         ? ActionName.Refund

@@ -3,22 +3,13 @@ using System.Data;
 
 namespace ThirdPartyBroadcast.Consumer.Services.Consumer;
 
-public class ProcessingConsumerService : IConsumer<IBroadcastApiProcessing>
+public class ProcessingConsumerService(
+    GenerateConsumerService service,
+    IMaintenanceService maintenanceService,
+    IConnectionMultiplexer connectionMultiplexer)
+    : IConsumer<IBroadcastApiProcessing>
 {
-    private readonly GenerateConsumerService service;
-
-    private readonly IMaintenanceService maintenanceService;
-
-    private readonly IConnectionMultiplexer connectionMultiplexer;
-
     private const string SpecifiedWord = ":space:";
-
-    public ProcessingConsumerService(GenerateConsumerService service, IMaintenanceService maintenanceService, IConnectionMultiplexer connectionMultiplexer)
-    {
-        this.service = service;
-        this.maintenanceService = maintenanceService;
-        this.connectionMultiplexer = connectionMultiplexer;
-    }
 
     private IDatabase RedisDatabase => connectionMultiplexer.GetDatabase();
 

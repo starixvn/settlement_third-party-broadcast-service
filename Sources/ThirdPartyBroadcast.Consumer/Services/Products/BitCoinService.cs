@@ -8,28 +8,13 @@ public interface BitCoinService
     Task<Result> Settle(BitCoinRequest request);
 }
 
-public class BitCoinServiceImp : BitCoinService
+public class BitCoinServiceImp(
+    IDynamicRepository repository,
+    IMapper mapper,
+    CalculateService calculateService,
+    LogDirectlyService logDirectlyService)
+    : BitCoinService
 {
-    private readonly IDynamicRepository repository;
-
-    private readonly IMapper mapper;
-
-    private readonly CalculateService calculateService;
-
-    private readonly LogDirectlyService logDirectlyService;
-
-    public BitCoinServiceImp(
-        IDynamicRepository repository,
-        IMapper mapper,
-        CalculateService calculateService,
-        LogDirectlyService logDirectlyService)
-    {
-        this.repository = repository;
-        this.mapper = mapper;
-        this.calculateService = calculateService;
-        this.logDirectlyService = logDirectlyService;
-    }
-
     public async Task<Result> Settle(BitCoinRequest request)
     {
         var eventStatus = await GetEventStatus(request.MatchId);

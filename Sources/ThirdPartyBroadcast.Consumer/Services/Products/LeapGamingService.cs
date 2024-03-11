@@ -5,6 +5,8 @@ namespace ThirdPartyBroadcast.Consumer.Services.Products;
 using Criteria;
 using Criteria.LeapGaming;
 using Fanex.Data.Repository;
+using Microsoft.Extensions.Options;
+using Models;
 
 public interface LeapGamingService
 {
@@ -17,24 +19,25 @@ public class LeapGamingServiceImp(
     IDynamicRepository repository,
     SendMailService sendMailService,
     MatchService matchService,
-    AnnouncementService announcementService)
+    AnnouncementService announcementService,
+    IOptions<AppSettingsKey> appSettingsKey)
     : LeapGamingService
 {
-    private const int ErrorCodeNotExistValue = 1_000_003;
+    private MailFunction MailFunction => appSettingsKey.Value.MailFunction;
 
-    private const string Subject = "Virtual Sports";
+    private const int ErrorCodeNotExistValue = 1_000_003;
 
     private const string ErrorMsgNotExistValue = "The input score values are not valid!";
 
     public async Task<Result> Settle(LeapGamingRequest request)
     {
-        var validationResult = ValidateMatchScore(request);
+        var currentMatchInfo = await matchService.GetMatchInfo(request.MatchId);
+        var validationResult = ValidateMatchScore(request, currentMatchInfo);
         if (validationResult.ErrorCode > 0)
         {
             return validationResult;
         }
 
-        var currentMatchInfo = await matchService.GetMatchInfoLeapGaming(request.MatchId);
         var currentTickets = await matchService.GetTicketsByAction(request.MatchId, request.Action);
 
         await matchService.UpdateMatchInfoLeapGaming(request);
@@ -51,7 +54,7 @@ public class LeapGamingServiceImp(
         var criteria = mapper.Map<LeapGamingRequest, LeapGamingCriteria>(request);
         var settleResult = await calculateService.Execute(criteria);
 
-        await WriteLogSettled(request, settleResult);
+        await WriteLogSettled(request, settleResult, matchInfo);
 
         await SendMail(request.Action, matchInfo);
 
@@ -60,37 +63,46 @@ public class LeapGamingServiceImp(
         return settleResult;
     }
 
-    private async Task WriteLogSettled(LeapGamingRequest request, Result resultSettle)
+    private async Task WriteLogSettled(LeapGamingRequest request, Result resultSettle, MatchInfo matchInfo)
     {
-        var criteria = CreateWriteLogCriteria(request, resultSettle);
+        var criteria = CreateWriteLogCriteria(request, resultSettle, matchInfo);
 
         await repository.ExecuteAsync(criteria);
     }
 
-    private static WriteLogCriteria CreateWriteLogCriteria(LeapGamingRequest request, Result resultSettle)
+    private static WriteLogCriteria CreateWriteLogCriteria(LeapGamingRequest request, Result resultSettle, MatchInfo matchInfo)
     {
         var resources = DeserializeResources(request.SelectedResources);
-        var message = $"VS 3 - Calculate({request.Action}) {(resultSettle.ErrorCode > 0 ? resultSettle.ErrorMessage : string.Empty)}";
-        var actionId = string.Equals(request.Action, ActionName.Calculate, StringComparison.OrdinalIgnoreCase) ? ActionId.LeapGamingCalc : ActionId.LeapGamingRefund;
+        var message = $"{matchInfo.SportName}- Calculate({request.Action}) {(resultSettle.ErrorCode > 0 ? resultSettle.ErrorMessage : string.Empty)}";
+        var actionId = GetActionId(request, matchInfo);
         var criteria = new WriteLogCriteria(request.MatchId, message, actionId, request.AdminId, request.Ip);
-        var htResult = resources.Items.Find(i => i.Id == ResourceId.HalfTimeResourceId);
-        var ftResult = resources.Items.Find(i => i.Id == ResourceId.FullTimeResourceId);
+        var htResult = resources.Items.Find(i => i.Id == ResourceId.HalfTimeResourceId) ?? new ResourceItemModel();
+        var ftResult = resources.Items.Find(i => i.Id == ResourceId.FullTimeResourceId) ?? new ResourceItemModel();
 
-        criteria.FinalAwayScore = int.TryParse(ftResult!.Away, out var away) ? away : 0;
-        criteria.FinalHomeScore = int.TryParse(ftResult!.Home, out var home) ? home : 0;
-        criteria.HtAwayScore = int.TryParse(htResult!.Away, out var htAway) ? htAway : 0;
-        criteria.HtHomeScore = int.TryParse(htResult!.Home, out var htHome) ? htHome : 0;
+        criteria.FinalAwayScore = int.TryParse(ftResult.Away, out var away) ? away : 0;
+        criteria.FinalHomeScore = int.TryParse(ftResult.Home, out var home) ? home : 0;
+        criteria.HtAwayScore = int.TryParse(htResult.Away, out var htAway) ? htAway : 0;
+        criteria.HtHomeScore = int.TryParse(htResult.Home, out var htHome) ? htHome : 0;
 
         return criteria;
     }
 
-    private static Result ValidateMatchScore(LeapGamingRequest request)
+    private static int GetActionId(LeapGamingRequest request, MatchInfo matchInfo)
+    {
+        if (matchInfo.SportType == SportType.VirtualCockFighting)
+        {
+            return string.Equals(request.Action, ActionName.Calculate, StringComparison.OrdinalIgnoreCase) ? ActionId.CockFightingCalc : ActionId.CockFightingRefund;
+        }
+        return string.Equals(request.Action, ActionName.Calculate, StringComparison.OrdinalIgnoreCase) ? ActionId.LeapGamingCalc : ActionId.LeapGamingRefund;
+    }
+
+    private static Result ValidateMatchScore(LeapGamingRequest request, MatchInfo matchInfo)
     {
         try
         {
             var resources = DeserializeResources(request.SelectedResources);
 
-            if (resources == null || resources.Items.Count == 0 || !ValidateResult(resources.Items, request.Action))
+            if (resources == null || resources.Items.Count == 0 || !ValidateResult(resources.Items, request.Action, matchInfo))
             {
                 return new Result
                 {
@@ -121,95 +133,87 @@ public class LeapGamingServiceImp(
 
     private async Task SendMail(string action, MatchInfo matchInfo)
     {
-        if (IsReSettleOrRefund(action, matchInfo.EventStatus))
+        if (matchService.IsReSettleOrRefund(action, matchInfo.EventStatus))
         {
-            var criteria = new LeapGamingTicketCriteria { MatchId = matchInfo.MatchId };
-            var (creditTickets, depositTickets) = await repository.FetchMultipleAsync<TicketInfo, TicketInfo>(criteria);
+            var (creditTickets, depositTickets) = await matchService.GetAllTicketsVirtualSports(matchInfo.MatchId);
 
-            var recipients = await GetRecipients();
             var actionName = GetActionName(action);
 
-            CreditTickets(actionName, Subject, creditTickets.ToList(), recipients, matchInfo);
-            DepositTickets(actionName, Subject, depositTickets.ToList(), recipients, matchInfo);
+            await RecipientGroupCredit(actionName, matchInfo, creditTickets.ToList());
+            await RecipientGroupDeposit(actionName, matchInfo, depositTickets.ToList());
         }
     }
 
-    private void CreditTickets(string actionName, string subject, IReadOnlyCollection<TicketInfo> ticketsInfo, Recipient recipient, MatchInfo matchInfos)
+    private async Task RecipientGroupCredit(string actionName, MatchInfo matchInfo, IReadOnlyCollection<TicketInfo> ticketsInfo)
     {
         if (ticketsInfo.Count < 1)
         {
             return;
         }
 
+        var mailId = MailFunction.VirtualSport.CreditMailId;
         var mailModel = new NotificationModel
         {
-            Subject = subject,
-            MatchInfo = matchInfos,
+            MatchInfo = matchInfo,
             Action = actionName,
-            To = recipient.CreditRecipients,
-            Copy = recipient.CopyRecipients,
             Type = EmailType.Credit,
+            MailId = mailId,
             TicketsInfo = ticketsInfo,
             TotalTickets = ticketsInfo.Count
         };
 
-        sendMailService.SendMail(mailModel);
+        await sendMailService.SendMailByFunctionId(mailModel);
     }
 
-    private void DepositTickets(string actionName, string subject, IReadOnlyCollection<TicketInfo> ticketsInfo, Recipient recipient, MatchInfo matchInfos)
+    private async Task RecipientGroupDeposit(string actionName, MatchInfo matchInfo, IReadOnlyCollection<TicketInfo> ticketsInfo)
     {
         if (ticketsInfo.Count < 1)
         {
             return;
         }
 
-        var tickets = SplitTicketByLicensee(ticketsInfo).ToList();
+        var tickets = matchService.SplitTicketByLicensee(ticketsInfo).ToList();
+        var mailId = MailFunction.VirtualSport.DepositMailId;
 
         var mailModel = new NotificationModel
         {
-            Subject = subject,
-            MatchInfo = matchInfos,
+            MatchInfo = matchInfo,
             Action = actionName,
-            To = recipient.DepositRecipients,
-            Copy = recipient.CopyRecipients,
             Type = EmailType.Deposit,
+            MailId = mailId,
             TicketsInfo = tickets,
             TotalTickets = ticketsInfo.Count
         };
 
-        sendMailService.SendMail(mailModel);
+        await sendMailService.SendMailByFunctionId(mailModel);
     }
-
-    private static IEnumerable<TicketInfo> SplitTicketByLicensee(IReadOnlyCollection<TicketInfo> ticketInfos)
-    {
-        var distinctLicensees = ticketInfos.Select(ticket => ticket.SiteName).Distinct();
-
-        return distinctLicensees.Select(licensee => new TicketInfo
-        {
-            TicketsInfo = ticketInfos.Where(ticket => ticket.SiteName == licensee).ToList()
-        });
-    }
-
-    private static bool IsReSettleOrRefund(string action, string eventStatus) =>
-        (!string.IsNullOrWhiteSpace(eventStatus) && string.Equals(eventStatus.ToLowerInvariant(), EventStatus.Completed))
-        || string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase);
 
     private static string GetActionName(string action) => string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase)
         ? ActionName.Refund
         : ActionName.ReSettle;
 
-    private async Task<Recipient> GetRecipients()
+    private static bool ValidateResult(IReadOnlyCollection<ResourceItemModel> items, string action, MatchInfo match)
     {
-        var criteria = new MailRecipientsCriteria();
-        return await repository.GetAsync<Recipient>(criteria);
+        if (match?.SportType == SportType.VirtualCockFighting)
+        {
+            return ValidateFtResult(items, action);
+        }
+
+        return ValidateHtResult(items, action) && ValidateFtResult(items, action);
     }
 
-    private static bool ValidateResult(IReadOnlyCollection<ResourceItemModel> items, string action)
+    private static bool ValidateHtResult(IReadOnlyCollection<ResourceItemModel> items, string action)
     {
         var htResult = items.FirstOrDefault(i => i.Id == ResourceId.HalfTimeResourceId);
+
+        return IsValidResult(htResult, action);
+    }
+
+    private static bool ValidateFtResult(IReadOnlyCollection<ResourceItemModel> items, string action)
+    {
         var ftResult = items.FirstOrDefault(i => i.Id == ResourceId.FullTimeResourceId);
 
-        return IsValidResult(htResult, action) && IsValidResult(ftResult, action);
+        return IsValidResult(ftResult, action);
     }
 
     private static bool IsValidResult(ResourceItemModel result, string action)

@@ -54,15 +54,19 @@ public static class ActionId
 
     public const int LeapGamingRefund = 81044;
 
+    public const int CockFightingCalc = 81050;
+
+    public const int CockFightingRefund = 81051;
+
     public const int NgCal = 115;
 
-    public const int NgCalHt = 118;
+    public const int NgIsLive = 116;
 
     public const int NgRefund = 117;
 
-    public const int NgRefundFt = 119;
+    public const int NgCalHt = 118;
 
-    public const int NgIsLive = 116;
+    public const int NgRefundFt = 119;
 }
 
 public static class ActionName
@@ -100,4 +104,9 @@ public static class ContentLanguage
     public const string English = "en";
     public const string Cantonese = "zh-TW";
     public const string Mandarin = "zh-CN";
+}
+
+public static class SportType
+{
+    public const short VirtualCockFighting = 188;
 }

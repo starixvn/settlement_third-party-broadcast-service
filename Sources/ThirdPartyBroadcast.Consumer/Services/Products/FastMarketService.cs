@@ -10,27 +10,13 @@ public interface FastMarketService
     Task<Result> Settle(FastMarketRequest request);
 }
 
-public class FastMarketServiceImp : FastMarketService
+public class FastMarketServiceImp(
+    ScaleOutSettleService scaleOutSettleService,
+    IMapper mapper,
+    CalculateService calculateService,
+    LogDirectlyService logDirectlyService)
+    : FastMarketService
 {
-    private readonly ScaleOutSettleService scaleOutSettleService;
-
-    private readonly IMapper mapper;
-
-    private readonly CalculateService calculateService;
-
-    private readonly LogDirectlyService logDirectlyService;
-
-    public FastMarketServiceImp(ScaleOutSettleService scaleOutSettleService,
-            IMapper mapper,
-            CalculateService calculateService,
-            LogDirectlyService logDirectlyService)
-    {
-        this.scaleOutSettleService = scaleOutSettleService;
-        this.mapper = mapper;
-        this.calculateService = calculateService;
-        this.logDirectlyService = logDirectlyService;
-    }
-
     public async Task<Result> Settle(FastMarketRequest request)
     {
         var criteria = mapper.Map<FastMarketRequest, FastMarketCriteria>(request);

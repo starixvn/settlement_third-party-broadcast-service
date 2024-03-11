@@ -1,4 +1,5 @@
-﻿using ThirdPartyBroadcast.Consumer.Criteria;
+﻿using Microsoft.Extensions.Options;
+using ThirdPartyBroadcast.Consumer.Criteria;
 
 namespace ThirdPartyBroadcast.Consumer.Services.Products;
 
@@ -12,119 +13,121 @@ public interface VirtualBetRadarService
     Task<Result> Settle(VirtualBetRadarRequest request);
 }
 
-public class VirtualBetRadarServiceImp : VirtualBetRadarService
+public class VirtualBetRadarServiceImp(
+    IDynamicRepository repository,
+    SendMailService sendMailService,
+    IMapper mapper,
+    CalculateService calculateService,
+    MatchService matchService,
+    AnnouncementService announcementService,
+    IOptions<AppSettingsKey> appSettingsKey)
+    : VirtualBetRadarService
 {
-    private readonly IDynamicRepository repository;
-
-    private readonly IMapper mapper;
-
-    private readonly CalculateService calculateService;
-
-    private readonly LogDirectlyService logDirectlyService;
-
-    private readonly MatchService matchService;
-
-    private readonly AnnouncementService announcementService;
-
-    public VirtualBetRadarServiceImp(
-        IDynamicRepository repository,
-        IMapper mapper,
-        CalculateService calculateService,
-        LogDirectlyService logDirectlyService,
-        MatchService matchService,
-        AnnouncementService announcementService)
-    {
-        this.repository = repository;
-        this.mapper = mapper;
-        this.calculateService = calculateService;
-        this.logDirectlyService = logDirectlyService;
-        this.matchService = matchService;
-        this.announcementService = announcementService;
-    }
+    private MailFunction MailFunction => appSettingsKey.Value.MailFunction;
 
     public async Task<Result> Settle(VirtualBetRadarRequest request)
     {
         var betRadarValidationCriteria = mapper.Map<VirtualBetRadarRequest, BetRadarValidationCriteria>(request);
         var resultValidation = await calculateService.ExecuteValidationMultiServer(betRadarValidationCriteria);
-        var criteria = mapper.Map<VirtualBetRadarRequest, VirtualBetRadarCriteria>(request);
 
         if (!resultValidation.IsSuccessful)
         {
             return resultValidation;
         }
 
-        var currentMatchInfo = await GetMatchStatus(request.MatchId);
+        var currentMatchInfo = await matchService.GetMatchInfo(request.MatchId);
         var currentTickets = await matchService.GetTicketsByAction(request.MatchId, request.Action);
 
-        await UpdateMatchInfo(request);
+        await matchService.UpdateMatchInfoBetRadar(request);
 
-        var message = GenerateMessageLog(criteria);
-        await logDirectlyService.WriteLog(criteria.MatchId, message);
+        await matchService.WriteLogBetRadar(request);
 
         var result = await HandleSettle(currentTickets, currentMatchInfo, request);
 
         return result;
     }
 
-    private async Task<Result> HandleSettle(List<TicketSettleInfo> currentTickets, MatchStatus matchStatus, VirtualBetRadarRequest request)
+    private async Task<Result> HandleSettle(List<TicketSettleInfo> currentTickets, MatchInfo matchInfo, VirtualBetRadarRequest request)
     {
         var criteria = mapper.Map<VirtualBetRadarRequest, VirtualBetRadarCriteria>(request);
         var settleResult = await calculateService.Execute(criteria);
 
-        await HandleAfterSettle(request, settleResult, matchStatus);
+        await WriteLogSettled(request, settleResult);
 
-        var matchInfo = new MatchInfo
-        {
-            KickOffTime = matchStatus.KickOffTime,
-            MatchId = matchStatus.MatchId,
-            LeagueGroupId = matchStatus.LeagueGroupId,
-            LeagueId = matchStatus.LeagueId,
-            HomeId = matchStatus.HomeId,
-            AwayId = matchStatus.AwayId,
-        };
+        await SendMail(request.Action, matchInfo);
+
         await announcementService.Handle(currentTickets, matchInfo, request.AdminId);
 
         return settleResult;
     }
 
-    private static string GenerateMessageLog(VirtualBetRadarCriteria criteria)
-        => $@"NAP: VS BetRadar - Calculate {criteria.Action} for matchId: {criteria.MatchId}
-              Scores: FT=[{criteria.Fth}-{criteria.Fta}]; HT=[{criteria.Hth}-{criteria.Hta}]
-              Resource Results: {criteria.ResourceResult}";
-
-    private async Task HandleAfterSettle(VirtualBetRadarRequest request, Result settleResult, MatchStatus matchStatus)
+    private async Task WriteLogSettled(VirtualBetRadarRequest request, Result resultSettle)
     {
-        var logCriteria = CreateWriteLogCriteria(request, settleResult);
-        await repository.ExecuteAsync(logCriteria);
+        var criteria = CreateWriteLogCriteria(request, resultSettle);
 
-        await SendMail(logCriteria, settleResult);
-
-        await SendNotify(request, matchStatus);
+        await repository.ExecuteAsync(criteria);
     }
 
-    private async Task SendMail(WriteLogCriteria logCriteria, Result settleResult)
+    private async Task SendMail(string action, MatchInfo matchInfo)
     {
-        if (!settleResult.IsSuccessful)
+        if (matchService.IsReSettleOrRefund(action, matchInfo.EventStatus))
         {
-            var sendMailCriteria = mapper.Map<WriteLogCriteria, SendMailCriteria>(logCriteria);
-            sendMailCriteria.Message = logCriteria.Remark;
-            await repository.ExecuteAsync(sendMailCriteria);
+            var (creditTickets, depositTickets) = await matchService.GetAllTicketsVirtualSports(matchInfo.MatchId);
+
+            var actionName = GetActionName(action);
+
+            await RecipientGroupCredit(actionName, matchInfo, creditTickets.ToList());
+            await RecipientGroupDeposit(actionName, matchInfo, depositTickets.ToList());
         }
     }
 
-    private async Task SendNotify(VirtualBetRadarRequest request, MatchStatus matchStatus)
+    private async Task RecipientGroupCredit(string actionName, MatchInfo matchInfo, IReadOnlyCollection<TicketInfo> ticketsInfo)
     {
-        if (IsReSettleOrRefund(request.Action, matchStatus))
+        if (ticketsInfo.Count < 1)
         {
-            var criteria = new SendNotifyBetRadarCriteria
-            {
-                MatchId = request.MatchId,
-                NotifyAction = ActionIdValue(request.Action)
-            };
-
-            await repository.ExecuteAsync(criteria);
+            return;
         }
+
+        var mailId = MailFunction.VirtualSport.CreditMailId;
+        var mailModel = new NotificationModel
+        {
+            MatchInfo = matchInfo,
+            Action = actionName,
+            Type = EmailType.Credit,
+            MailId = mailId,
+            TicketsInfo = ticketsInfo,
+            TotalTickets = ticketsInfo.Count
+        };
+
+        await sendMailService.SendMailByFunctionId(mailModel);
     }
+
+    private async Task RecipientGroupDeposit(string actionName, MatchInfo matchInfo, IReadOnlyCollection<TicketInfo> ticketsInfo)
+    {
+        if (ticketsInfo.Count < 1)
+        {
+            return;
+        }
+
+        var tickets = matchService.SplitTicketByLicensee(ticketsInfo).ToList();
+        var mailId = MailFunction.VirtualSport.DepositMailId;
+
+        var mailModel = new NotificationModel
+        {
+            MatchInfo = matchInfo,
+            Action = actionName,
+            Type = EmailType.Deposit,
+            MailId = mailId,
+            TicketsInfo = tickets,
+            TotalTickets = ticketsInfo.Count
+        };
+
+        await sendMailService.SendMailByFunctionId(mailModel);
+    }
+
+    private static string GetActionName(string action) => string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase)
+        ? ActionName.Refund
+        : ActionName.ReSettle;
 
     private static WriteLogCriteria CreateWriteLogCriteria(VirtualBetRadarRequest request, Result settleResult)
     {
@@ -136,7 +139,7 @@ public class VirtualBetRadarServiceImp : VirtualBetRadarService
             FinalHomeScore = request.Fth,
             HtAwayScore = request.Hta,
             HtHomeScore = request.Hth,
-            Remark = $"VS BetRadar - Calculate ({request.Action}) {(settleResult.ErrorCode > 0 ? settleResult.ErrorMessage : string.Empty)}" //check
+            Remark = $"VS BetRadar - Calculate ({request.Action}) {(settleResult.ErrorCode > 0 ? settleResult.ErrorMessage : string.Empty)}"
         };
         return criteria;
     }
@@ -144,23 +147,4 @@ public class VirtualBetRadarServiceImp : VirtualBetRadarService
     private static int ActionIdValue(string actionName) => string.Equals(actionName, ActionName.Calculate, StringComparison.OrdinalIgnoreCase)
         ? ActionId.VirtualBetRadarCalc
         : ActionId.VirtualBetRadarRefund;
-
-    private async Task UpdateMatchInfo(VirtualBetRadarRequest request)
-    {
-        var criteria = mapper.Map<VirtualBetRadarRequest, BetRadarUpdateMatchCriteria>(request);
-        await repository.ExecuteAsync(criteria);
-    }
-
-    private static bool IsReSettleOrRefund(string action, MatchStatus matchStatus)
-    => string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase)
-       || matchStatus != null && (matchStatus.Calculate || matchStatus.CalRefund);
-
-    private async Task<MatchStatus> GetMatchStatus(int matchId)
-    {
-        var criteria = new GetMatchStatusCriteria { MatchId = matchId };
-        var matchStatus = await repository.GetAsync<MatchStatus>(criteria);
-        matchStatus.MatchId = matchId;
-
-        return matchStatus;
-    }
 }

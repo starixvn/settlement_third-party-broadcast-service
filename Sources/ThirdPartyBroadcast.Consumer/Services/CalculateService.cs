@@ -10,23 +10,14 @@ public interface CalculateService
     Task<Result> ExecuteValidationMultiServer(BaseCriteria criteria);
 }
 
-public class CalculateServiceImp : CalculateService
+public class CalculateServiceImp(
+    IDynamicRepository repository,
+    IOptions<AppSettingsKey> appSettingsKey)
+    : CalculateService
 {
-    private readonly IDynamicRepository repository;
-
-    private readonly AppSettingsKey appSettingsKey;
-
-    public CalculateServiceImp(
-        IDynamicRepository repository,
-        IOptions<AppSettingsKey> appSettingsKey)
-    {
-        this.repository = repository;
-        this.appSettingsKey = appSettingsKey.Value;
-    }
-
     public async Task<Result> Execute(CalculateCriteria criteria)
     {
-        var tasks = appSettingsKey
+        var tasks = appSettingsKey.Value
             .SiteDbServer
             .Select(s => CalculateByServer(s, criteria))
             .ToList();
@@ -53,7 +44,7 @@ public class CalculateServiceImp : CalculateService
 
     public async Task<Result> ExecuteValidationMultiServer(BaseCriteria criteria)
     {
-        foreach (var server in appSettingsKey.SiteDbServer)
+        foreach (var server in appSettingsKey.Value.SiteDbServer)
         {
             criteria.DbServer = server;
             await repository.ExecuteAsync(criteria);

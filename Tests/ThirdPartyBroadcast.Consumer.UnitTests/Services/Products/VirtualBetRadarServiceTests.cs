@@ -1,21 +1,17 @@
-﻿using ThirdPartyBroadcast.Consumer.Criteria;
-
-namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products;
+﻿namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products;
 
 using AutoMapper;
 using Criteria.VirtualBetRadar;
 using Fanex.Data.Repository;
+using Fanex.RemotingRef;
+using Microsoft.Extensions.Options;
 using ThirdPartyBroadcast.Consumer.Services;
 
 public class VirtualBetRadarServiceTests
 {
     private readonly CalculateService calculateService;
 
-    private readonly IDynamicRepository repository;
-
     private readonly VirtualBetRadarService service;
-
-    private readonly LogDirectlyService logService;
 
     private readonly MatchService matchService;
 
@@ -24,89 +20,62 @@ public class VirtualBetRadarServiceTests
     public VirtualBetRadarServiceTests()
     {
         calculateService = Substitute.For<CalculateService>();
-        repository = Substitute.For<IDynamicRepository>();
-        logService = Substitute.For<LogDirectlyService>();
+        var repository = Substitute.For<IDynamicRepository>();
         matchService = Substitute.For<MatchService>();
         announcementService = Substitute.For<AnnouncementService>();
+        var sendMailService = Substitute.For<SendMailService>();
 
         var mapperConfig = new MapperConfigurationExpression();
         mapperConfig.AddProfile<ThirdPartyBroadcastMappingProfile>();
         var config = new MapperConfiguration(mapperConfig);
         var mapper = new Mapper(config);
-        service = new VirtualBetRadarServiceImp(repository, mapper, calculateService, logService, matchService, announcementService);
+
+        var appSettingsKey = new AppSettingsKey { SiteDbServer = ["01", "02"], MailFunction = new MailFunction { VirtualSport = new MailInfo { CreditMailId = 103 } } };
+        var options = Options.Create(appSettingsKey);
+
+        service = new VirtualBetRadarServiceImp(repository, sendMailService, mapper, calculateService, matchService, announcementService, options);
     }
 
-    [Theory]
-    [InlineData(ActionName.Calculate, false, false, true, true, 0)]
-    [InlineData(ActionName.Calculate, true, false, false, false, 2)]
-    [InlineData(ActionName.Calculate, false, true, false, false, 2)]
-    [InlineData(ActionName.Calculate, true, false, true, false, 10)]
-    [InlineData(ActionName.Calculate, true, false, false, true, 10)]
-    [InlineData(ActionName.Refund, true, false, false, true, 10)]
-    public async Task Settle_ValidatePassed_CallSettleWithCorrectNotifyStatus(string action, bool calculate, bool calRefund, bool multiple, bool refund, int expected)
+    [Fact]
+    public async Task Settle_InValid_StopProcessAndReturn()
     {
-        var request = new VirtualBetRadarRequest
+        calculateService.ExecuteValidationMultiServer(Arg.Any<BetRadarValidationCriteria>())
+            .Returns(new Result { ErrorCode = 1 });
+        var result = await service.Settle(new VirtualBetRadarRequest());
+
+        Assert.True(result.ErrorCode > 0);
+    }
+
+    [Fact]
+    public async Task Settle_ValidationPassed_InvokeAllMethod()
+    {
+        var matchInfo = new MatchInfo
         {
-            Action = action,
-        };
-        var matchStatus = new MatchStatus
-        {
-            Refund = refund,
-            Multiple = multiple,
-            CalRefund = calRefund,
-            Calculate = calculate
+            MatchId = 1,
+            RefDataService = new RefDataServiceImp(new RemotingRefService())
         };
 
-        var mapperMock = Substitute.For<IMapper>();
-        var serviceMock = new VirtualBetRadarServiceImp(repository, mapperMock, calculateService, logService, matchService, announcementService);
+        matchService.GetMatchInfo(Arg.Any<int>()).Returns(matchInfo);
         calculateService.ExecuteValidationMultiServer(Arg.Any<BetRadarValidationCriteria>()).Returns(new Result());
-        await repository.ExecuteAsync(Arg.Any<BetRadarUpdateMatchCriteria>());
         calculateService.Execute(Arg.Any<VirtualBetRadarCriteria>()).Returns(new Result());
-        repository.GetAsync<MatchStatus>(Arg.Any<GetMatchStatusCriteria>()).Returns(matchStatus);
-        mapperMock.Map<VirtualBetRadarRequest, VirtualBetRadarCriteria>(request).Returns(new VirtualBetRadarCriteria { DbServer = "DBTXN" });
-
-        //Action
-        await serviceMock.Settle(request);
-
-        //Assert
-        await calculateService.Received().Execute(Arg.Any<VirtualBetRadarCriteria>());
-    }
-
-    [Fact]
-    public async Task Settle_ValidatePassed_SettleSuccessAndWriteLog()
-    {
-        calculateService.ExecuteValidationMultiServer(Arg.Any<BetRadarValidationCriteria>())
-            .Returns(new Result());
-        calculateService.Execute(Arg.Any<VirtualBetRadarCriteria>()).Returns(new Result());
-        repository.GetAsync<MatchStatus>(Arg.Any<GetMatchStatusCriteria>()).Returns(new MatchStatus());
-
-        await service.Settle(new VirtualBetRadarRequest());
-
-        await repository.Received().ExecuteAsync(Arg.Any<BetRadarUpdateMatchCriteria>());
-        await calculateService.Received().Execute(Arg.Any<VirtualBetRadarCriteria>());
-        await repository.Received().ExecuteAsync(Arg.Any<WriteLogCriteria>());
-    }
-
-    [Fact]
-    public async Task Settle_ValidatePassedAndSettleFailed_WriteCorrectLog()
-    {
-        var resultSettle = new Result
+        await service.Settle(new VirtualBetRadarRequest
         {
-            ErrorCode = 1,
-            ErrorMessage = "Error Test"
-        };
-        calculateService.ExecuteValidationMultiServer(Arg.Any<BetRadarValidationCriteria>())
-            .Returns(new Result());
-        calculateService.Execute(Arg.Any<VirtualBetRadarCriteria>()).Returns(resultSettle);
-        repository.GetAsync<MatchStatus>(Arg.Any<GetMatchStatusCriteria>()).Returns(new MatchStatus());
+            Action = "CAL",
+            MatchId = 1,
+            Fta = 0,
+            Fth = 1,
+            Hta = 1,
+            Hth = 1
+        });
 
-        //action
-        await service.Settle(new VirtualBetRadarRequest());
-        const string message = "VS BetRadar - Calculate (CAL) Error Test";
-
-        //assert
-        await repository.Received().ExecuteAsync(Arg.Any<BetRadarUpdateMatchCriteria>());
-        await calculateService.Received().Execute(Arg.Any<VirtualBetRadarCriteria>());
-        await repository.Received().ExecuteAsync(Arg.Is<WriteLogCriteria>(item => item.Remark == message));
+        Received.InOrder(() =>
+        {
+            matchService.GetMatchInfo(Arg.Any<int>());
+            matchService.GetTicketsByAction(Arg.Any<int>(), Arg.Any<string>());
+            matchService.UpdateMatchInfoBetRadar(Arg.Any<VirtualBetRadarRequest>());
+            matchService.WriteLogBetRadar(Arg.Any<VirtualBetRadarRequest>());
+            calculateService.Execute(Arg.Any<VirtualBetRadarCriteria>());
+            announcementService.Handle(Arg.Any<List<TicketSettleInfo>>(), Arg.Any<MatchInfo>(), Arg.Any<int>());
+        });
     }
 }

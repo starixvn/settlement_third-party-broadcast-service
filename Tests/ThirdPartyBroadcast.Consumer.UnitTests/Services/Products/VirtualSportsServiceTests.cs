@@ -12,18 +12,20 @@ public class VirtualSportsServiceTests
 
     private readonly MatchService matchService;
 
+    private readonly AnnouncementService announcementService;
+
     public VirtualSportsServiceTests()
     {
         calculateService = Substitute.For<CalculateService>();
         matchService = Substitute.For<MatchService>();
-        var announcementService = Substitute.For<AnnouncementService>();
+        announcementService = Substitute.For<AnnouncementService>();
 
         var mapperConfig = new MapperConfigurationExpression();
         mapperConfig.AddProfile<ThirdPartyBroadcastMappingProfile>();
         var config = new MapperConfiguration(mapperConfig);
         var mapper = new Mapper(config);
 
-        var appSettingsKey = new AppSettingsKey { SiteDbServer = new List<string> { "01", "02" }, MailFunction = new MailFunction { VirtualSport = new MailInfo { CreditMailId = 103 } } };
+        var appSettingsKey = new AppSettingsKey { SiteDbServer = ["01", "02"], MailFunction = new MailFunction { VirtualSport = new MailInfo { CreditMailId = 103 } } };
         var options = Options.Create(appSettingsKey);
 
         var sendMailService = Substitute.For<SendMailService>();
@@ -31,25 +33,22 @@ public class VirtualSportsServiceTests
         service = new VirtualSportsServiceImp(matchService, mapper, calculateService, announcementService, sendMailService, options);
     }
 
-    [Theory]
-    [InlineData(ActionName.Calculate, 1, 1, SpName.VirtualSports + "-CAL")]
-    [InlineData(ActionName.Refund, null, null, SpName.VirtualSports + "-REFUND")]
-    public async Task Settle_ValidatePassed_DoSettle(string action, int? home, int? away, string command)
+    [Fact]
+    public async Task Settle_ValidatePassed_InvokeAllMethod()
     {
-        var request = new VirtualSoccerRequest
-        {
-            Action = action,
-            Fta = away,
-            Fth = home
-        };
-
-        matchService.GetMatchInfoVirtualSports(Arg.Any<int>()).Returns(new MatchInfo { MatchId = request.MatchId, EventStatus = string.Empty });
+        matchService.GetMatchInfo(Arg.Any<int>()).Returns(new MatchInfo { EventStatus = string.Empty });
         matchService.GetAllTicketsVirtualSports(Arg.Any<int>()).Returns((new List<TicketInfo>(), new List<TicketInfo>()));
 
-        await service.Settle(request);
+        await service.Settle(new VirtualSoccerRequest());
 
-        await calculateService.Received().Execute(Arg.Any<VirtualSportsCriteria>());
-        await matchService.Received().UpdateMatchInfoVirtualSports(Arg.Any<VirtualSoccerRequest>());
-        await matchService.Received().WriteLogVirtualSports(Arg.Any<VirtualSoccerRequest>());
+        Received.InOrder(() =>
+        {
+            matchService.GetMatchInfo(Arg.Any<int>());
+            matchService.GetTicketsByAction(Arg.Any<int>(), Arg.Any<string>());
+            matchService.UpdateMatchInfoVirtualSports(Arg.Any<VirtualSoccerRequest>());
+            matchService.WriteLogVirtualSports(Arg.Any<VirtualSoccerRequest>());
+            calculateService.Execute(Arg.Any<VirtualSportsCriteria>());
+            announcementService.Handle(Arg.Any<List<TicketSettleInfo>>(), Arg.Any<MatchInfo>(), Arg.Any<int>());
+        });
     }
 }

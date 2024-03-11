@@ -16,27 +16,18 @@ public interface LogDirectlyService
     Task HandleLog(Result result, string productType, string data);
 }
 
-public class LogDirectlyServiceImp : LogDirectlyService
+public class LogDirectlyServiceImp(
+    IDynamicRepository dynamicRepository,
+    IOptions<AppSettingsKey> appSettingsKey)
+    : LogDirectlyService
 {
     private const string ErrorMessage = "Error from Settlement ThirdPartyBroadcast Service";
-
-    private readonly IDynamicRepository dynamicRepository;
-
-    private readonly AppSettingsKey appSettingsKey;
-
-    public LogDirectlyServiceImp(
-        IDynamicRepository dynamicRepository,
-        IOptions<AppSettingsKey> appSettingsKey)
-    {
-        this.dynamicRepository = dynamicRepository;
-        this.appSettingsKey = appSettingsKey.Value;
-    }
 
     public string Message(int matchId) => $"Settlement for matchId: {matchId}";
 
     public async Task WriteInfo(string productType, string data)
     {
-        if (appSettingsKey.EnableWriteLog)
+        if (appSettingsKey.Value.EnableWriteLog)
         {
             var productName = GetProductName(productType);
             await LogService.InfoAsync($"ThirdPartyBroadcast Service - Product Name:{productName} - Match info: {data}");
