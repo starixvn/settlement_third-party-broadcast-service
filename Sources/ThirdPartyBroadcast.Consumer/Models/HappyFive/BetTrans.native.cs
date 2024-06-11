@@ -1,4 +1,4 @@
-﻿namespace ThirdPartyBroadcast.Consumer.Models.Happy5;
+﻿namespace ThirdPartyBroadcast.Consumer.Models.HappyFive;
 
 public class BetTrans
 {

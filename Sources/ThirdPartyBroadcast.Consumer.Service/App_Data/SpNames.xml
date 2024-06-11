@@ -21,22 +21,41 @@
 		<Setting Key="NAP_Admin_SendNotify_VS" SpName="NAP_Admin_SendNotify_VS" DbName="DBTXN.bodb02.wsv_nap" />
 		<Setting Key="NAP_SpecialDelete_Message_Insert" SpName="NAP_SpecialDelete_Message_Insert" DbName="DB061.bodb_Message.wsv_nap" />
 		<Setting Key="NAP_SpecialDelete_BatchMessage_Upload" SpName="NAP_SpecialDelete_BatchMessage_Upload" DbName="DB061.bodb_Message.wsv_nap" />
+
+		<Setting Key="Task_Winlimit_InsertHistoryData" SpName="Task_Winlimit_InsertHistoryData" DbName="DBCUST.CustDB.wsv_nap" />
+		<Setting Key="NAP_Set_Happy5_Result_Sel" SpName="NAP_Set_Happy5_Result_Sel" DbName="DBPRO.bodb02.wsv_nap" />
+		<Setting Key="NAP_Admin_Settlement_MaxPayoutSetting_Sel" SpName="NAP_Admin_Settlement_MaxPayoutSetting_Sel" DbName="DBSIC.bodb02.wsv_nap" />
+	</Function>
+	<Function Name="Transfer the logic business to Application Layer">
+		<Function Name="NAP_Admin_Settlement_BatchTicket_Sel">
+			<Setting Key="NAP_Admin_Settlement_BatchTicket_Sel_DBTXN" SpName="NAP_Admin_Settlement_BatchTicket_Sel" DbName="DBTXN.bodb02.wsv_nap" />
+			<Setting Key="NAP_Admin_Settlement_BatchTicket_Sel_DBSID01" SpName="NAP_Admin_Settlement_BatchTicket_Sel" DbName="DBSID01.bodb02.wsv_nap" />
+			<Setting Key="NAP_Admin_Settlement_BatchTicket_Sel_DBSID02" SpName="NAP_Admin_Settlement_BatchTicket_Sel" DbName="DBSID02.bodb02.wsv_nap" />
+			<Setting Key="NAP_Admin_Settlement_BatchTicket_Sel_DBSID03" SpName="NAP_Admin_Settlement_BatchTicket_Sel" DbName="DBSID03.bodb02.wsv_nap" />
+		</Function>
+
+		<Function Name="NAP_Admin_Settlement_Ticket_Sel">
+			<Setting Key="NAP_Admin_Settlement_Ticket_Sel_DBTXN" SpName="NAP_Admin_Settlement_Ticket_Sel" DbName="DBTXN.bodb02.wsv_nap" />
+			<Setting Key="NAP_Admin_Settlement_Ticket_Sel_DBSID01" SpName="NAP_Admin_Settlement_Ticket_Sel" DbName="DBSID01.bodb02.wsv_nap" />
+			<Setting Key="NAP_Admin_Settlement_Ticket_Sel_DBSID02" SpName="NAP_Admin_Settlement_Ticket_Sel" DbName="DBSID02.bodb02.wsv_nap" />
+			<Setting Key="NAP_Admin_Settlement_Ticket_Sel_DBSID03" SpName="NAP_Admin_Settlement_Ticket_Sel" DbName="DBSID03.bodb02.wsv_nap" />
+		</Function>
+
+		<Function Name="NAP_Admin_Calculate_OtherSports">
+			<Setting Key="NAP_Admin_Calculate_OtherSports_DBTXN" SpName="NAP_Admin_Calculate_OtherSports" DbName="DBTXN.bodb02.wsv_nap" />
+			<Setting Key="NAP_Admin_Calculate_OtherSports_DBSID01" SpName="NAP_Admin_Calculate_OtherSports" DbName="DBSID01.bodb02.wsv_nap" />
+			<Setting Key="NAP_Admin_Calculate_OtherSports_DBSID02" SpName="NAP_Admin_Calculate_OtherSports" DbName="DBSID02.bodb02.wsv_nap" />
+			<Setting Key="NAP_Admin_Calculate_OtherSports_DBSID03" SpName="NAP_Admin_Calculate_OtherSports" DbName="DBSID03.bodb02.wsv_nap" />
+		</Function>
+
+		<Function Name="NAP_Admin_Settlement_Match_Locking">
+			<Setting Key="NAP_Admin_Settlement_Match_Locking_DBTXN" SpName="NAP_Admin_Settlement_Match_Locking" DbName="DBTXN.bodb02.wsv_nap" />
+			<Setting Key="NAP_Admin_Settlement_Match_Locking_DBSID01" SpName="NAP_Admin_Settlement_Match_Locking" DbName="DBSID01.bodb02.wsv_nap" />
+			<Setting Key="NAP_Admin_Settlement_Match_Locking_DBSID02" SpName="NAP_Admin_Settlement_Match_Locking" DbName="DBSID02.bodb02.wsv_nap" />
+			<Setting Key="NAP_Admin_Settlement_Match_Locking_DBSID03" SpName="NAP_Admin_Settlement_Match_Locking" DbName="DBSID03.bodb02.wsv_nap" />
+		</Function>
 	</Function>
 	<Function Name="Scale Out DB">
-		<Function Name="Happy 5">
-			<Function Name="NAP_Admin_Settlement_s164">
-				<Setting Key="NAP_Admin_Settlement_s164_DBTXN" SpName="NAP_Admin_Settlement_s164" DbName="DBTXN.bodb02.wsv_nap" />
-				<Setting Key="NAP_Admin_Settlement_s164_DBSID01" SpName="NAP_Admin_Settlement_s164" DbName="DBSID01.bodb02.wsv_nap" />
-				<Setting Key="NAP_Admin_Settlement_s164_DBSID02" SpName="NAP_Admin_Settlement_s164" DbName="DBSID02.bodb02.wsv_nap" />
-				<Setting Key="NAP_Admin_Settlement_s164_DBSID03" SpName="NAP_Admin_Settlement_s164" DbName="DBSID03.bodb02.wsv_nap" />
-			</Function>
-			<Function Name="NAP_Admin_Settlement_s164_Validation">
-				<Setting Key="NAP_Admin_Settlement_s164_Validation_DBTXN" SpName="NAP_Admin_Settlement_s164_Validation" DbName="DBTXN.bodb02.wsv_nap" />
-				<Setting Key="NAP_Admin_Settlement_s164_Validation_DBSID01" SpName="NAP_Admin_Settlement_s164_Validation" DbName="DBSID01.bodb02.wsv_nap" />
-				<Setting Key="NAP_Admin_Settlement_s164_Validation_DBSID02" SpName="NAP_Admin_Settlement_s164_Validation" DbName="DBSID02.bodb02.wsv_nap" />
-				<Setting Key="NAP_Admin_Settlement_s164_Validation_DBSID03" SpName="NAP_Admin_Settlement_s164_Validation" DbName="DBSID03.bodb02.wsv_nap" />
-			</Function>
-		</Function>
 		<Function Name="Number Game">
 			<Function Name="NAP_Admin_Settlement_s161">
 				<Setting Key="NAP_Admin_Settlement_s161_DBTXN" SpName="NAP_Admin_Settlement_s161" DbName="DBTXN.bodb02.wsv_nap" />

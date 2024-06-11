@@ -1,6 +1,13 @@
-﻿namespace ThirdPartyBroadcast.Consumer.Services.Products;
+﻿using Settlement.Business.Core.Models;
+using System.Diagnostics;
 
+namespace ThirdPartyBroadcast.Consumer.Services.Products;
+
+using Criteria;
 using Criteria.HappyFive;
+using HappyFive;
+using Models;
+using Settlement.Business.Services;
 
 public interface HappyFiveService
 {
@@ -8,11 +15,11 @@ public interface HappyFiveService
 }
 
 public class HappyFiveServiceImp(
-    IMapper mapper,
-    CalculateService calculateService,
+    SettleSitesService settleSitesService,
     IDynamicRepository repository,
     ScaleOutSettleThirdPartyService scaleOutSettleThirdPartyService,
-    LogDirectlyService logDirectlyService)
+    LogDirectlyService logDirectlyService,
+    MatchService matchService)
     : HappyFiveService
 {
     public async Task<Result> Settle(HappyFiveRequest request)
@@ -22,15 +29,43 @@ public class HappyFiveServiceImp(
         if (result.IsSuccessful)
         {
             await UpdateMatchInfo(request);
-
             await WriteLog(request.MatchId);
 
-            var criteria = mapper.Map<HappyFiveRequest, HappyFiveCriteria>(request);
-            return await calculateService.Execute(criteria);
+            var (resources, balls) = await matchService.GetResourceHappy5(request.MatchId, request.Action);
+            var watch = Stopwatch.StartNew();
+            result = await settleSitesService.Settle(request, resources.ToList());
+            watch.Stop();
+
+            await WriteLogSettled(request, result, balls, watch.ElapsedMilliseconds);
         }
 
         return result;
     }
+
+    private async Task WriteLogSettled(HappyFiveRequest request, Result result, IEnumerable<Ball> balls, long duration)
+    {
+        var ball = string.Join(", ", balls.Select(ball => $"B{ball.Seq}({ball.Number})").ToArray());
+        var message = result.ErrorCode > 0 ? $"<br/>{result.ErrorMessage}" : string.Empty;
+        var remark = $"IsAuto: 1<br/>Results: {ball}<br/>Duration: {duration} ms {message}";
+
+        var criteria = CreateWriteLogCriteria(request, remark);
+
+        await repository.ExecuteAsync(criteria);
+    }
+
+    private static WriteLogCriteria CreateWriteLogCriteria(HappyFiveRequest request, string remark)
+    {
+        var actionId = ActionIdValue(request.Action);
+
+        return new WriteLogCriteria(request.MatchId, actionId, request.AdminId, request.Ip)
+        {
+            Remark = remark
+        };
+    }
+
+    private static int ActionIdValue(string actionName) => string.Equals(actionName, ActionName.Calculate, StringComparison.OrdinalIgnoreCase)
+        ? ActionId.HappyFiveCalc
+        : ActionId.HappyFiveRefund;
 
     private async Task WriteLog(int matchId)
     {

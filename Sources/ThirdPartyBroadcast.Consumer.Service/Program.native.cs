@@ -8,6 +8,7 @@ using ThirdPartyBroadcast.Consumer.Service;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.InitializeServices(builder.Configuration);
+builder.Services.InitializeBusinessServices();
 
 builder.Services.AddFanexSql(builder.Configuration);
 

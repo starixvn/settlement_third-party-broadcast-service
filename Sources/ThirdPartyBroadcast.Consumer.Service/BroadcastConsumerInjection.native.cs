@@ -22,11 +22,13 @@ using ONEbook.UM.AspNetCore;
 using ONEbook.UM.Configurations;
 using ONEbook.UM.Helpers;
 using ONEbook.UM.Transport;
+using Settlement.Business.Services;
 using SharpRaven;
 using StackExchange.Redis;
 using ThirdPartyBroadcast.Consumer.Services;
 using ThirdPartyBroadcast.Consumer.Services.Consumer;
 using ThirdPartyBroadcast.Consumer.Services.Products;
+using ThirdPartyBroadcast.Consumer.Services.Products.HappyFive;
 
 namespace ThirdPartyBroadcast.Consumer.Service;
 
@@ -59,7 +61,7 @@ public static class BroadcastConsumerInjection
         service.AddSingleton<PinGoalService, PinGoalServiceImp>();
         service.AddTransient<AnnouncementService, AnnouncementServiceImp>();
         service.AddTransient<MessageAnnouncementService, MessageAnnouncementServiceImp>();
-        service.AddTransient<MatchService, MatchServiceImp>();
+        service.AddTransient<Services.MatchService, Services.MatchServiceImp>();
         service.AddSingleton<IMaintenanceService, MaintenanceServiceImp>();
         service.AddSingleton(new UMClientConfiguration().Initialize(configuration));
         service.AddSingleton<IUMCacheService, UMCacheService>();
@@ -80,6 +82,31 @@ public static class BroadcastConsumerInjection
         AppSettings.AppMailId = configuration.GetSection("MailServer:Id").Value;
         AppSettings.AppMailAddress = configuration.GetSection("MailServer:Address").Value;
         MailClientHandler.StartAsync();
+    }
+
+    public static void InitializeBusinessServices(this IServiceCollection services)
+    {
+        services.AddSingleton<BatchTicketsService, BatchTicketsServiceImp>();
+        services.AddSingleton<CommandService, CommandServiceImp>();
+        services.AddSingleton<CustomerService, CustomerServiceImp>();
+        services.AddSingleton<GenerateTicketService, GenerateTicketServiceImp>();
+        services.AddSingleton<Settlement.Business.Services.MatchService, Settlement.Business.Services.MatchServiceImp>();
+        services.AddSingleton<ModdsService, ModdsServiceImp>();
+        services.AddSingleton<ModdsValueService, ModdsValueServiceImp>();
+        services.AddSingleton<PrepareTicketService, PrepareTicketServiceImp>();
+        services.AddSingleton<InsertHistoryData, InsertHistoryDataImp>();
+        services.AddSingleton<TicketService, TicketServiceImp>();
+        services.AddSingleton<WinLimitService, WinLimitServiceImp>();
+        services.AddSingleton<WinLostService, WinLostServiceImp>();
+        services.AddSingleton<WinLostByModdsService, WinLostByModdsServiceImp>();
+        services.AddSingleton<CommissionService, CommissionServiceImp>();
+        services.AddSingleton<ProcessService, ProcessServiceImp>();
+        services.AddSingleton<SettleSitesService, SettleSitesServiceImp>();
+
+        services.AddControllers().AddJsonOptions(options =>
+        {
+            options.JsonSerializerOptions.WriteIndented = true;
+        });
     }
 
     private static void ConfigureAutoMapper(this IServiceCollection service)
