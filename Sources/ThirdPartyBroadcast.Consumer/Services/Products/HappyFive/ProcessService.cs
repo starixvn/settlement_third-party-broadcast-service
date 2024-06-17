@@ -1,4 +1,5 @@
-﻿using Settlement.Business.Requests;
+﻿using Microsoft.Extensions.Configuration;
+using Settlement.Business.Requests;
 using BusinessConstants = Settlement.Business.Core.Constants;
 using BusinessModels = Settlement.Business.Core.Models;
 using BusinessServices = Settlement.Business.Services;
@@ -10,26 +11,30 @@ public interface ProcessService
     Task<BusinessModels.Result> Settle(HappyFiveRequest request, string site, List<BusinessModels.Resources> resources);
 }
 
-public class ProcessServiceImp(BusinessServices.MatchService matchService,
-    BusinessServices.BatchTicketsService batchTicketsService) : ProcessService
+public class ProcessServiceImp(
+    BusinessServices.MatchService matchService,
+    BusinessServices.BatchTicketsService batchTicketsService,
+    IConfiguration configuration) : ProcessService
 {
     public async Task<BusinessModels.Result> Settle(HappyFiveRequest request, string site, List<BusinessModels.Resources> resources)
     {
         try
         {
             var result = await matchService.LockMatch(request.MatchId, 1, site);
-            if (result.IsSuccessful)
+            if (!result.IsSuccessful)
             {
-                var batchTicketRequest = CreateBatchTicketRequest(request, site, resources);
-                result = await batchTicketsService.SettleByBatch(batchTicketRequest);
-                await matchService.LockMatch(request.MatchId, 0, site);
+                return new BusinessModels.Result
+                {
+                    ErrCode = result.ErrCode,
+                    ErrMessage = $"Match Id = {request.MatchId} - SiteDb = {site} - {result.ErrMessage}"
+                };
             }
 
-            return new BusinessModels.Result
-            {
-                ErrCode = result.ErrCode,
-                ErrMessage = result.ErrMessage
-            };
+            var batchTicketRequest = CreateBatchTicketRequest(request, site, resources);
+            result = await batchTicketsService.SettleByBatch(batchTicketRequest);
+            await matchService.LockMatch(request.MatchId, 0, site);
+
+            return result;
         }
         catch (Exception exception)
         {
@@ -44,7 +49,7 @@ public class ProcessServiceImp(BusinessServices.MatchService matchService,
         }
     }
 
-    private static BatchTicketRequest CreateBatchTicketRequest(HappyFiveRequest request, string site, List<BusinessModels.Resources> resources)
+    private BatchTicketRequest CreateBatchTicketRequest(HappyFiveRequest request, string site, List<BusinessModels.Resources> resources)
     {
         return new BatchTicketRequest
         {
@@ -56,7 +61,7 @@ public class ProcessServiceImp(BusinessServices.MatchService matchService,
             LastCustId = 0,
             LastTransId = 0,
             BatchSize = BusinessConstants.Settings.MaxBatchSize,
-            BatchTotal = BusinessConstants.Settings.MaxWorker
+            BatchTotal = Convert.ToInt32(configuration.GetSection("MaxWorker").Value)
         };
     }
 }
