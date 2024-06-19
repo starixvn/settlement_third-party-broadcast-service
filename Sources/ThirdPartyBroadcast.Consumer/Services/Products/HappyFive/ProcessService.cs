@@ -13,7 +13,7 @@ public interface ProcessService
 
 public class ProcessServiceImp(
     BusinessServices.MatchService matchService,
-    BusinessServices.BatchTicketsService batchTicketsService,
+    BusinessServices.HappyFive.BatchTicketsService batchTicketsService,
     IConfiguration configuration) : ProcessService
 {
     public async Task<BusinessModels.Result> Settle(HappyFiveRequest request, string site, List<BusinessModels.Resources> resources)
@@ -31,7 +31,7 @@ public class ProcessServiceImp(
             }
 
             var batchTicketRequest = CreateBatchTicketRequest(request, site, resources);
-            result = await batchTicketsService.SettleByBatch(batchTicketRequest);
+            result = await batchTicketsService.Settle(batchTicketRequest);
             await matchService.LockMatch(request.MatchId, 0, site);
 
             return result;
@@ -56,6 +56,7 @@ public class ProcessServiceImp(
             MatchId = request.MatchId,
             SportType = request.SportType,
             Action = request.Action,
+            ActionId = request.ActionId,
             Resources = resources,
             DbServer = site,
             LastCustId = 0,

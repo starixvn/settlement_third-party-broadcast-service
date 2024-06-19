@@ -86,11 +86,11 @@ public static class BroadcastConsumerInjection
 
     public static void InitializeBusinessServices(this IServiceCollection services)
     {
-        services.AddSingleton<BatchTicketsService, BatchTicketsServiceImp>();
-        services.AddSingleton<CommandService, CommandServiceImp>();
-        services.AddSingleton<CustomerService, CustomerServiceImp>();
-        services.AddSingleton<GenerateTicketService, GenerateTicketServiceImp>();
+        services.AddSingleton<Settlement.Business.Services.HappyFive.BatchTicketsService, Settlement.Business.Services.HappyFive.BatchTicketsServiceImp>();
+        services.AddSingleton<Settlement.Business.Services.HappyFive.CommandService, Settlement.Business.Services.HappyFive.CommandServiceImp>();
+        services.AddSingleton<Settlement.Business.Services.HappyFive.ProcessService, Settlement.Business.Services.HappyFive.ProcessServiceImp>();
         services.AddSingleton<Settlement.Business.Services.MatchService, Settlement.Business.Services.MatchServiceImp>();
+        services.AddSingleton<CustomerService, CustomerServiceImp>();
         services.AddSingleton<ModdsService, ModdsServiceImp>();
         services.AddSingleton<ModdsValueService, ModdsValueServiceImp>();
         services.AddSingleton<PrepareTicketService, PrepareTicketServiceImp>();

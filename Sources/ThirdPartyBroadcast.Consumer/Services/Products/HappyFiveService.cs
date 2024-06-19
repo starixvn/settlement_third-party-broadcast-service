@@ -55,17 +55,11 @@ public class HappyFiveServiceImp(
 
     private static WriteLogCriteria CreateWriteLogCriteria(HappyFiveRequest request, string remark)
     {
-        var actionId = ActionIdValue(request.Action);
-
-        return new WriteLogCriteria(request.MatchId, actionId, request.AdminId, request.Ip)
+        return new WriteLogCriteria(request.MatchId, request.ActionId, request.AdminId, request.Ip)
         {
             Remark = remark
         };
     }
-
-    private static int ActionIdValue(string actionName) => string.Equals(actionName, ActionName.Calculate, StringComparison.OrdinalIgnoreCase)
-        ? ActionId.HappyFiveCalc
-        : ActionId.HappyFiveRefund;
 
     private async Task WriteLog(int matchId)
     {
@@ -75,13 +69,18 @@ public class HappyFiveServiceImp(
 
     private async Task<Result> ValidateBeforeSettle(HappyFiveRequest request)
     {
-        var criteriaValidation = new ValidateHappyFive { MatchId = request.MatchId, Action = request.Action };
-        await repository.ExecuteAsync(criteriaValidation);
-        return new Result
+        if (string.Equals(request.Action, ActionName.Calculate, StringComparison.OrdinalIgnoreCase))
         {
-            ErrorCode = criteriaValidation.ErrCode,
-            ErrorMessage = criteriaValidation.ErrMsg
-        };
+            var criteriaValidation = new ValidateHappyFive { MatchId = request.MatchId, Action = request.Action };
+            await repository.ExecuteAsync(criteriaValidation);
+            return new Result
+            {
+                ErrorCode = criteriaValidation.ErrCode,
+                ErrorMessage = criteriaValidation.ErrMsg
+            };
+        }
+
+        return new Result();
     }
 
     private async Task UpdateMatchInfo(HappyFiveRequest request)
