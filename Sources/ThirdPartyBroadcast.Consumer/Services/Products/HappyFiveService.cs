@@ -46,7 +46,8 @@ public class HappyFiveServiceImp(
     {
         var ball = string.Join(", ", balls.Select(ball => $"B{ball.Seq}({ball.Number})").ToArray());
         var message = result.ErrorCode > 0 ? $"<br/>{result.ErrorMessage}" : string.Empty;
-        var remark = $"IsAuto: 1<br/>Results: {ball}<br/>Duration: {duration} ms {message}";
+        var results = request.ActionId == ActionId.HappyFiveCalc ? "Results" : "Old Results";
+        var remark = $"IsAuto: 1<br/>{results}: {ball}<br/>Duration: {duration} ms {message}";
 
         var criteria = CreateWriteLogCriteria(request, remark);
 
