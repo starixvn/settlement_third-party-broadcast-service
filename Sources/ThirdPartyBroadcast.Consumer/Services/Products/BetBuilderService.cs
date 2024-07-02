@@ -4,6 +4,7 @@ using ThirdPartyBroadcast.Consumer.Criteria;
 
 namespace ThirdPartyBroadcast.Consumer.Services.Products;
 
+using Fanex.Settlement.ScaleOut.Models;
 using Requests;
 using System;
 
@@ -22,21 +23,24 @@ public class BetBuilderServiceImp(
     LogDirectlyService logDirectlyService)
     : BetBuilderService
 {
+
+    private const string InvalidMessage = "MarketIds cannot be auto settled since they have been settled already: ";
+
+    private const string NoResultMessage = "MarketIds cannot be settled since there is no value: ";
     public async Task<Result> Settle(BetBuilderRequest request)
     {
-        var (validationResult, invalidMarketIds) = await ValidationBeforeSettle(request);
+        var (validationResult, invalidMarkets) = await ValidationBeforeSettle(request);
 
         if (validationResult.ErrorCode > 0)
         {
             return validationResult;
         }
 
-        var selectedMarket = RemoveInvalidMarket(invalidMarketIds, request.Resources);
+        var selectedMarket = RemoveInvalidMarket(invalidMarkets, request.Resources);
 
-        if (!string.IsNullOrWhiteSpace(invalidMarketIds))
-        {
-            await WriteLog(request, invalidMarketIds);
-        }
+
+        await WriteLog(request, invalidMarkets.MarketIds, InvalidMessage);
+        await WriteLog(request, invalidMarkets.NoResultMarketIds, NoResultMessage);
 
         if (!string.IsNullOrWhiteSpace(selectedMarket))
         {
@@ -65,15 +69,26 @@ public class BetBuilderServiceImp(
         return $"NAP: Calculate {criteria.Action} for matchId: {criteria.MatchId} {messageResource}; IsAuto:{criteria.IsAuto}; BetType:38";
     }
 
-    private async Task WriteLog(BetBuilderRequest request, string invalidMarketIds)
+    private async Task WriteLog(BetBuilderRequest request, string invalidMarkets, string message)
+    {
+        if (!string.IsNullOrEmpty(invalidMarkets))
+        {
+            var logMessage = InvalidMarketMessage(invalidMarkets, message);
+            await ExecuteWriteLog(request, logMessage);
+        }
+    }
+
+    private string InvalidMarketMessage(string marketIds, string logMessage)
     {
         const int MaxLength = 115;
-        const string logMessage = "MarketIds cannot be auto settled since they have been settled already:";
-        var marketIds = invalidMarketIds.Length > MaxLength ? $"{invalidMarketIds[..MaxLength]}..." : invalidMarketIds;
-        var actionId = string.Equals(request.Action, Constants.ActionName.Calculate, StringComparison.OrdinalIgnoreCase) ? ActionId.BetBuilderCalc : ActionId.BetBuilderRefund;
-        var message = $"{logMessage} {marketIds}";
+        return marketIds.Length > MaxLength ? $"{logMessage} {marketIds[..MaxLength]}..." : $"{logMessage} {marketIds}";
+    }
 
-        var criteria = new WriteLogCriteria(request.MatchId, message, actionId, request.AdminId, request.Ip);
+    private async Task ExecuteWriteLog(BetBuilderRequest request, string logMessage)
+    {
+        var actionId = string.Equals(request.Action, Constants.ActionName.Calculate, StringComparison.OrdinalIgnoreCase) ? ActionId.BetBuilderCalc : ActionId.BetBuilderRefund;
+
+        var criteria = new WriteLogCriteria(request.MatchId, logMessage, actionId, request.AdminId, request.Ip);
         await repository.ExecuteAsync(criteria);
     }
 
@@ -91,10 +106,12 @@ public class BetBuilderServiceImp(
         await scaleOutSettleService.UpdateMatchInfo(requestUpdate);
     }
 
-    private string RemoveInvalidMarket(string invalidMarketIds, string selectionMarket)
+    private string RemoveInvalidMarket(InvalidMarkets invalidMarkets, string selectionMarket)
     {
         var listMarket = xmlConvertService.Deserialize<ResourcesMarketModel>(selectionMarket);
-        var listInvalidMarket = invalidMarketIds.Split(',').ToList();
+        var listNoResult = (invalidMarkets.NoResultMarketIds ?? string.Empty).Split(',', StringSplitOptions.RemoveEmptyEntries).ToList();
+        var listInvalidMarkets = (invalidMarkets.MarketIds ?? string.Empty).Split(',', StringSplitOptions.RemoveEmptyEntries).ToList();
+        var listInvalidMarket = listNoResult.Concat(listInvalidMarkets).ToList();
         listInvalidMarket.ForEach(item =>
         {
             var index = listMarket.Items.FindIndex(i => i.MarketId == item);
@@ -107,7 +124,7 @@ public class BetBuilderServiceImp(
         return listMarket.Items.Count > 0 ? xmlConvertService.Serialize(listMarket) : string.Empty;
     }
 
-    private async Task<(Result, string)> ValidationBeforeSettle(BetBuilderRequest request)
+    private async Task<(Result, InvalidMarkets)> ValidationBeforeSettle(BetBuilderRequest request)
     {
         var eventTicketThirdPartyRequest = new Fanex.Settlement.ScaleOut.Request.BetBuilderRequest
         {
@@ -118,7 +135,7 @@ public class BetBuilderServiceImp(
             VendorId = request.VendorId
         };
 
-        var (resultValidate, invalidMarketIds) = await scaleOutSettleThirdPartyService.ValidateBetBuilder(eventTicketThirdPartyRequest);
+        var (resultValidate, invalidMarkets) = await scaleOutSettleThirdPartyService.ValidateBetBuilder(eventTicketThirdPartyRequest);
 
         var result = new Result
         {
@@ -126,6 +143,6 @@ public class BetBuilderServiceImp(
             ErrorMessage = resultValidate.ErrorMessage
         };
 
-        return (result, invalidMarketIds ?? string.Empty);
+        return (result, invalidMarkets);
     }
 }
