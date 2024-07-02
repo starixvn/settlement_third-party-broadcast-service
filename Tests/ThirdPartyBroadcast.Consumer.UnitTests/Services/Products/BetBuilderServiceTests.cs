@@ -45,7 +45,7 @@ public class BetBuilderServiceTests
             ErrorCode = 1
         };
         scaleOutSettleThirdPartyService.ValidateBetBuilder(Arg.Any<ScaleOutRequest.BetBuilderRequest>())
-            .Returns((resultFailed, "1234"));
+            .Returns((resultFailed, new InvalidMarkets("1234", "5678")));
 
         var result = await service.Settle(new BetBuilderRequest());
 
@@ -100,7 +100,44 @@ public class BetBuilderServiceTests
         const string message = "MarketIds cannot be auto settled since they have been settled already: 123";
 
         scaleOutSettleThirdPartyService.ValidateBetBuilder(Arg.Any<ScaleOutRequest.BetBuilderRequest>())
-            .Returns((new ResultMessage(), "123"));
+            .Returns((new ResultMessage(), new InvalidMarkets("123", "5678")));
+        xmlConvertService.Deserialize<ResourcesMarketModel>(Arg.Any<string>()).Returns(resources);
+        xmlConvertService.Serialize(Arg.Any<ResourcesMarketModel>()).Returns("2");
+        calculateService.Execute(Arg.Any<BetBuilderCriteria>()).Returns(new Result());
+
+        await service.Settle(request);
+
+        await repository.Received().ExecuteAsync(Arg.Is<WriteLogCriteria>(item => item.ActionId == actionId && item.Remark == message));
+        await scaleOutSettleService.Received().UpdateMatchInfo(Arg.Any<ScaleOutRequest.UpdateMatchInfoRequest>());
+        await calculateService.Received().Execute(Arg.Any<BetBuilderCriteria>());
+    }
+
+    [Theory]
+    [InlineData(ActionName.Calculate, ActionId.BetBuilderCalc)]
+    [InlineData(ActionName.Refund, ActionId.BetBuilderRefund)]
+    public async Task Settle_ValidatePassedAndExistResultNull_SettleCorrectResult(string action, int actionId)
+    {
+        var resources = new ResourcesMarketModel
+        {
+            Items = new List<ResourceMarketItemModel>
+            {
+                new() { MarketId = "123" },
+                new() { MarketId = "234" }
+            }
+        };
+
+        var request = new BetBuilderRequest
+        {
+            Action = action,
+            Ip = "1",
+            AdminId = 1,
+            MatchId = 1234
+        };
+
+        const string message = "MarketIds cannot be settled since there is no value: 234";
+
+        scaleOutSettleThirdPartyService.ValidateBetBuilder(Arg.Any<ScaleOutRequest.BetBuilderRequest>())
+            .Returns((new ResultMessage(), new InvalidMarkets("123", "234")));
         xmlConvertService.Deserialize<ResourcesMarketModel>(Arg.Any<string>()).Returns(resources);
         xmlConvertService.Serialize(Arg.Any<ResourcesMarketModel>()).Returns("2");
         calculateService.Execute(Arg.Any<BetBuilderCriteria>()).Returns(new Result());
@@ -140,7 +177,7 @@ public class BetBuilderServiceTests
         const string message = "error";
 
         scaleOutSettleThirdPartyService.ValidateBetBuilder(Arg.Any<ScaleOutRequest.BetBuilderRequest>())
-            .Returns((new ResultMessage(), "123"));
+            .Returns((new ResultMessage(), new InvalidMarkets("123", "5678")));
         xmlConvertService.Deserialize<ResourcesMarketModel>(Arg.Any<string>()).Returns(resources);
         xmlConvertService.Serialize(Arg.Any<ResourcesMarketModel>()).Returns("2");
         calculateService.Execute(Arg.Any<BetBuilderCriteria>()).Returns(resultFailed);
