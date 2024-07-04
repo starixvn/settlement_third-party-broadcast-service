@@ -1,5 +1,4 @@
 ﻿using Fanex.RemotingRef;
-using Microsoft.Extensions.Options;
 using ThirdPartyBroadcast.Consumer.Criteria.LeapGaming;
 
 namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products;
@@ -18,19 +17,16 @@ public class LeapGamingServiceTests
     {
         calculateService = Substitute.For<CalculateService>();
         var repository = Substitute.For<IDynamicRepository>();
-        var sendMailService = Substitute.For<SendMailService>();
         matchService = Substitute.For<MatchService>();
         announcementService = Substitute.For<AnnouncementService>();
+        var recipientMessageService = Substitute.For<RecipientMessageService>();
 
         var mapperConfig = new MapperConfigurationExpression();
         mapperConfig.AddProfile<ThirdPartyBroadcastMappingProfile>();
         var config = new MapperConfiguration(mapperConfig);
         var mapper = new Mapper(config);
 
-        var appSettingsKey = new AppSettingsKey { SiteDbServer = ["01", "02"], MailFunction = new MailFunction { VirtualSport = new MailInfo { CreditMailId = 103 } } };
-        var options = Options.Create(appSettingsKey);
-
-        service = new LeapGamingServiceImp(mapper, calculateService, repository, sendMailService, matchService, announcementService, options);
+        service = new LeapGamingServiceImp(mapper, calculateService, repository, matchService, announcementService, recipientMessageService);
     }
 
     [Fact]

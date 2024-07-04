@@ -5,7 +5,6 @@ namespace ThirdPartyBroadcast.Consumer.Services.Products;
 using Criteria;
 using Criteria.LeapGaming;
 using Fanex.Data.Repository;
-using Microsoft.Extensions.Options;
 using Models;
 
 public interface LeapGamingService
@@ -17,14 +16,11 @@ public class LeapGamingServiceImp(
     IMapper mapper,
     CalculateService calculateService,
     IDynamicRepository repository,
-    SendMailService sendMailService,
     MatchService matchService,
     AnnouncementService announcementService,
-    IOptions<AppSettingsKey> appSettingsKey)
+    RecipientMessageService recipientMessageService)
     : LeapGamingService
 {
-    private MailFunction MailFunction => appSettingsKey.Value.MailFunction;
-
     private const int ErrorCodeNotExistValue = 1_000_003;
 
     private const string ErrorMsgNotExistValue = "The input score values are not valid!";
@@ -56,7 +52,7 @@ public class LeapGamingServiceImp(
 
         await WriteLogSettled(request, settleResult, matchInfo);
 
-        await SendMail(request.Action, matchInfo);
+        await recipientMessageService.Message(request.Action, matchInfo);
 
         await announcementService.Handle(currentTickets, matchInfo, request.AdminId);
 
@@ -130,67 +126,6 @@ public class LeapGamingServiceImp(
 
         return (ResourcesModel)serializer.Deserialize(sr);
     }
-
-    private async Task SendMail(string action, MatchInfo matchInfo)
-    {
-        if (matchService.IsReSettleOrRefund(action, matchInfo.EventStatus))
-        {
-            var (creditTickets, depositTickets) = await matchService.GetAllTicketsVirtualSports(matchInfo.MatchId);
-
-            var actionName = GetActionName(action);
-
-            await RecipientGroupCredit(actionName, matchInfo, creditTickets.ToList());
-            await RecipientGroupDeposit(actionName, matchInfo, depositTickets.ToList());
-        }
-    }
-
-    private async Task RecipientGroupCredit(string actionName, MatchInfo matchInfo, IReadOnlyCollection<TicketInfo> ticketsInfo)
-    {
-        if (ticketsInfo.Count < 1)
-        {
-            return;
-        }
-
-        var mailId = MailFunction.VirtualSport.CreditMailId;
-        var mailModel = new NotificationModel
-        {
-            MatchInfo = matchInfo,
-            Action = actionName,
-            Type = EmailType.Credit,
-            MailId = mailId,
-            TicketsInfo = ticketsInfo,
-            TotalTickets = ticketsInfo.Count
-        };
-
-        await sendMailService.SendMailByFunctionId(mailModel);
-    }
-
-    private async Task RecipientGroupDeposit(string actionName, MatchInfo matchInfo, IReadOnlyCollection<TicketInfo> ticketsInfo)
-    {
-        if (ticketsInfo.Count < 1)
-        {
-            return;
-        }
-
-        var tickets = matchService.SplitTicketByLicensee(ticketsInfo).ToList();
-        var mailId = MailFunction.VirtualSport.DepositMailId;
-
-        var mailModel = new NotificationModel
-        {
-            MatchInfo = matchInfo,
-            Action = actionName,
-            Type = EmailType.Deposit,
-            MailId = mailId,
-            TicketsInfo = tickets,
-            TotalTickets = ticketsInfo.Count
-        };
-
-        await sendMailService.SendMailByFunctionId(mailModel);
-    }
-
-    private static string GetActionName(string action) => string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase)
-        ? ActionName.Refund
-        : ActionName.ReSettle;
 
     private static bool ValidateResult(IReadOnlyCollection<ResourceItemModel> items, string action, MatchInfo match)
     {
