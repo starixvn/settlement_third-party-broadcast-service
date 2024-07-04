@@ -23,22 +23,22 @@ public class ProcessServiceImp(
             var result = await matchService.LockMatch(request.MatchId, 1, site);
             if (!result.IsSuccessful)
             {
+                var errorMessage = GetErrorMessage(request.MatchId, site, result.ErrMessage);
                 return new BusinessModels.Result
                 {
                     ErrCode = result.ErrCode,
-                    ErrMessage = $"Match Id = {request.MatchId} - SiteDb = {site} - {result.ErrMessage}"
+                    ErrMessage = errorMessage
                 };
             }
 
             var batchTicketRequest = CreateBatchTicketRequest(request, site, resources);
             result = await batchTicketsService.Settle(batchTicketRequest);
             await matchService.LockMatch(request.MatchId, 0, site);
-            Console.WriteLine($"MatchId:{request.MatchId}");
             return result;
         }
         catch (Exception exception)
         {
-            var errorMessage = $"Match Id = {request.MatchId} - SiteDb = {site} - {exception.Message}";
+            var errorMessage = GetErrorMessage(request.MatchId, site, exception.Message);
             await matchService.LockMatch(request.MatchId, 0, site);
 
             return new BusinessModels.Result
@@ -47,6 +47,11 @@ public class ProcessServiceImp(
                 ErrMessage = errorMessage
             };
         }
+    }
+
+    private static string GetErrorMessage(int matchId, string site, string message)
+    {
+        return $"Match Id = {matchId} - SiteDb = {site} - {message}";
     }
 
     private BatchTicketRequest CreateBatchTicketRequest(HappyFiveRequest request, string site, List<BusinessModels.Resources> resources)
