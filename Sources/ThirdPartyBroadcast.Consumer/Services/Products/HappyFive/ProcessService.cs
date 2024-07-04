@@ -33,7 +33,7 @@ public class ProcessServiceImp(
             var batchTicketRequest = CreateBatchTicketRequest(request, site, resources);
             result = await batchTicketsService.Settle(batchTicketRequest);
             await matchService.LockMatch(request.MatchId, 0, site);
-
+            Console.WriteLine($"MatchId:{request.MatchId}");
             return result;
         }
         catch (Exception exception)

@@ -16,7 +16,6 @@
 		<Setting Key="NAP_Admin_SendMail" SpName="NAP_Admin_SendMail" DbName="DBTXN.bodb02.wsv_nap" />
 		<Setting Key="WriteLog_UserLog_Settle" SpName="WriteLog_UserLog_Settle" DbName="DBLOG.bodb_CustomerLog.wsv_nap" />
 		<Setting Key="NAP_UserLog_WriteLogPreSettlement" SpName="NAP_UserLog_WriteLogPreSettlement" DbName="DBUserLog.LogTDB.wsv_nap" />
-		<Setting Key="NAP_Set_MatchSelInfo" SpName="NAP_Set_MatchSelInfo" DbName="DBPRO.bodb02.wsv_nap" />
 		<Setting Key="NAP_Set_Match_VS_Sel" SpName="NAP_Set_Match_VS_Sel" DbName="DBPRO.bodb02.wsv_nap" />
 		<Setting Key="NAP_Admin_SendNotify_VS" SpName="NAP_Admin_SendNotify_VS" DbName="DBTXN.bodb02.wsv_nap" />
 		<Setting Key="NAP_SpecialDelete_Message_Insert" SpName="NAP_SpecialDelete_Message_Insert" DbName="DB061.bodb_Message.wsv_nap" />
