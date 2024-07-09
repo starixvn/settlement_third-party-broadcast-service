@@ -1,6 +1,7 @@
 ﻿namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products;
 
 using Criteria.BitCoin;
+using ThirdPartyBroadcast.Consumer.Criteria;
 
 public class BitCoinServiceTests
 {
@@ -44,7 +45,7 @@ public class BitCoinServiceTests
         var result = await service.Settle(new BitCoinRequest());
 
         Assert.True(result.IsSuccessful);
-        await repository.Received().GetAsync<string>(Arg.Any<BitCoinEventStatusCriteria>());
+        await repository.Received().GetAsync<string>(Arg.Any<Match3rdSelCriteria>());
         await repository.Received().ExecuteAsync(Arg.Any<BitCoinUpdateMatchCriteria>());
         await repository.Received().ExecuteAsync(Arg.Any<UpdateEventStatusCriteria>());
         await calculateService.Received().Execute(Arg.Any<BitCoinCriteria>());
@@ -56,7 +57,7 @@ public class BitCoinServiceTests
     [InlineData("Running", ActionName.Refund)]
     public async Task Settle_ReSettle_ShouldNotify(string eventStatus, string action)
     {
-        repository.GetAsync<string>(Arg.Any<BitCoinEventStatusCriteria>()).Returns(eventStatus);
+        repository.GetAsync<string>(Arg.Any<Match3rdSelCriteria>()).Returns(eventStatus);
         calculateService.Execute(Arg.Any<BitCoinCriteria>()).Returns(new Result());
 
         var result = await service.Settle(new BitCoinRequest { Action = action });

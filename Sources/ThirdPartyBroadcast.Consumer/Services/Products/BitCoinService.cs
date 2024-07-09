@@ -2,6 +2,7 @@
 
 using Criteria.BitCoin;
 using System;
+using ThirdPartyBroadcast.Consumer.Criteria;
 
 public interface BitCoinService
 {
@@ -42,7 +43,7 @@ public class BitCoinServiceImp(
 
     private async Task<string> GetEventStatus(int matchId)
     {
-        var criteria = new BitCoinEventStatusCriteria { MatchId = matchId };
+        var criteria = new Match3rdSelCriteria { MatchId = matchId };
 
         return await repository.GetAsync<string>(criteria);
     }
