@@ -5,9 +5,11 @@ namespace ThirdPartyBroadcast.Consumer.Services.Products;
 
 using Criteria;
 using Criteria.HappyFive;
+using Fanex.Settlement.Converter.Services;
 using HappyFive;
 using Models;
 using Settlement.Business.Services;
+using ThirdPartyBroadcast.Consumer.Models.HappyFive;
 
 public interface HappyFiveService
 {
@@ -19,7 +21,8 @@ public class HappyFiveServiceImp(
     IDynamicRepository repository,
     ScaleOutSettleThirdPartyService scaleOutSettleThirdPartyService,
     LogDirectlyService logDirectlyService,
-    MatchService matchService)
+    MatchService matchService,
+    XmlConvertService xmlConvertService)
     : HappyFiveService
 {
     public async Task<Result> Settle(HappyFiveRequest request)
@@ -36,6 +39,7 @@ public class HappyFiveServiceImp(
             result = await settleSitesService.Settle(request, resources.ToList());
             watch.Stop();
 
+            await UpdateBalls(result, request, balls);
             await WriteLogSettled(request, result, balls, watch.ElapsedMilliseconds);
         }
 
@@ -68,9 +72,11 @@ public class HappyFiveServiceImp(
         await logDirectlyService.WriteLog(matchId, logMessage);
     }
 
+    private static bool IsCalculate(string actionName) => string.Equals(actionName, ActionName.Calculate, StringComparison.OrdinalIgnoreCase);
+
     private async Task<Result> ValidateBeforeSettle(HappyFiveRequest request)
     {
-        if (string.Equals(request.Action, ActionName.Calculate, StringComparison.OrdinalIgnoreCase))
+        if (IsCalculate(request.Action))
         {
             var criteriaValidation = new ValidateHappyFive { MatchId = request.MatchId, Action = request.Action };
             await repository.ExecuteAsync(criteriaValidation);
@@ -94,5 +100,31 @@ public class HappyFiveServiceImp(
             Creator = request.AdminId
         };
         await scaleOutSettleThirdPartyService.UpdateMatchInfo3rd(updateRequest);
+    }
+
+    private async Task UpdateBalls(Result result, HappyFiveRequest request, IEnumerable<Ball> balls)
+    {
+        if (result.IsSuccessful && !IsCalculate(request.Action))
+        {
+            var updateMatchCriteria = new UpdateBallsCriteria
+            {
+                MatchId = request.MatchId,
+                Resources = ResourcesBalls(balls)
+            };
+
+            await repository.ExecuteAsync(updateMatchCriteria);
+        }
+    }
+
+    private string ResourcesBalls(IEnumerable<Ball> balls)
+    {
+        var resourceItems = balls.Select(ball => new ResourcesItem { Seq = ball.Seq, NumberBall = 0 }).ToList();
+
+        var resources = new Resources
+        {
+            ResourceItems = resourceItems
+        };
+
+        return xmlConvertService.Serialize(resources);
     }
 }

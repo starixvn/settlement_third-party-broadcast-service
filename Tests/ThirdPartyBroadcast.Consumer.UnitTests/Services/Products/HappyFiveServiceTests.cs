@@ -20,15 +20,18 @@ public class HappyFiveServiceTests
 
     private readonly LogDirectlyService logDirectlyService;
 
+    private readonly XmlConvertService xmlConvertService;
+
     public HappyFiveServiceTests()
     {
         repository = Substitute.For<IDynamicRepository>();
         settleSitesService = Substitute.For<SettleSitesService>();
         scaleOutSettleThirdPartyService = Substitute.For<ScaleOutSettleThirdPartyService>();
         logDirectlyService = Substitute.For<LogDirectlyService>();
+        xmlConvertService = Substitute.For<XmlConvertService>();
         matchService = Substitute.For<Settlement.Business.Services.MatchService>();
 
-        service = new HappyFiveServiceImp(settleSitesService, repository, scaleOutSettleThirdPartyService, logDirectlyService, matchService);
+        service = new HappyFiveServiceImp(settleSitesService, repository, scaleOutSettleThirdPartyService, logDirectlyService, matchService, xmlConvertService);
     }
 
     [Fact]
@@ -46,7 +49,7 @@ public class HappyFiveServiceTests
     }
 
     [Fact]
-    public async Task Settle_ValidateBeforeSettleIsPassed_DoSettle()
+    public async Task Settle_ValidateBeforeSettleIsPassed_DoCalc()
     {
         await repository.ExecuteAsync(Arg.Do<ValidateHappyFive>(x =>
         {
@@ -56,10 +59,14 @@ public class HappyFiveServiceTests
 
         var resources = new List<Resources>();
         var balls = new List<Ball>();
+        var request = new HappyFiveRequest
+        {
+            Action = ActionName.Calculate
+        };
 
         matchService.GetResourceHappy5(Arg.Any<int>(), Arg.Any<string>()).Returns((resources, balls));
         settleSitesService.Settle(Arg.Any<HappyFiveRequest>(), Arg.Any<List<Resources>>()).Returns(new Result());
-        await service.Settle(new HappyFiveRequest());
+        await service.Settle(request);
 
         Received.InOrder(() =>
         {
@@ -67,6 +74,38 @@ public class HappyFiveServiceTests
             logDirectlyService.Message(Arg.Any<int>());
             logDirectlyService.WriteLog(Arg.Any<int>(), Arg.Any<string>());
             settleSitesService.Settle(Arg.Any<HappyFiveRequest>(), Arg.Any<List<Resources>>());
+        });
+        await repository.DidNotReceive().ExecuteAsync(Arg.Any<UpdateBallsCriteria>());
+        xmlConvertService.DidNotReceive().Serialize(Arg.Any<Resources>());
+    }
+
+    [Fact]
+    public async Task Settle_ValidateBeforeSettleIsPassed_DoRefund()
+    {
+        await repository.ExecuteAsync(Arg.Do<ValidateHappyFive>(x =>
+        {
+            x.ErrCode = 0;
+            x.ErrMsg = string.Empty;
+        }));
+
+        var resources = new List<Resources>();
+        var balls = new List<Ball>();
+        var request = new HappyFiveRequest
+        {
+            Action = ActionName.Refund
+        };
+
+        matchService.GetResourceHappy5(Arg.Any<int>(), Arg.Any<string>()).Returns((resources, balls));
+        settleSitesService.Settle(Arg.Any<HappyFiveRequest>(), Arg.Any<List<Resources>>()).Returns(new Result());
+        await service.Settle(request);
+
+        Received.InOrder(() =>
+        {
+            scaleOutSettleThirdPartyService.UpdateMatchInfo3rd(Arg.Any<UpdateMatchInfo3RdRequest>());
+            logDirectlyService.Message(Arg.Any<int>());
+            logDirectlyService.WriteLog(Arg.Any<int>(), Arg.Any<string>());
+            settleSitesService.Settle(Arg.Any<HappyFiveRequest>(), Arg.Any<List<Resources>>());
+            repository.ExecuteAsync(Arg.Any<UpdateBallsCriteria>());
         });
     }
 }
