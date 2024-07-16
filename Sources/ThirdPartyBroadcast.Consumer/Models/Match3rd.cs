@@ -9,4 +9,8 @@ public class Match3rd
     public int AwayId { get; set; }
     public string EventStatus { get; set; }
     public DateTime EventDate { get; set; }
+    public int? HtHomeScore { get; set; }
+    public int? HtAwayScore { get; set; }
+    public int? FinalHomeScore { get; set; }
+    public int? FinalAwayScore { get; set; }
 }

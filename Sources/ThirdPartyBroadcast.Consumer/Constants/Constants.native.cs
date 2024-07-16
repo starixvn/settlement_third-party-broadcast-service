@@ -71,6 +71,9 @@ public static class ActionId
 	public const int NgCalHt = 118;
 
 	public const int NgRefundFt = 119;
+
+    public const int VirtualSportFiveCal = 81053;
+    public const int VirtualSportFiveRefund = 81054;
 }
 
 public static class ActionName

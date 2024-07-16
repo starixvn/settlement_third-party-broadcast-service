@@ -38,7 +38,7 @@ public class MatchServiceImp(
     ScaleOutSettleThirdPartyService scaleOutSettleThirdPartyService,
     LogDirectlyService logDirectlyService,
     RefDataService refDataService,
-    IOptions<AppSettingsKey> appSettingsKey)
+    TicketService ticketService)
     : MatchService
 {
     public async Task<MatchInfo> GetMatchInfo(int matchId)
@@ -115,7 +115,7 @@ public class MatchServiceImp(
     {
         if (string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase))
         {
-            return await GetAllTickets(new TicketSettleCriteria { MatchId = matchId });
+            return await ticketService.GetTicketsAllSites(new TicketSettleCriteria { MatchId = matchId });
         }
 
         return [];
@@ -129,22 +129,7 @@ public class MatchServiceImp(
         }
 
         var transIds = string.Join(',', tickets.Select(x => x.TransId).ToArray());
-        return await GetAllTickets(new TicketSettleCriteria { MatchId = matchId, TransIDs = transIds });
-    }
-
-    private async Task<List<TicketSettleInfo>> GetAllTickets(TicketSettleCriteria criteria)
-    {
-        var result = new List<TicketSettleInfo>();
-        foreach (var server in appSettingsKey.Value.SiteDbServer)
-        {
-            criteria.DbServer = server;
-
-            var ticketInfo = await repository.FetchAsync<TicketSettleInfo>(criteria);
-
-            result.AddRange(ticketInfo);
-        }
-
-        return result;
+        return await ticketService.GetTicketsAllSites(new TicketSettleCriteria { MatchId = matchId, TransIDs = transIds });
     }
 
     public bool IsReSettleOrRefund(string action, string eventStatus) =>

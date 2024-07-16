@@ -27,7 +27,8 @@ public class GenerateConsumerServiceImp(
         ProductType.VirtualSports,
         ProductType.LeapGaming,
         ProductType.CockFighting,
-        ProductType.PinGoal
+        ProductType.PinGoal,
+        ProductType.VirtualSports5
     ];
 
     public async Task SettleByProduct(string productType, string data)
