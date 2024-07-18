@@ -52,7 +52,7 @@ public class VirtualBetRadarServiceImp(
 
         await recipientMessageService.Message(request.Action, matchInfo);
 
-        await announcementService.Handle(currentTickets, matchInfo, request.AdminId);
+        await announcementService.SendAnnounceRefund(currentTickets, matchInfo, request.AdminId);
 
         return settleResult;
     }

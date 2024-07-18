@@ -17,14 +17,10 @@ public class LeapGamingServiceImp(
     CalculateService calculateService,
     IDynamicRepository repository,
     MatchService matchService,
-    AnnouncementService announcementService,
+    TicketService ticketService,
     RecipientMessageService recipientMessageService)
     : LeapGamingService
 {
-    private const int ErrorCodeNotExistValue = 1_000_003;
-
-    private const string ErrorMsgNotExistValue = "The input score values are not valid!";
-
     public async Task<Result> Settle(LeapGamingRequest request)
     {
         var currentMatchInfo = await matchService.GetMatchInfo(request.MatchId);
@@ -34,7 +30,7 @@ public class LeapGamingServiceImp(
             return validationResult;
         }
 
-        var currentTickets = await matchService.GetTicketsByAction(request.MatchId, request.Action);
+        var currentTickets = await ticketService.GetTicketsByAction(currentMatchInfo.MatchId, currentMatchInfo.SportType, request.Action);
 
         await matchService.UpdateMatchInfoLeapGaming(request);
 
@@ -54,7 +50,7 @@ public class LeapGamingServiceImp(
 
         await recipientMessageService.Message(request.Action, matchInfo);
 
-        await announcementService.Handle(currentTickets, matchInfo, request.AdminId);
+        await announcementService.SendAnnounceRefund(currentTickets, matchInfo, request.AdminId);
 
         return settleResult;
     }
@@ -102,8 +98,8 @@ public class LeapGamingServiceImp(
             {
                 return new Result
                 {
-                    ErrorCode = ErrorCodeNotExistValue,
-                    ErrorMessage = ErrorMsgNotExistValue
+                    ErrorCode = ErrorCode.NotExistValue,
+                    ErrorMessage = ErrorMessage.NotExistValue
                 };
             }
         }
@@ -111,8 +107,8 @@ public class LeapGamingServiceImp(
         {
             return new Result
             {
-                ErrorCode = ErrorCodeNotExistValue,
-                ErrorMessage = ErrorMsgNotExistValue
+                ErrorCode = ErrorCode.NotExistValue,
+                ErrorMessage = ErrorMessage.NotExistValue
             };
         }
 

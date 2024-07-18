@@ -5,33 +5,33 @@ namespace ThirdPartyBroadcast.Consumer.Services;
 
 public interface TicketService
 {
-    Task<List<TicketSettleInfo>> GetTicketsByAction(int matchId, string action);
+    Task<List<TicketSettleInfo>> GetTicketsByAction(int matchId, short sportType, string action);
 
-    Task<List<TicketSettleInfo>> GetTicketsByTransIds(int matchId, List<TicketSettleInfo> tickets)
+    Task<List<TicketSettleInfo>> GetTicketsByTransIds(int matchId, short sportType, List<TicketSettleInfo> tickets);
 }
 
 public class TicketServiceImp : TicketService
 {
-    private readonly AppSettingsKey appSettingsKey;
+    private readonly IOptions<AppSettingsKey> appSettingsKey;
     private readonly IDynamicRepository repository;
 
-    public TicketServiceImp(IOptions<AppSettingsKey> options, IDynamicRepository repository)
+    public TicketServiceImp(IOptions<AppSettingsKey> appSettingsKey, IDynamicRepository repository)
     {
-        appSettingsKey = options.Value;
+        this.appSettingsKey = appSettingsKey;
         this.repository = repository;
     }
 
-    public async Task<List<TicketSettleInfo>> GetTicketsByAction(int matchId, string action)
+    public async Task<List<TicketSettleInfo>> GetTicketsByAction(int matchId, short sportType, string action)
     {
         if (string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase))
         {
-            return await GetTicketsAllSites(new TicketSettleCriteria { MatchId = matchId });
+            return await GetTicketsAllSites(new TicketSettleCriteria { MatchId = matchId, SportType = sportType });
         }
 
         return [];
     }
 
-    public async Task<List<TicketSettleInfo>> GetTicketsByTransIds(int matchId, List<TicketSettleInfo> tickets)
+    public async Task<List<TicketSettleInfo>> GetTicketsByTransIds(int matchId, short sportType, List<TicketSettleInfo> tickets)
     {
         if (tickets.Count == 0)
         {
@@ -39,19 +39,19 @@ public class TicketServiceImp : TicketService
         }
 
         var transIds = string.Join(',', tickets.Select(x => x.TransId).ToArray());
-        return await GetTicketsAllSites(new TicketSettleCriteria { MatchId = matchId, TransIDs = transIds });
+        return await GetTicketsAllSites(new TicketSettleCriteria { MatchId = matchId, SportType = sportType, TransIDs = transIds });
     }
 
-    public async Task<List<TicketSettleInfo>> GetTicketsAllSites(TicketInfoSelBase criteria)
+    public async Task<List<TicketSettleInfo>> GetTicketsAllSites(TicketSettleCriteria criteria)
     {
-        var tasks = appSettingsKey.SiteDbServer.Select(s => GetTicketsOnSite(s, criteria));
+        var tasks = appSettingsKey.Value.SiteDbServer.Select(s => GetTicketsOnSite(s, criteria));
 
         var result = await Task.WhenAll(tasks);
 
         return result.SelectMany(x => x).ToList();
     }
 
-    private Task<IEnumerable<TicketSettleInfo>> GetTicketsOnSite(string server, TicketInfoSelBase criteria)
+    private Task<IEnumerable<TicketSettleInfo>> GetTicketsOnSite(string server, TicketSettleCriteria criteria)
     {
         criteria.DbServer = server;
         return repository.FetchAsync<TicketSettleInfo>(criteria);

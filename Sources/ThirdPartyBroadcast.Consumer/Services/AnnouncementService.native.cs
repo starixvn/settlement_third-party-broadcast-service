@@ -1,21 +1,30 @@
 ﻿using Fanex.Settlement.Converter.Services;
+using Microsoft.Extensions.Options;
 using ThirdPartyBroadcast.Consumer.Criteria;
+using ThirdPartyBroadcast.Consumer.Models;
 
 namespace ThirdPartyBroadcast.Consumer.Services;
 
 public interface AnnouncementService
 {
-    Task Handle(List<TicketSettleInfo> currentTickets, MatchInfo matchInfo, int adminId);
+    Task SendAnnounceRefund(List<TicketSettleInfo> currentTickets, MatchInfo matchInfo, int adminId);
+
+    Task SendMail(string action, MatchInfo matchInfo);
 }
 
 public class AnnouncementServiceImp(
     IDynamicRepository repository,
     XmlConvertService xmlConvertService,
     MatchService matchService,
-    MessageAnnouncementService messageAnnouncementService)
+    MessageAnnouncementService messageAnnouncementService,
+    SendMailService sendMailService,
+    IOptions<AppSettingsKey> appSettingsKey
+)
     : AnnouncementService
 {
-    public async Task Handle(List<TicketSettleInfo> currentTickets, MatchInfo matchInfo, int adminId)
+    private MailFunction MailFunction => appSettingsKey.Value.MailFunction;
+
+    public async Task SendAnnounceRefund(List<TicketSettleInfo> currentTickets, MatchInfo matchInfo, int adminId)
     {
         var settledTickets = await matchService.GetTicketsByTransIds(matchInfo.MatchId, currentTickets);
 
@@ -23,6 +32,19 @@ public class AnnouncementServiceImp(
         {
             var groupTickets = CreateGroupsStatus(currentTickets, settledTickets).ToList();
             await HandleInsertMessage(matchInfo, groupTickets, adminId);
+        }
+    }
+
+    public async Task SendMail(string action, MatchInfo matchInfo)
+    {
+        if (matchService.IsReSettleOrRefund(action, matchInfo.EventStatus))
+        {
+            var (creditTickets, depositTickets) = await matchService.GetAllTicketsVirtualSports(matchInfo.MatchId);
+
+            var actionName = GetActionName(action);
+
+            await RecipientGroupCredit(actionName, matchInfo, creditTickets.ToList());
+            await RecipientGroupDeposit(actionName, matchInfo, depositTickets.ToList());
         }
     }
 
@@ -89,4 +111,52 @@ public class AnnouncementServiceImp(
 
         await repository.ExecuteAsync(criteria);
     }
+
+    private async Task RecipientGroupCredit(string actionName, MatchInfo matchInfo, IReadOnlyCollection<TicketInfo> ticketsInfo)
+    {
+        if (ticketsInfo.Count < 1)
+        {
+            return;
+        }
+
+        var mailId = MailFunction.VirtualSport.CreditMailId;
+        var mailModel = new NotificationModel
+        {
+            MatchInfo = matchInfo,
+            Action = actionName,
+            Type = EmailType.Credit,
+            MailId = mailId,
+            TicketsInfo = ticketsInfo,
+            TotalTickets = ticketsInfo.Count
+        };
+
+        await sendMailService.SendMailByFunctionId(mailModel);
+    }
+
+    private async Task RecipientGroupDeposit(string actionName, MatchInfo matchInfo, IReadOnlyCollection<TicketInfo> ticketsInfo)
+    {
+        if (ticketsInfo.Count < 1)
+        {
+            return;
+        }
+
+        var tickets = matchService.SplitTicketByLicensee(ticketsInfo).ToList();
+        var mailId = MailFunction.VirtualSport.DepositMailId;
+
+        var mailModel = new NotificationModel
+        {
+            MatchInfo = matchInfo,
+            Action = actionName,
+            Type = EmailType.Deposit,
+            MailId = mailId,
+            TicketsInfo = tickets,
+            TotalTickets = ticketsInfo.Count
+        };
+
+        await sendMailService.SendMailByFunctionId(mailModel);
+    }
+
+    private static string GetActionName(string action) => string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase)
+        ? ActionName.Refund
+        : ActionName.ReSettle;
 }

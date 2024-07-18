@@ -38,7 +38,7 @@ public class VirtualSportsServiceImp(
 
         await recipientMessageService.Message(request.Action, matchInfo);
 
-        await announcementService.Handle(currentTickets, matchInfo, criteria.AdminId);
+        await announcementService.SendAnnounceRefund(currentTickets, matchInfo, criteria.AdminId);
 
         return settleResult;
     }

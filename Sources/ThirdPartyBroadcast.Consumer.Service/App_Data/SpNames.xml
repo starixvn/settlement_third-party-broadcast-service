@@ -181,10 +181,10 @@
 			</Function>
 		</Function>
 		<Function Name="Match3rd_TicketInfo">
-			<Setting Key="NAP_Set_Match3rd_TicketInfo_Sel_DBTXN" SpName="NAP_Set_Match3rd_TicketInfo_Sel" DbName="DBTXN.bodb02.wsv_nap" />
-			<Setting Key="NNAP_Set_Match3rd_TicketInfo_Sel_DBSID01" SpName="NAP_Set_Match3rd_TicketInfo_Sel" DbName="DBSID01.bodb02.wsv_nap" />
-			<Setting Key="NAP_Set_Match3rd_TicketInfo_Sel_DBSID02" SpName="NAP_Set_Match3rd_TicketInfo_Sel" DbName="DBSID02.bodb02.wsv_nap" />
-			<Setting Key="NAP_Set_Match3rd_TicketInfo_Sel_DBSID03" SpName="NAP_Set_Match3rd_TicketInfo_Sel" DbName="DBSID03.bodb02.wsv_nap" />
+			<Setting Key="NAP_Set_Match3rd_TicketInfo_Sel_DBTXN" SpName="NAP_Set_Match3rd_TicketInfo_Sel_UAT4" DbName="DBTXN.bodb02.wsv_nap" />
+			<Setting Key="NNAP_Set_Match3rd_TicketInfo_Sel_DBSID01" SpName="NAP_Set_Match3rd_TicketInfo_Sel_UAT4" DbName="DBSID01.bodb02.wsv_nap" />
+			<Setting Key="NAP_Set_Match3rd_TicketInfo_Sel_DBSID02" SpName="NAP_Set_Match3rd_TicketInfo_Sel_UAT4" DbName="DBSID02.bodb02.wsv_nap" />
+			<Setting Key="NAP_Set_Match3rd_TicketInfo_Sel_DBSID03" SpName="NAP_Set_Match3rd_TicketInfo_Sel_UAT4" DbName="DBSID03.bodb02.wsv_nap" />
 		</Function>
 	</Function>
 </Functions>

@@ -10,7 +10,7 @@ public class MatchInfo
 
 	public string EventStatus { get; set; }
 
-	public short SportType { get; set; }
+    public short SportType { get; set; }
 
 	public string SportName => RefDataService.GetSportName(SportType, ContentLanguage.English);
 

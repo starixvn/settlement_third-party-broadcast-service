@@ -43,7 +43,7 @@ public class VirtualSportsServiceTests
             matchService.UpdateMatchInfoVirtualSports(Arg.Any<VirtualSoccerRequest>());
             matchService.WriteLogVirtualSports(Arg.Any<VirtualSoccerRequest>());
             calculateService.Execute(Arg.Any<VirtualSportsCriteria>());
-            announcementService.Handle(Arg.Any<List<TicketSettleInfo>>(), Arg.Any<MatchInfo>(), Arg.Any<int>());
+            announcementService.SendAnnounceRefund(Arg.Any<List<TicketSettleInfo>>(), Arg.Any<MatchInfo>(), Arg.Any<int>());
         });
     }
 }

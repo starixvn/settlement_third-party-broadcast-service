@@ -2,11 +2,12 @@
 
 public class Match3rdUpdateCriteria : NonQueryCommand
 {
-    public int Match3rdId { get; set; }
-    public string Action { get; set; }
+    public int MatchId { get; set; }
     public string SelectedResources { get; set; }
+    public string BetStatus { get; set; }
+    public string EventStatus { get; set; }
 
     public override string GetSettingKey() => "NAP_Set_Match3rd_Info_Update";
 
-    public override bool IsValid() => Match3rdId > 0;
+    public override bool IsValid() => MatchId > 0;
 }

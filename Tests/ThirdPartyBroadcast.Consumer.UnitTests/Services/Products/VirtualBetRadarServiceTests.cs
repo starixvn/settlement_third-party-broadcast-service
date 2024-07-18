@@ -71,7 +71,7 @@ public class VirtualBetRadarServiceTests
             matchService.UpdateMatchInfoBetRadar(Arg.Any<VirtualBetRadarRequest>());
             matchService.WriteLogBetRadar(Arg.Any<VirtualBetRadarRequest>());
             calculateService.Execute(Arg.Any<VirtualBetRadarCriteria>());
-            announcementService.Handle(Arg.Any<List<TicketSettleInfo>>(), Arg.Any<MatchInfo>(), Arg.Any<int>());
+            announcementService.SendAnnounceRefund(Arg.Any<List<TicketSettleInfo>>(), Arg.Any<MatchInfo>(), Arg.Any<int>());
         });
     }
 }

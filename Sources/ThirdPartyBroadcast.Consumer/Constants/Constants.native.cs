@@ -114,3 +114,13 @@ public static class SportType
 {
 	public const short VirtualCockFighting = 188;
 }
+
+public static class ErrorCode
+{
+    public const int NotExistValue = 1_000_003;
+}
+
+public static class ErrorMessage
+{
+    public const string NotExistValue = "The input score values are not valid!";
+}

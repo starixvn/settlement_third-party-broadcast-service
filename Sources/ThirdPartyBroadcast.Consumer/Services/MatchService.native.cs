@@ -23,10 +23,6 @@ public interface MatchService
 
     Task WriteLogBetRadar(VirtualBetRadarRequest request);
 
-    Task<List<TicketSettleInfo>> GetTicketsByAction(int matchId, string action);
-
-    Task<List<TicketSettleInfo>> GetTicketsByTransIds(int matchId, List<TicketSettleInfo> tickets);
-
     bool IsReSettleOrRefund(string action, string eventStatus);
 
     IEnumerable<TicketInfo> SplitTicketByLicensee(IReadOnlyCollection<TicketInfo> ticketInfos);
@@ -109,27 +105,6 @@ public class MatchServiceImp(
               Resource Results: {request.ResourceResult}";
 
         await logDirectlyService.WriteLog(request.MatchId, message);
-    }
-
-    public async Task<List<TicketSettleInfo>> GetTicketsByAction(int matchId, string action)
-    {
-        if (string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase))
-        {
-            return await ticketService.GetTicketsAllSites(new TicketSettleCriteria { MatchId = matchId });
-        }
-
-        return [];
-    }
-
-    public async Task<List<TicketSettleInfo>> GetTicketsByTransIds(int matchId, List<TicketSettleInfo> tickets)
-    {
-        if (tickets.Count == 0)
-        {
-            return [];
-        }
-
-        var transIds = string.Join(',', tickets.Select(x => x.TransId).ToArray());
-        return await ticketService.GetTicketsAllSites(new TicketSettleCriteria { MatchId = matchId, TransIDs = transIds });
     }
 
     public bool IsReSettleOrRefund(string action, string eventStatus) =>
