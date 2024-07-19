@@ -1,6 +1,7 @@
 ﻿namespace ThirdPartyBroadcast.Consumer.Services.Products;
 
 using Criteria.VirtualSports;
+using Microsoft.Extensions.Options;
 using Models;
 using System.Collections.Generic;
 
@@ -15,12 +16,13 @@ public class VirtualSportsServiceImp(
     CalculateService calculateService,
     AnnouncementService announcementService,
     RecipientMessageService recipientMessageService)
+    TicketService ticketService,
     : VirtualSportsService
 {
     public async Task<Result> Settle(VirtualSoccerRequest request)
     {
         var matchInfo = await matchService.GetMatchInfo(request.MatchId);
-        var currentTickets = await matchService.GetTicketsByAction(request.MatchId, request.Action);
+        var currentTickets = await ticketService.GetTicketsByAction(request.MatchId, matchInfo.SportType, request.Action);
 
         await matchService.UpdateMatchInfoVirtualSports(request);
 

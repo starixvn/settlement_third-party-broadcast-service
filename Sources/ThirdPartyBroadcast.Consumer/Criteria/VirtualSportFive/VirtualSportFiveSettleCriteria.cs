@@ -8,9 +8,8 @@ namespace ThirdPartyBroadcast.Consumer.Criteria.VirtualSportFive;
 
 public class VirtualSportFiveSettleCriteria : CalculateCriteria
 {
-    public int Match3rId { get; set; }
     public int SportType { get; set; }
-    public DateOnly EventDate { get; set; }
+    public DateTime EventDate { get; set; }
     public int ActionId { get; set; }
     public string Action { get; set; }
     public string SelectedResources { get; set; }

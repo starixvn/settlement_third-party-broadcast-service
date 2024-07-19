@@ -93,6 +93,10 @@ public class GenerateConsumerServiceImp(
                 await groupTwoService.SettlePinGoal(productType, data);
                 break;
 
+            case ProductType.VirtualSports5:
+                await groupTwoService.SettleVS5(productType, data);
+                break;
+
             default:
                 await groupTwoService.SettleVirtualSoccer(productType, data);
                 break;

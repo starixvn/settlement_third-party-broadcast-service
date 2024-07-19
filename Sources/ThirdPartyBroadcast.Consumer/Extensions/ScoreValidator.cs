@@ -1,0 +1,30 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace ThirdPartyBroadcast.Consumer.Extensions;
+
+public static class ScoreValidator
+{
+    public static bool ValidateScore(ResourceItemModel htResult, ResourceItemModel ftResult, MatchInfo matchInfo)
+    {
+        if (!ftResult.TryParseScore(out var ftScore) || ftScore.Home < (matchInfo.HtHomeScore ?? 0) || ftScore.Away < (matchInfo.HtAwayScore ?? 0))
+        {
+            return false;
+        }
+
+        if (htResult == null)
+        {
+            return true;
+        }
+
+        if (!htResult.TryParseScore(out var htScore) || htScore.Home > ftScore.Home || htScore.Away > ftScore.Away)
+        {
+            return false;
+        }
+
+        return true;
+    }
+}

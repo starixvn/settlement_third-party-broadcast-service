@@ -57,11 +57,13 @@ public static class BroadcastConsumerInjection
         service.AddSingleton<VirtualBetRadarService, VirtualBetRadarServiceImp>();
         service.AddSingleton<VirtualSportsService, VirtualSportsServiceImp>();
         service.AddSingleton<LeapGamingService, LeapGamingServiceImp>();
+        service.AddSingleton<Product3rdService, Product3rdServiceImp>();
         service.AddSingleton<SendMailService, SendMailServiceImp>();
         service.AddSingleton<PinGoalService, PinGoalServiceImp>();
         service.AddTransient<AnnouncementService, AnnouncementServiceImp>();
         service.AddTransient<MessageAnnouncementService, MessageAnnouncementServiceImp>();
         service.AddTransient<RecipientMessageService, RecipientMessageServiceImp>();
+        service.AddTransient<TicketService, TicketServiceImp>();
         service.AddTransient<Services.MatchService, Services.MatchServiceImp>();
         service.AddSingleton<IMaintenanceService, MaintenanceServiceImp>();
         service.AddSingleton(new UMClientConfiguration().Initialize(configuration));

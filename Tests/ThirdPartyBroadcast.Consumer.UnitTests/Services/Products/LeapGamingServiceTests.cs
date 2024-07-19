@@ -13,6 +13,8 @@ public class LeapGamingServiceTests
 
     private readonly AnnouncementService announcementService;
 
+    private readonly TicketService ticketService;
+
     public LeapGamingServiceTests()
     {
         calculateService = Substitute.For<CalculateService>();
@@ -59,7 +61,7 @@ public class LeapGamingServiceTests
         Received.InOrder(() =>
         {
             matchService.GetMatchInfo(Arg.Any<int>());
-            matchService.GetTicketsByAction(Arg.Any<int>(), Arg.Any<string>());
+            ticketService.GetTicketsByAction(Arg.Any<int>(), Arg.Any<short>(), Arg.Any<string>());
             matchService.UpdateMatchInfoLeapGaming(Arg.Any<LeapGamingRequest>());
             matchService.WriteLogLeapGaming(Arg.Any<int>());
             calculateService.Execute(Arg.Any<LeapGamingCriteria>());

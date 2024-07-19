@@ -9,6 +9,7 @@ public class MatchInfo
 	public int MatchId { get; set; }
 
 	public string EventStatus { get; set; }
+    public DateTime EventDate { get; set; }
 
     public short SportType { get; set; }
 

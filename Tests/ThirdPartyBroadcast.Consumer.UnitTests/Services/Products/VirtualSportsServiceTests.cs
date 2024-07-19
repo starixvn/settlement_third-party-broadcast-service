@@ -13,12 +13,14 @@ public class VirtualSportsServiceTests
 
     private readonly AnnouncementService announcementService;
 
+    private readonly TicketService ticketService;
+
     public VirtualSportsServiceTests()
     {
         calculateService = Substitute.For<CalculateService>();
         matchService = Substitute.For<MatchService>();
         announcementService = Substitute.For<AnnouncementService>();
-        var recipientMessageService = Substitute.For<RecipientMessageService>();
+        ticketService = Substitute.For<TicketService>();
 
         var mapperConfig = new MapperConfigurationExpression();
         mapperConfig.AddProfile<ThirdPartyBroadcastMappingProfile>();
@@ -26,6 +28,7 @@ public class VirtualSportsServiceTests
         var mapper = new Mapper(config);
 
         service = new VirtualSportsServiceImp(matchService, mapper, calculateService, announcementService, recipientMessageService);
+        service = new VirtualSportsServiceImp(matchService, mapper, calculateService, announcementService, sendMailService, ticketService, options);
     }
 
     [Fact]
@@ -39,7 +42,7 @@ public class VirtualSportsServiceTests
         Received.InOrder(() =>
         {
             matchService.GetMatchInfo(Arg.Any<int>());
-            matchService.GetTicketsByAction(Arg.Any<int>(), Arg.Any<string>());
+            ticketService.GetTicketsByAction(Arg.Any<int>(), Arg.Any<short>(), Arg.Any<string>());
             matchService.UpdateMatchInfoVirtualSports(Arg.Any<VirtualSoccerRequest>());
             matchService.WriteLogVirtualSports(Arg.Any<VirtualSoccerRequest>());
             calculateService.Execute(Arg.Any<VirtualSportsCriteria>());

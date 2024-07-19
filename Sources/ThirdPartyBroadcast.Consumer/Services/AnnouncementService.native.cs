@@ -1,7 +1,6 @@
 ﻿using Fanex.Settlement.Converter.Services;
 using Microsoft.Extensions.Options;
 using ThirdPartyBroadcast.Consumer.Criteria;
-using ThirdPartyBroadcast.Consumer.Models;
 
 namespace ThirdPartyBroadcast.Consumer.Services;
 
@@ -18,6 +17,7 @@ public class AnnouncementServiceImp(
     MatchService matchService,
     MessageAnnouncementService messageAnnouncementService,
     SendMailService sendMailService,
+    TicketService ticketService,
     IOptions<AppSettingsKey> appSettingsKey
 )
     : AnnouncementService
@@ -26,7 +26,7 @@ public class AnnouncementServiceImp(
 
     public async Task SendAnnounceRefund(List<TicketSettleInfo> currentTickets, MatchInfo matchInfo, int adminId)
     {
-        var settledTickets = await matchService.GetTicketsByTransIds(matchInfo.MatchId, currentTickets);
+        var settledTickets = await ticketService.GetTicketsByTransIds(matchInfo.MatchId, matchInfo.SportType, currentTickets);
 
         if (settledTickets.Count > 0)
         {

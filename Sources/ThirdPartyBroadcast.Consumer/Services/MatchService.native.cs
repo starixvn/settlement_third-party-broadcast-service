@@ -33,8 +33,7 @@ public class MatchServiceImp(
     IMapper mapper,
     ScaleOutSettleThirdPartyService scaleOutSettleThirdPartyService,
     LogDirectlyService logDirectlyService,
-    RefDataService refDataService,
-    TicketService ticketService)
+    RefDataService refDataService)
     : MatchService
 {
     public async Task<MatchInfo> GetMatchInfo(int matchId)
