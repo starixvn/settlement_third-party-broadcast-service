@@ -45,7 +45,7 @@ public class BitCoinServiceImp(
     {
         var criteria = new Match3rdSelCriteria { MatchId = matchId };
 
-        var match = await repository.GetAsync<Match3rd>(criteria);
+        var match = await repository.GetAsync<MatchInfo>(criteria);
         return match.EventStatus;
     }
 

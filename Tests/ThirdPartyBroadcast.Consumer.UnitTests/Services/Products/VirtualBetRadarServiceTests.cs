@@ -15,7 +15,7 @@ public class VirtualBetRadarServiceTests
     private readonly MatchService matchService;
 
     private readonly AnnouncementService announcementService;
-    private readonly TicketService ticketService;
+    private readonly TicketInfoService ticketInfoService;
 
     public VirtualBetRadarServiceTests()
     {
@@ -24,15 +24,14 @@ public class VirtualBetRadarServiceTests
         matchService = Substitute.For<MatchService>();
         announcementService = Substitute.For<AnnouncementService>();
         var recipientMessageService = Substitute.For<RecipientMessageService>();
-        ticketService = Substitute.For<TicketService>();
+        ticketInfoService = Substitute.For<TicketInfoService>();
 
         var mapperConfig = new MapperConfigurationExpression();
         mapperConfig.AddProfile<ThirdPartyBroadcastMappingProfile>();
         var config = new MapperConfiguration(mapperConfig);
         var mapper = new Mapper(config);
 
-        service = new VirtualBetRadarServiceImp(repository, mapper, calculateService, matchService, announcementService, recipientMessageService);
-        service = new VirtualBetRadarServiceImp(repository, sendMailService, mapper, calculateService, matchService, announcementService, ticketService, options);
+        service = new VirtualBetRadarServiceImp(repository, mapper, calculateService, matchService, announcementService, recipientMessageService, ticketInfoService);
     }
 
     [Fact]
@@ -70,7 +69,7 @@ public class VirtualBetRadarServiceTests
         Received.InOrder(() =>
         {
             matchService.GetMatchInfo(Arg.Any<int>());
-            ticketService.GetTicketsByAction(Arg.Any<int>(), Arg.Any<short>(), Arg.Any<string>());
+            ticketInfoService.GetTicketsByAction(Arg.Any<int>(), Arg.Any<short>(), Arg.Any<string>());
             matchService.UpdateMatchInfoBetRadar(Arg.Any<VirtualBetRadarRequest>());
             matchService.WriteLogBetRadar(Arg.Any<VirtualBetRadarRequest>());
             calculateService.Execute(Arg.Any<VirtualBetRadarCriteria>());

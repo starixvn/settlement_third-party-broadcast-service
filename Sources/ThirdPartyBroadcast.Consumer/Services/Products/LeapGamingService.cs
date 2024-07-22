@@ -17,8 +17,9 @@ public class LeapGamingServiceImp(
     CalculateService calculateService,
     IDynamicRepository repository,
     MatchService matchService,
-    TicketService ticketService,
-    RecipientMessageService recipientMessageService)
+    TicketInfoService ticketService,
+    RecipientMessageService recipientMessageService,
+    AnnouncementService announcementService)
     : LeapGamingService
 {
     public async Task<Result> Settle(LeapGamingRequest request)

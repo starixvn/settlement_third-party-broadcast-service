@@ -3,19 +3,19 @@ using ThirdPartyBroadcast.Consumer.Criteria;
 
 namespace ThirdPartyBroadcast.Consumer.Services;
 
-public interface TicketService
+public interface TicketInfoService
 {
     Task<List<TicketSettleInfo>> GetTicketsByAction(int matchId, short sportType, string action);
 
     Task<List<TicketSettleInfo>> GetTicketsByTransIds(int matchId, short sportType, List<TicketSettleInfo> tickets);
 }
 
-public class TicketServiceImp : TicketService
+public class TicketInfoServiceImp : TicketInfoService
 {
     private readonly IOptions<AppSettingsKey> appSettingsKey;
     private readonly IDynamicRepository repository;
 
-    public TicketServiceImp(IOptions<AppSettingsKey> appSettingsKey, IDynamicRepository repository)
+    public TicketInfoServiceImp(IOptions<AppSettingsKey> appSettingsKey, IDynamicRepository repository)
     {
         this.appSettingsKey = appSettingsKey;
         this.repository = repository;

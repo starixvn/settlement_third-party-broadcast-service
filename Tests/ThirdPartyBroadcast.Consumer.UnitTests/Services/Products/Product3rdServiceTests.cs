@@ -15,9 +15,10 @@ public class Product3rdServiceTests
     private readonly IDynamicRepository _repository;
     private readonly LogDirectlyService _logDirectlyService;
     private readonly CalculateService _calculateService;
-    private readonly TicketService _ticketService;
+    private readonly TicketInfoService _ticketService;
     private readonly AnnouncementService _announcementService;
     private readonly RefDataService _refDataService;
+    private readonly RecipientMessageService _recipientMessageService;
     private readonly Product3rdServiceImp _service;
 
     public Product3rdServiceTests()
@@ -25,9 +26,10 @@ public class Product3rdServiceTests
         _repository = Substitute.For<IDynamicRepository>();
         _logDirectlyService = Substitute.For<LogDirectlyService>();
         _calculateService = Substitute.For<CalculateService>();
-        _ticketService = Substitute.For<TicketService>();
+        _ticketService = Substitute.For<TicketInfoService>();
         _announcementService = Substitute.For<AnnouncementService>();
         _refDataService = Substitute.For<RefDataService>();
+        _recipientMessageService = Substitute.For<RecipientMessageService>();
 
         _service = new Product3rdServiceImp(
             _repository,
@@ -35,7 +37,8 @@ public class Product3rdServiceTests
             _calculateService,
             _ticketService,
             _announcementService,
-            _refDataService
+            _refDataService,
+            _recipientMessageService
         );
     }
 

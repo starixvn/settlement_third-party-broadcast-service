@@ -13,22 +13,23 @@ public class VirtualSportsServiceTests
 
     private readonly AnnouncementService announcementService;
 
-    private readonly TicketService ticketService;
+    private readonly TicketInfoService ticketInfoService;
+
+    private readonly RecipientMessageService recipientMessageService;
 
     public VirtualSportsServiceTests()
     {
         calculateService = Substitute.For<CalculateService>();
         matchService = Substitute.For<MatchService>();
         announcementService = Substitute.For<AnnouncementService>();
-        ticketService = Substitute.For<TicketService>();
-
+        ticketInfoService = Substitute.For<TicketInfoService>();
+        recipientMessageService = Substitute.For<RecipientMessageService>();
         var mapperConfig = new MapperConfigurationExpression();
         mapperConfig.AddProfile<ThirdPartyBroadcastMappingProfile>();
         var config = new MapperConfiguration(mapperConfig);
         var mapper = new Mapper(config);
 
-        service = new VirtualSportsServiceImp(matchService, mapper, calculateService, announcementService, recipientMessageService);
-        service = new VirtualSportsServiceImp(matchService, mapper, calculateService, announcementService, sendMailService, ticketService, options);
+        service = new VirtualSportsServiceImp(matchService, mapper, calculateService, announcementService, recipientMessageService, ticketInfoService);
     }
 
     [Fact]
@@ -42,7 +43,7 @@ public class VirtualSportsServiceTests
         Received.InOrder(() =>
         {
             matchService.GetMatchInfo(Arg.Any<int>());
-            ticketService.GetTicketsByAction(Arg.Any<int>(), Arg.Any<short>(), Arg.Any<string>());
+            ticketInfoService.GetTicketsByAction(Arg.Any<int>(), Arg.Any<short>(), Arg.Any<string>());
             matchService.UpdateMatchInfoVirtualSports(Arg.Any<VirtualSoccerRequest>());
             matchService.WriteLogVirtualSports(Arg.Any<VirtualSoccerRequest>());
             calculateService.Execute(Arg.Any<VirtualSportsCriteria>());

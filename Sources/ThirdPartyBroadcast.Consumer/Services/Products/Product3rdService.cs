@@ -14,17 +14,19 @@ public class Product3rdServiceImp : Product3rdService
     private readonly IDynamicRepository repository;
     private readonly LogDirectlyService logDirectlyService;
     private readonly CalculateService calculateService;
-    private readonly TicketService ticketService;
+    private readonly TicketInfoService ticketService;
     private readonly AnnouncementService announcementService;
+    private readonly RecipientMessageService recipientMessageService;
     private readonly RefDataService refDataService;
 
     public Product3rdServiceImp(
         IDynamicRepository repository,
         LogDirectlyService logDirectlyService,
         CalculateService calculateService,
-        TicketService ticketService,
+        TicketInfoService ticketService,
         AnnouncementService announcementService,
-        RefDataService refDataService)
+        RefDataService refDataService,
+        RecipientMessageService recipientMessageService)
     {
         this.repository = repository;
         this.logDirectlyService = logDirectlyService;
@@ -32,6 +34,7 @@ public class Product3rdServiceImp : Product3rdService
         this.ticketService = ticketService;
         this.announcementService = announcementService;
         this.refDataService = refDataService;
+        this.recipientMessageService = recipientMessageService;
     }
 
     public async Task<Result> Settle(VirtualSportFiveRequest request)
@@ -79,7 +82,7 @@ public class Product3rdServiceImp : Product3rdService
 
         await WriteLogSettled(request, settleResult);
 
-        await announcementService.SendMail(request.Action, matchInfo);
+        await recipientMessageService.Message(request.Action, matchInfo);
 
         await announcementService.SendAnnounceRefund(currentTickets, matchInfo, request.AdminId);
 

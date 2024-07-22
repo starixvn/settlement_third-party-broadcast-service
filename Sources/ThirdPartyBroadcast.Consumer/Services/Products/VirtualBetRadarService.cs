@@ -18,8 +18,8 @@ public class VirtualBetRadarServiceImp(
     CalculateService calculateService,
     MatchService matchService,
     AnnouncementService announcementService,
-    RecipientMessageService recipientMessageService)
-    TicketService ticketService,
+    RecipientMessageService recipientMessageService,
+    TicketInfoService ticketService)
     : VirtualBetRadarService
 {
     public async Task<Result> Settle(VirtualBetRadarRequest request)

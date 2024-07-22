@@ -15,8 +15,8 @@ public class VirtualSportsServiceImp(
     IMapper mapper,
     CalculateService calculateService,
     AnnouncementService announcementService,
-    RecipientMessageService recipientMessageService)
-    TicketService ticketService,
+    RecipientMessageService recipientMessageService,
+    TicketInfoService ticketService)
     : VirtualSportsService
 {
     public async Task<Result> Settle(VirtualSoccerRequest request)
