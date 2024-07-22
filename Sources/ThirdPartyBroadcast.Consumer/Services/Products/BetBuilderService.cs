@@ -23,10 +23,10 @@ public class BetBuilderServiceImp(
     LogDirectlyService logDirectlyService)
     : BetBuilderService
 {
-
     private const string InvalidMessage = "MarketIds cannot be auto settled since they have been settled already: ";
 
     private const string NoResultMessage = "MarketIds cannot be settled since there is no value: ";
+
     public async Task<Result> Settle(BetBuilderRequest request)
     {
         var (validationResult, invalidMarkets) = await ValidationBeforeSettle(request);
@@ -37,7 +37,6 @@ public class BetBuilderServiceImp(
         }
 
         var selectedMarket = RemoveInvalidMarket(invalidMarkets, request.Resources);
-
 
         await WriteLog(request, invalidMarkets.MarketIds, InvalidMessage);
         await WriteLog(request, invalidMarkets.NoResultMarketIds, NoResultMessage);
@@ -78,7 +77,7 @@ public class BetBuilderServiceImp(
         }
     }
 
-    private string InvalidMarketMessage(string marketIds, string logMessage)
+    private static string InvalidMarketMessage(string marketIds, string logMessage)
     {
         const int MaxLength = 115;
         return marketIds.Length > MaxLength ? $"{logMessage} {marketIds[..MaxLength]}..." : $"{logMessage} {marketIds}";

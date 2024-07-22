@@ -25,16 +25,16 @@ public class NumberGameServiceImp(
 
         var criteria = mapper.Map<NumberGameRequest, NumberGameCriteria>(request);
 
-        var startSettle = DateTime.Now;
+        var startSettle = DateTimeOffset.Now;
         var settledResult = await calculateService.Execute(criteria);
-        var endSettle = DateTime.Now;
+        var endSettle = DateTimeOffset.Now;
 
         await WriteLogSettled(criteria, settledResult, startSettle, endSettle);
 
         return settledResult;
     }
 
-    private async Task WriteLogSettled(NumberGameCriteria criteria, Result resultSettle, DateTime start, DateTime end)
+    private async Task WriteLogSettled(NumberGameCriteria criteria, Result resultSettle, DateTimeOffset start, DateTimeOffset end)
     {
         var actionId = GetLogActionId(criteria);
 

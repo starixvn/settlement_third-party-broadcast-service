@@ -1,7 +1,6 @@
 ﻿namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products;
 
 using Criteria.VirtualSports;
-using Microsoft.Extensions.Options;
 using ThirdPartyBroadcast.Consumer.Services;
 
 public class VirtualSportsServiceTests
@@ -19,18 +18,14 @@ public class VirtualSportsServiceTests
         calculateService = Substitute.For<CalculateService>();
         matchService = Substitute.For<MatchService>();
         announcementService = Substitute.For<AnnouncementService>();
+        var recipientMessageService = Substitute.For<RecipientMessageService>();
 
         var mapperConfig = new MapperConfigurationExpression();
         mapperConfig.AddProfile<ThirdPartyBroadcastMappingProfile>();
         var config = new MapperConfiguration(mapperConfig);
         var mapper = new Mapper(config);
 
-        var appSettingsKey = new AppSettingsKey { SiteDbServer = ["01", "02"], MailFunction = new MailFunction { VirtualSport = new MailInfo { CreditMailId = 103 } } };
-        var options = Options.Create(appSettingsKey);
-
-        var sendMailService = Substitute.For<SendMailService>();
-
-        service = new VirtualSportsServiceImp(matchService, mapper, calculateService, announcementService, sendMailService, options);
+        service = new VirtualSportsServiceImp(matchService, mapper, calculateService, announcementService, recipientMessageService);
     }
 
     [Fact]

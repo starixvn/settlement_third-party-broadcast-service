@@ -2,7 +2,6 @@
 
 using Criteria;
 using Criteria.BitCoin;
-using Criteria.HappyFive;
 using Criteria.LeapGaming;
 using Criteria.VirtualBetRadar;
 using Criteria.VirtualSports;
@@ -14,7 +13,6 @@ public class ThirdPartyBroadcastMappingProfile : Profile
     {
         CreateMap<NumberGameRequest, NumberGameCriteria>();
         CreateMap<FastMarketRequest, FastMarketCriteria>();
-        CreateMap<HappyFiveRequest, HappyFiveCriteria>();
         CreateMap<PinGoalRequest, UpdateMatchInfoRequest>();
         CreateMap<PinGoalRequest, PinGoalCriteria>();
         CreateMap<BitCoinRequest, BitCoinUpdateMatchCriteria>();

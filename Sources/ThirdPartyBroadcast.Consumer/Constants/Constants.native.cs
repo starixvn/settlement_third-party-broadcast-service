@@ -58,6 +58,10 @@ public static class ActionId
 
     public const int CockFightingRefund = 81051;
 
+    public const int HappyFiveCalc = 81000;
+
+    public const int HappyFiveRefund = 81001;
+
     public const int NgCal = 115;
 
     public const int NgIsLive = 116;
@@ -76,10 +80,6 @@ public static class ActionName
     public const string ReSettle = "ReSettle";
 
     public const string Refund = "Refund";
-
-    public const string CalculateHt = "Cal-HT";
-
-    public const string RefundFt = "Refund-FT";
 }
 
 public enum TicketType

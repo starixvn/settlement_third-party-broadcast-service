@@ -10,11 +10,14 @@ public class NumberGameServiceTests
     private readonly ScaleOutSettleThirdPartyService scaleOutSettleThirdPartyService;
 
     private readonly NumberGameService service;
+
     private readonly LogDirectlyService logDirectlyService;
 
     public NumberGameServiceTests()
     {
         calculateService = Substitute.For<CalculateService>();
+        calculateService.Execute(Arg.Any<NumberGameCriteria>()).Returns(new Result());
+
         scaleOutSettleThirdPartyService = Substitute.For<ScaleOutSettleThirdPartyService>();
         logDirectlyService = Substitute.For<LogDirectlyService>();
         var repository = Substitute.For<IDynamicRepository>();

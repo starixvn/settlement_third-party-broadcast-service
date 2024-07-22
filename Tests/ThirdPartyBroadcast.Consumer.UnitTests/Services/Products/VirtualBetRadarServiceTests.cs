@@ -4,7 +4,6 @@ using AutoMapper;
 using Criteria.VirtualBetRadar;
 using Fanex.Data.Repository;
 using Fanex.RemotingRef;
-using Microsoft.Extensions.Options;
 using ThirdPartyBroadcast.Consumer.Services;
 
 public class VirtualBetRadarServiceTests
@@ -23,17 +22,14 @@ public class VirtualBetRadarServiceTests
         var repository = Substitute.For<IDynamicRepository>();
         matchService = Substitute.For<MatchService>();
         announcementService = Substitute.For<AnnouncementService>();
-        var sendMailService = Substitute.For<SendMailService>();
+        var recipientMessageService = Substitute.For<RecipientMessageService>();
 
         var mapperConfig = new MapperConfigurationExpression();
         mapperConfig.AddProfile<ThirdPartyBroadcastMappingProfile>();
         var config = new MapperConfiguration(mapperConfig);
         var mapper = new Mapper(config);
 
-        var appSettingsKey = new AppSettingsKey { SiteDbServer = ["01", "02"], MailFunction = new MailFunction { VirtualSport = new MailInfo { CreditMailId = 103 } } };
-        var options = Options.Create(appSettingsKey);
-
-        service = new VirtualBetRadarServiceImp(repository, sendMailService, mapper, calculateService, matchService, announcementService, options);
+        service = new VirtualBetRadarServiceImp(repository, mapper, calculateService, matchService, announcementService, recipientMessageService);
     }
 
     [Fact]
