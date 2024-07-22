@@ -38,7 +38,7 @@ public class Product3rdServiceImp : Product3rdService
     {
         var currentMatchInfo = await GetMatchInfo(request.MatchId);
 
-        if (!TryGetSources(request, out var resources) || !ValidateRequest(request.Action, resources, currentMatchInfo))
+        if (!TryGetSources(request, out var resources) || !ValidateResources(request.Action, resources, currentMatchInfo))
         {
             return Result.ErrorRequest();
         }
@@ -124,7 +124,7 @@ public class Product3rdServiceImp : Product3rdService
                 : "running";
     }
 
-    private static bool ValidateRequest(string action, List<ResourceItemModel> resources, MatchInfo matchInfo)
+    private static bool ValidateResources(string action, List<ResourceItemModel> resources, MatchInfo matchInfo)
     {
         var htResult = resources.Find(resources => resources.Id == ResourceId.HalfTimeResourceId);
         var ftResult = resources.Find(resources => resources.Id == ResourceId.FullTimeResourceId);
@@ -144,14 +144,21 @@ public class Product3rdServiceImp : Product3rdService
 
     private static bool TryGetSources(VirtualSportFiveRequest request, out List<ResourceItemModel> resources)
     {
+        resources = new();
+
         try
         {
+            if (request.MatchId <= 0 || string.IsNullOrEmpty(request.SelectedResources))
+            {
+                return false;
+            }
+
             resources = request.SelectedResources.ToResources().Items;
+
             return true;
         }
         catch
         {
-            resources = new();
             return false;
         }
     }
