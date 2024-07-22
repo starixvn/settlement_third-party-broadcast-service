@@ -1,6 +1,7 @@
 ﻿namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products;
 
 using Criteria.BitCoin;
+using Fanex.Data.Repository;
 using ThirdPartyBroadcast.Consumer.Criteria;
 
 public class BitCoinServiceTests
@@ -31,6 +32,7 @@ public class BitCoinServiceTests
     {
         var resultMessage = new Result { ErrorCode = 1, ErrorMessage = "Error Message" };
         calculateService.Execute(Arg.Any<BitCoinCriteria>()).Returns(resultMessage);
+        repository.GetAsync<MatchInfo>(Arg.Any<Match3rdSelCriteria>()).Returns(new MatchInfo());
 
         var result = await service.Settle(new BitCoinRequest());
 
@@ -41,11 +43,11 @@ public class BitCoinServiceTests
     public async Task Settle_IsSuccessful_DoNotNotify()
     {
         calculateService.Execute(Arg.Any<BitCoinCriteria>()).Returns(new Result());
+        repository.GetAsync<MatchInfo>(Arg.Any<Match3rdSelCriteria>()).Returns(new MatchInfo());
 
         var result = await service.Settle(new BitCoinRequest());
 
         Assert.True(result.IsSuccessful);
-        await repository.Received().GetAsync<string>(Arg.Any<Match3rdSelCriteria>());
         await repository.Received().ExecuteAsync(Arg.Any<BitCoinUpdateMatchCriteria>());
         await repository.Received().ExecuteAsync(Arg.Any<UpdateEventStatusCriteria>());
         await calculateService.Received().Execute(Arg.Any<BitCoinCriteria>());
@@ -57,7 +59,7 @@ public class BitCoinServiceTests
     [InlineData("Running", ActionName.Refund)]
     public async Task Settle_ReSettle_ShouldNotify(string eventStatus, string action)
     {
-        repository.GetAsync<string>(Arg.Any<Match3rdSelCriteria>()).Returns(eventStatus);
+        repository.GetAsync<MatchInfo>(Arg.Any<Match3rdSelCriteria>()).Returns(new MatchInfo { EventStatus = eventStatus });
         calculateService.Execute(Arg.Any<BitCoinCriteria>()).Returns(new Result());
 
         var result = await service.Settle(new BitCoinRequest { Action = action });
