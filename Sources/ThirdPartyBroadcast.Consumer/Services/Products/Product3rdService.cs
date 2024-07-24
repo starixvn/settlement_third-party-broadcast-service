@@ -134,7 +134,7 @@ public class Product3rdServiceImp : Product3rdService
 
         if (string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase))
         {
-            return ftResult is { Home: "", Away: "" } && htResult is null;
+            return ValidRefundResources(htResult, ftResult);
         }
 
         if (string.Equals(action, ActionName.Calculate, StringComparison.OrdinalIgnoreCase))
@@ -143,6 +143,16 @@ public class Product3rdServiceImp : Product3rdService
         }
 
         return false;
+    }
+
+    private static bool ValidRefundResources(ResourceItemModel htResult, ResourceItemModel ftResult)
+    {
+        if (ftResult == null || (!string.IsNullOrEmpty(ftResult.Away) || !string.IsNullOrEmpty(ftResult.Home)))
+        {
+            return false;
+        }
+
+        return htResult == null || (string.IsNullOrEmpty(htResult.Away) && string.IsNullOrEmpty(htResult.Home));
     }
 
     private static bool TryGetSources(VirtualSportFiveRequest request, out List<ResourceItemModel> resources)
