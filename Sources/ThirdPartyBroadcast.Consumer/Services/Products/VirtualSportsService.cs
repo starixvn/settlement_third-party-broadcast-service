@@ -1,7 +1,6 @@
 ﻿namespace ThirdPartyBroadcast.Consumer.Services.Products;
 
 using Criteria.VirtualSports;
-using Microsoft.Extensions.Options;
 using Models;
 using System.Collections.Generic;
 
