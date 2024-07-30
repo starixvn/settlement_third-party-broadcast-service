@@ -4,6 +4,11 @@ public static class ScoreValidator
 {
     public static bool ValidateScore(ResourceItemModel htResult, ResourceItemModel ftResult, MatchInfo matchInfo)
     {
+        if (htResult != null && ftResult == null)
+        {
+            return htResult.TryParseScore(out var _);
+        }
+
         if (!ftResult.TryParseScore(out var ftScore) || ftScore.Home < (matchInfo.HtHomeScore ?? 0) || ftScore.Away < (matchInfo.HtAwayScore ?? 0))
         {
             return false;
