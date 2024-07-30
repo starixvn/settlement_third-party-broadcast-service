@@ -4,22 +4,32 @@ namespace ThirdPartyBroadcast.Consumer.Services
 {
     public interface RefDataService
     {
-        string GetLeagueName(int leagueId, string languageCode);
+        string GetLeagueName(int leagueId, string languageCode, bool Is3rd = false);
 
-        string GetTeamName(int teamId, string languageCode);
+        string GetTeamName(int teamId, string languageCode, bool Is3rd = false);
 
         string GetSportName(int sportId, string languageCode);
     }
 
     public class RefDataServiceImp(IRemotingRefService remotingRefService) : RefDataService
     {
-        public string GetLeagueName(int leagueId, string languageCode)
+        public string GetLeagueName(int leagueId, string languageCode, bool Is3rd = false)
         {
+            if (Is3rd)
+            {
+                return remotingRefService.GetLeagueName3rd(leagueId.ToString(), languageCode, string.Empty);
+            }
+
             return remotingRefService.GetLeagueName(leagueId.ToString(), languageCode, string.Empty);
         }
 
-        public string GetTeamName(int teamId, string languageCode)
+        public string GetTeamName(int teamId, string languageCode, bool Is3rd = false)
         {
+            if (Is3rd)
+            {
+                return remotingRefService.GetTeamName3rd(teamId.ToString(), languageCode, string.Empty);
+            }
+
             return remotingRefService.GetTeamName(teamId.ToString(), languageCode, string.Empty);
         }
 

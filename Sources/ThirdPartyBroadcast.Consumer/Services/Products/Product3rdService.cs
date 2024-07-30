@@ -93,6 +93,7 @@ public class Product3rdServiceImp : Product3rdService
     {
         var criteria = new Match3rdSelCriteria { MatchId = matchId };
         var match = await repository.GetAsync<MatchInfo>(criteria);
+        match.IsMatch3rd = true;
         match.RefDataService = refDataService;
 
         return match;
