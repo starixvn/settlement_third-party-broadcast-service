@@ -7,6 +7,7 @@ using ThirdPartyBroadcast.Consumer.Criteria;
 using ThirdPartyBroadcast.Consumer.Criteria.VirtualSportFive;
 using ThirdPartyBroadcast.Consumer.Models;
 using ThirdPartyBroadcast.Consumer.Services;
+using ThirdPartyBroadcast.Consumer.Services.Products.VirtualSportFive;
 
 namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products;
 

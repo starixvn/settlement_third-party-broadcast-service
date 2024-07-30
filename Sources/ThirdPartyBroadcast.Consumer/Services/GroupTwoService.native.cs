@@ -1,4 +1,5 @@
 ﻿using ThirdPartyBroadcast.Consumer.Services.Products;
+using ThirdPartyBroadcast.Consumer.Services.Products.VirtualSportFive;
 
 namespace ThirdPartyBroadcast.Consumer.Services;
 

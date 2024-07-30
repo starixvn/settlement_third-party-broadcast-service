@@ -1,8 +1,9 @@
-﻿using ThirdPartyBroadcast.Consumer.Criteria;
+﻿using StackExchange.Redis;
+using ThirdPartyBroadcast.Consumer.Criteria;
 using ThirdPartyBroadcast.Consumer.Criteria.VirtualSportFive;
 using ThirdPartyBroadcast.Consumer.Extensions;
 
-namespace ThirdPartyBroadcast.Consumer.Services.Products;
+namespace ThirdPartyBroadcast.Consumer.Services.Products.VirtualSportFive;
 
 public interface Product3rdService
 {
@@ -41,10 +42,13 @@ public class Product3rdServiceImp : Product3rdService
     {
         var currentMatchInfo = await GetMatchInfo(request.MatchId);
 
-        if (!TryGetSources(request, out var resources) || !ValidateResources(request.Action, resources, currentMatchInfo))
+        var validationResult = ValidateResources(request, currentMatchInfo);
+        if (!validationResult.IsSuccessful)
         {
-            return Result.ErrorRequest();
+            return validationResult;
         }
+
+        var resources = request.SelectedResources.ToResources().Items;
 
         var currentTickets = await ticketService.GetTicketsByAction(currentMatchInfo.MatchId, currentMatchInfo.SportType, request.Action);
 
@@ -128,32 +132,37 @@ public class Product3rdServiceImp : Product3rdService
                 : "running";
     }
 
-    private static bool ValidateResources(string action, List<ResourceItemModel> resources, MatchInfo matchInfo)
+    private static Result ValidateResources(VirtualSportFiveRequest request, MatchInfo matchInfo)
     {
+        if (!TryGetSources(request, out var resources))
+        {
+            return Result.ErrorRequest();
+        }
+
         var htResult = resources.Find(resources => resources.Id == ResourceId.HalfTimeResourceId);
         var ftResult = resources.Find(resources => resources.Id == ResourceId.FullTimeResourceId);
 
-        if (string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(request.Action, ActionName.Refund, StringComparison.OrdinalIgnoreCase) && ValidRefundResources(htResult, ftResult))
         {
-            return ValidRefundResources(htResult, ftResult);
+            return Result.ErrorRequest();
         }
 
-        if (string.Equals(action, ActionName.Calculate, StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(request.Action, ActionName.Calculate, StringComparison.OrdinalIgnoreCase))
         {
-            return ScoreValidator.ValidateScore(htResult, ftResult, matchInfo);
+            return Validator.ValidateScores(htResult, ftResult, matchInfo);
         }
 
-        return false;
+        return new Result();
     }
 
     private static bool ValidRefundResources(ResourceItemModel htResult, ResourceItemModel ftResult)
     {
-        if (ftResult == null || (!string.IsNullOrEmpty(ftResult.Away) || !string.IsNullOrEmpty(ftResult.Home)))
+        if (ftResult == null || !string.IsNullOrEmpty(ftResult.Away) || !string.IsNullOrEmpty(ftResult.Home))
         {
             return false;
         }
 
-        return htResult == null || (string.IsNullOrEmpty(htResult.Away) && string.IsNullOrEmpty(htResult.Home));
+        return htResult == null || string.IsNullOrEmpty(htResult.Away) && string.IsNullOrEmpty(htResult.Home);
     }
 
     private static bool TryGetSources(VirtualSportFiveRequest request, out List<ResourceItemModel> resources)
