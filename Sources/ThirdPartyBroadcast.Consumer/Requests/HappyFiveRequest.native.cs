@@ -14,8 +14,6 @@ public class HappyFiveRequest
 
     public string Ip { get; set; } = string.Empty;
 
-    public bool IsAuto { get; set; } = true;
-
     private static int ActionIdValue(string actionName) => string.Equals(actionName, ActionName.Calculate, StringComparison.OrdinalIgnoreCase)
         ? Constants.ActionId.HappyFiveCalc
         : Constants.ActionId.HappyFiveRefund;
