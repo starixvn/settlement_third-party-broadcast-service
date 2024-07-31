@@ -142,7 +142,7 @@ public class Product3rdServiceImp : Product3rdService
         var htResult = resources.Find(resources => resources.Id == ResourceId.HalfTimeResourceId);
         var ftResult = resources.Find(resources => resources.Id == ResourceId.FullTimeResourceId);
 
-        if (string.Equals(request.Action, ActionName.Refund, StringComparison.OrdinalIgnoreCase) && ValidRefundResources(htResult, ftResult))
+        if (string.Equals(request.Action, ActionName.Refund, StringComparison.OrdinalIgnoreCase) && !ValidRefundResources(htResult, ftResult))
         {
             return Result.ErrorRequest();
         }
@@ -157,12 +157,12 @@ public class Product3rdServiceImp : Product3rdService
 
     private static bool ValidRefundResources(ResourceItemModel htResult, ResourceItemModel ftResult)
     {
-        if (ftResult == null || !string.IsNullOrEmpty(ftResult.Away) || !string.IsNullOrEmpty(ftResult.Home))
+        if (ftResult == null || (!string.IsNullOrEmpty(ftResult.Away) || !string.IsNullOrEmpty(ftResult.Home)))
         {
             return false;
         }
 
-        return htResult == null || string.IsNullOrEmpty(htResult.Away) && string.IsNullOrEmpty(htResult.Home);
+        return htResult == null || (string.IsNullOrEmpty(htResult.Away) && string.IsNullOrEmpty(htResult.Home));
     }
 
     private static bool TryGetSources(VirtualSportFiveRequest request, out List<ResourceItemModel> resources)

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ThirdPartyBroadcast.Consumer.Extensions;
+﻿using ThirdPartyBroadcast.Consumer.Extensions;
 
 namespace ThirdPartyBroadcast.Consumer.Services.Products.VirtualSportFive;
 
