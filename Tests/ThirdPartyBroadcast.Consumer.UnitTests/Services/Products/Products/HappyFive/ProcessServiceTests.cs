@@ -33,8 +33,7 @@ public class ProcessServiceTests
             AdminId = 0,
             SportType = 0,
             Action = null,
-            Ip = null,
-            IsAuto = false
+            Ip = null
         };
         const string site = "DB1";
         var result = new BusinessModels.Result
@@ -62,8 +61,7 @@ public class ProcessServiceTests
             AdminId = 0,
             SportType = 0,
             Action = null,
-            Ip = null,
-            IsAuto = false
+            Ip = null
         };
         const string site = "DB1";
         var result = new BusinessModels.Result
@@ -94,8 +92,7 @@ public class ProcessServiceTests
             AdminId = 0,
             SportType = 0,
             Action = null,
-            Ip = null,
-            IsAuto = false
+            Ip = null
         };
         const string site = "DB1";
         var result = new BusinessModels.Result
