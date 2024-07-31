@@ -1,4 +1,6 @@
-﻿namespace ThirdPartyBroadcast.Consumer.Constants;
+﻿using ThirdPartyBroadcast.Consumer.Models;
+
+namespace ThirdPartyBroadcast.Consumer.Constants;
 
 public static class CacheKeys
 {
@@ -123,4 +125,5 @@ public static class ErrorCode
 public static class ErrorMessage
 {
     public const string NotExistValue = "The input score values are not valid!";
+    public const string Inconsistent = "HT({0}) is inconsistent with FT({1})";
 }
