@@ -178,7 +178,7 @@ public class Product3rdServiceImp : Product3rdService
 
             resources = request.SelectedResources.ToResources().Items;
 
-            return true;
+            return resources.Any();
         }
         catch
         {

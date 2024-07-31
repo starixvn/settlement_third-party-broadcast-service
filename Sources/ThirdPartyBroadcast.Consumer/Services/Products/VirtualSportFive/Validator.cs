@@ -50,18 +50,27 @@ public static class Validator
         htResult.TryParseScore(out var htScore);
         ftResult.TryParseScore(out var ftScore);
 
-        var isRequestScoreValid = ftResult != null && (htScore.Home > ftScore.Home || htScore.Away > ftScore.Away);
+        var isHtCalculated = matchInfo.HtAwayScore != null || matchInfo.HtHomeScore != null;
+        var ísFtCalculated = matchInfo.FinalAwayScore != null || matchInfo.FinalHomeScore != null;
 
-        var isMatchScoreValid = matchInfo.FinalHomeScore != null
-            && matchInfo.FinalAwayScore != null
+        var isFtRequestScoreValid = ftResult != null && (htScore.Home > ftScore.Home || htScore.Away > ftScore.Away);
+
+        var isFtMatchScoreValid = ftResult != null
+            && isHtCalculated
+            && (matchInfo.HtHomeScore > ftScore.Home || matchInfo.HtAwayScore > ftScore.Away);
+
+        var isMatchScoreValid = htResult != null
+            && ísFtCalculated
             && (htScore.Home > matchInfo.FinalHomeScore || htScore.Away > matchInfo.FinalAwayScore);
 
-        if (isRequestScoreValid || isMatchScoreValid)
+        if (isFtRequestScoreValid || isFtMatchScoreValid || isMatchScoreValid)
         {
+            var haftScore = htResult != null ? $"HT Request({htResult.Home}-{htResult.Away})" : "";
+            var finalScore = ftResult != null ? $"FT Request({ftResult.Home}-{ftResult.Away})" : "";
             return new Result
             {
                 ErrorCode = 3,
-                ErrorMessage = $"HT({htResult?.Home}-{htResult?.Away}) is inconsistent with FT({ftResult?.Home}-{ftResult?.Away})",
+                ErrorMessage = $"{haftScore} HT({matchInfo.HtHomeScore}-{matchInfo.HtAwayScore}) is inconsistent with {finalScore} FT({matchInfo.FinalHomeScore}-{matchInfo.FinalAwayScore})",
             };
         }
 

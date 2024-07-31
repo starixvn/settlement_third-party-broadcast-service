@@ -53,7 +53,7 @@ public class Product3rdServiceTests
             Action = "InvalidAction",
             SelectedResources = "<Resources></Resources>"
         };
-        var matchInfo = new MatchInfo { MatchId = 1, SportType = 148, EventDate = DateTime.Now };
+        var matchInfo = new MatchInfo { MatchId = 1, SportType = 147, EventDate = DateTime.Now };
         _repository.GetAsync<MatchInfo>(Arg.Any<Match3rdSelCriteria>()).Returns(matchInfo);
 
         // Act
@@ -72,10 +72,10 @@ public class Product3rdServiceTests
         {
             MatchId = 1,
             Action = "CAL",
-            SelectedResources = "<Resources><Resource Id=\"00\" Home=\"1\" Away=\"3\" /></Resources>"
+            SelectedResources = "<Resources><Resource Id=\"01\" Home=\"1\" Away=\"0\" /><Resource Id=\"00\" Home=\"1\" Away=\"3\" /></Resources>"
         };
 
-        var matchInfo = new MatchInfo { MatchId = 1, SportType = 148, EventDate = DateTime.Now };
+        var matchInfo = new MatchInfo { MatchId = 1, SportType = 147, EventDate = DateTime.Now };
 
         _repository.GetAsync<MatchInfo>(Arg.Any<Match3rdSelCriteria>()).Returns(matchInfo);
 
