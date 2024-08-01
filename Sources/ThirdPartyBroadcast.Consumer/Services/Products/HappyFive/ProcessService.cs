@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Settlement.Business.Requests;
-using BusinessConstants = Settlement.Business.Core.Constants;
 using BusinessModels = Settlement.Business.Core.Models;
 using BusinessServices = Settlement.Business.Services;
 
@@ -66,7 +65,7 @@ public class ProcessServiceImp(
             DbServer = site,
             LastCustId = 0,
             LastTransId = 0,
-            BatchSize = BusinessConstants.Settings.MaxBatchSize,
+            BatchSize = Convert.ToInt32(configuration.GetSection("MaxBatchSize").Value),
             BatchTotal = Convert.ToInt32(configuration.GetSection("MaxWorker").Value)
         };
     }
