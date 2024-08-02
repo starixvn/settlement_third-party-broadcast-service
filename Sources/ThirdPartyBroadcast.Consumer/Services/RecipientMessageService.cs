@@ -23,6 +23,7 @@ public class RecipientMessageServiceImp(
         var isMatchReSettle = matchService.IsReSettleOrRefund(request.Action, matchInfo.EventStatus);
 
         var isHtReSettle = htResult is not null
+            && matchInfo.HtHomeScore != null && matchInfo.HtAwayScore != null
             && (int.Parse(htResult.Home) != matchInfo.HtHomeScore || int.Parse(htResult.Away) != matchInfo.HtAwayScore);
 
         if (!isMatchReSettle && !isHtReSettle)

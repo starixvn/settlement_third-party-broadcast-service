@@ -1,5 +1,4 @@
-﻿using StackExchange.Redis;
-using ThirdPartyBroadcast.Consumer.Criteria;
+﻿using ThirdPartyBroadcast.Consumer.Criteria;
 using ThirdPartyBroadcast.Consumer.Criteria.VirtualSportFive;
 using ThirdPartyBroadcast.Consumer.Extensions;
 
@@ -120,14 +119,14 @@ public class Product3rdServiceImp : Product3rdService
     {
         if (string.Equals(request.Action, ActionName.Refund, StringComparison.OrdinalIgnoreCase))
         {
-            return "completed";
+            return EventStatus.Completed;
         }
 
         var ftResult = request.Resources.Find(resources => resources.Id == ResourceId.FullTimeResourceId);
         var isCalc = string.Equals(request.Action, ActionName.Calculate, StringComparison.OrdinalIgnoreCase);
 
         return isCalc && ftResult is not null
-                ? "completed"
+                ? EventStatus.Completed
                 : matchInfo.EventStatus;
     }
 
@@ -149,7 +148,9 @@ public class Product3rdServiceImp : Product3rdService
 
         if (string.Equals(request.Action, ActionName.Calculate, StringComparison.OrdinalIgnoreCase))
         {
-            return Validator.ValidateScores(htResult, ftResult, matchInfo);
+            var validator = ValidatorFactory.CreateValidatorChain();
+            var result = validator.Validate(htResult, ftResult, matchInfo);
+            return result;
         }
 
         return new Result();
@@ -167,7 +168,7 @@ public class Product3rdServiceImp : Product3rdService
 
     private static bool TryGetSources(VirtualSportFiveRequest request, out List<ResourceItemModel> resources)
     {
-        resources = new();
+        resources = [];
 
         try
         {
@@ -178,7 +179,7 @@ public class Product3rdServiceImp : Product3rdService
 
             resources = request.SelectedResources.ToResources().Items;
 
-            return resources.Any();
+            return resources.Count != 0;
         }
         catch
         {
