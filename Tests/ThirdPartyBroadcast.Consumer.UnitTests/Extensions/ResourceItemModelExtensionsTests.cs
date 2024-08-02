@@ -23,10 +23,9 @@ public class ResourceItemModelExtensionsTests
     public void TryParseScore_NullResourceItem_ReturnsFalse()
     {
         // Arrange
-        ResourceItemModel resourceItem = null;
 
         // Act
-        var result = resourceItem.TryParseScore(out var actualScore);
+        var result = ((ResourceItemModel)null).TryParseScore(out var actualScore);
 
         // Assert
         Assert.False(result);

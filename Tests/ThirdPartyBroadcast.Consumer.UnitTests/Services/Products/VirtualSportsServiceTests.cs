@@ -7,15 +7,13 @@ public class VirtualSportsServiceTests
 {
     private readonly CalculateService calculateService;
 
-    private readonly VirtualSportsService service;
-
     private readonly MatchService matchService;
 
     private readonly AnnouncementService announcementService;
 
     private readonly TicketInfoService ticketInfoService;
 
-    private readonly RecipientMessageService recipientMessageService;
+    private readonly VirtualSportsServiceImp service;
 
     public VirtualSportsServiceTests()
     {
@@ -23,7 +21,7 @@ public class VirtualSportsServiceTests
         matchService = Substitute.For<MatchService>();
         announcementService = Substitute.For<AnnouncementService>();
         ticketInfoService = Substitute.For<TicketInfoService>();
-        recipientMessageService = Substitute.For<RecipientMessageService>();
+        var recipientMessageService = Substitute.For<RecipientMessageService>();
         var mapperConfig = new MapperConfigurationExpression();
         mapperConfig.AddProfile<ThirdPartyBroadcastMappingProfile>();
         var config = new MapperConfiguration(mapperConfig);

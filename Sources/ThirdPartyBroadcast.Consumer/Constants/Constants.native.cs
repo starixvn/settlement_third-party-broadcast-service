@@ -1,6 +1,4 @@
-﻿using ThirdPartyBroadcast.Consumer.Models;
-
-namespace ThirdPartyBroadcast.Consumer.Constants;
+﻿namespace ThirdPartyBroadcast.Consumer.Constants;
 
 public static class CacheKeys
 {
@@ -22,6 +20,8 @@ public static class EmailType
 public static class EventStatus
 {
 	public const string Completed = "completed";
+
+    public const string Running = "running";
 }
 
 public static class ResourceId

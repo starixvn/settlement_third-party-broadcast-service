@@ -21,6 +21,8 @@ public class ProcessServiceTests
         batchTicketsService = Substitute.For<BusinessServices.HappyFive.BatchTicketsService>();
         var configuration = Substitute.For<IConfiguration>();
         configuration.GetSection("MaxWorker").Value = "1";
+        configuration.GetSection("MaxBatchSize").Value = "2000";
+
         service = new ProcessServiceImp(matchService, batchTicketsService, configuration);
     }
 

@@ -1,8 +1,8 @@
 ﻿namespace ThirdPartyBroadcast.Consumer.Services.Products;
 
+using Criteria;
 using Criteria.BitCoin;
 using System;
-using ThirdPartyBroadcast.Consumer.Criteria;
 
 public interface BitCoinService
 {

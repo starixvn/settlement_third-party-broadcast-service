@@ -23,12 +23,11 @@ public class ScoreValidatorTests
     public void ValidateScore_ReturnsTrue_WhenHtResultIsNull()
     {
         // Arrange
-        ResourceItemModel htResult = null;
         var ftResult = new ResourceItemModel { Home = "1", Away = "0" };
         var matchInfo = new MatchInfo { HtHomeScore = null, HtAwayScore = null };
 
         // Act
-        var result = ScoreValidator.ValidateScore(htResult, ftResult, matchInfo);
+        var result = ScoreValidator.ValidateScore(null, ftResult, matchInfo);
 
         // Assert
         Assert.True(result);

@@ -1,8 +1,8 @@
 ﻿namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products;
 
+using Criteria;
 using Criteria.BitCoin;
 using Fanex.Data.Repository;
-using ThirdPartyBroadcast.Consumer.Criteria;
 
 public class BitCoinServiceTests
 {
@@ -10,9 +10,9 @@ public class BitCoinServiceTests
 
     private readonly CalculateService calculateService;
 
-    private readonly BitCoinService service;
-
     private readonly LogDirectlyService logDirectlyService;
+
+    private readonly BitCoinServiceImp service;
 
     public BitCoinServiceTests()
     {

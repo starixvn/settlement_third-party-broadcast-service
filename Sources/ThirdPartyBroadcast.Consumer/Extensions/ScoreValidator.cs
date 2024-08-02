@@ -6,7 +6,7 @@ public static class ScoreValidator
     {
         if (htResult != null && ftResult == null)
         {
-            return htResult.TryParseScore(out var _);
+            return htResult.TryParseScore(out _);
         }
 
         if (!ftResult.TryParseScore(out var ftScore) || ftScore.Home < (matchInfo.HtHomeScore ?? 0) || ftScore.Away < (matchInfo.HtAwayScore ?? 0))
@@ -19,11 +19,6 @@ public static class ScoreValidator
             return true;
         }
 
-        if (!htResult.TryParseScore(out var htScore) || htScore.Home > ftScore.Home || htScore.Away > ftScore.Away)
-        {
-            return false;
-        }
-
-        return true;
+        return htResult.TryParseScore(out var htScore) && htScore.Home <= ftScore.Home && htScore.Away <= ftScore.Away;
     }
 }

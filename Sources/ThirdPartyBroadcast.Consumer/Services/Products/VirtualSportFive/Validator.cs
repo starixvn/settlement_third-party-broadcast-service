@@ -1,5 +1,4 @@
 ﻿using ThirdPartyBroadcast.Consumer.Extensions;
-using ThirdPartyBroadcast.Consumer.Models;
 
 namespace ThirdPartyBroadcast.Consumer.Services.Products.VirtualSportFive;
 
@@ -58,38 +57,43 @@ public static class Validator
             return ValidateOnlyHtConsistency(htResult, matchInfo);
         }
 
-        if (ftResult != null)
-        {
-            return ValidateOnlyFtConsistency(ftResult, matchInfo);
-        }
-
-        return new Result();
+        return ftResult != null ? ValidateOnlyFtConsistency(ftResult, matchInfo) : new Result();
     }
 
     private static Result ValidateOnlyFtConsistency(ResourceItemModel ftResult, MatchInfo matchInfo)
     {
         ftResult.TryParseScore(out var ftScore);
         var isHtCalculated = matchInfo.HtAwayScore != null || matchInfo.HtHomeScore != null;
+        var isFtScoreHigherThanHtScore = ftScore.Home > matchInfo.HtHomeScore || ftScore.Away > matchInfo.HtAwayScore;
 
-        if (isHtCalculated && (ftScore.Home > matchInfo.HtHomeScore || ftScore.Away > matchInfo.HtAwayScore))
+        if (isHtCalculated && isFtScoreHigherThanHtScore)
         {
-            var message = string.Format(ErrorMessage.Inconsistent, $"{matchInfo.HtHomeScore}-{matchInfo.HtAwayScore}", $"{ftResult.Home}-{ftResult.Away}");
-            return new Result(3, message);
+            var errorMessage = string.Format(ErrorMessage.Inconsistent, $"{matchInfo.HtHomeScore}-{matchInfo.HtAwayScore}", $"{ftResult.Home}-{ftResult.Away}");
+            return new Result(3, errorMessage);
         }
-        return new Result(); // Success
+
+        return new Result();
     }
 
     private static Result ValidateOnlyHtConsistency(ResourceItemModel htResult, MatchInfo matchInfo)
     {
         htResult.TryParseScore(out var htScore);
-        var ísFtCalculated = matchInfo.FinalAwayScore != null || matchInfo.FinalHomeScore != null;
+        var isFtCalculated = IsFtScoreCalculated(matchInfo);
+        var isHtScoreHigherThanFtScore = htScore.Home > matchInfo.FinalHomeScore || htScore.Away > matchInfo.FinalAwayScore;
 
-        if (ísFtCalculated && (htScore.Home > matchInfo.FinalHomeScore || htScore.Away > matchInfo.FinalAwayScore))
+        if (isFtCalculated && isHtScoreHigherThanFtScore)
         {
-            var message = string.Format(ErrorMessage.Inconsistent, $"{htResult.Home}-{htResult.Away}", $"{matchInfo.FinalHomeScore}-{matchInfo.FinalAwayScore}");
-            return new Result(3, message);
+            var errorMessage = string.Format(ErrorMessage.Inconsistent, $"{htResult.Home}-{htResult.Away}", $"{matchInfo.FinalHomeScore}-{matchInfo.FinalAwayScore}");
+
+            return new Result(3, errorMessage);
         }
-        return new Result(); // Success
+
+        return new Result();
+    }
+
+    private static bool IsFtScoreCalculated(MatchInfo matchInfo)
+    {
+        return matchInfo.FinalAwayScore != null || matchInfo.FinalHomeScore != null;
     }
 
     private static Result ValidateHtFtConsistency(ResourceItemModel htResult, ResourceItemModel ftResult)
@@ -97,37 +101,40 @@ public static class Validator
         htResult.TryParseScore(out var htScore);
         ftResult.TryParseScore(out var ftScore);
 
-        if (htScore.Home > ftScore.Home || htScore.Away > ftScore.Away)
+        if (IsHtScoreHigherThanFtScore(htScore, ftScore))
         {
-            var message = string.Format(ErrorMessage.Inconsistent, $"{htResult.Home}-{htResult.Away}", $"{ftResult.Home}-{ftResult.Away}");
-            return new Result(3, message);
+            var errorMessage = string.Format(ErrorMessage.Inconsistent, $"{htResult.Home}-{htResult.Away}", $"{ftResult.Home}-{ftResult.Away}");
+            return new Result(3, errorMessage);
         }
-        return new Result(); // Success
+
+        return new Result();
+    }
+
+    private static bool IsHtScoreHigherThanFtScore(Score htScore, Score ftScore)
+    {
+        return htScore.Home > ftScore.Home || htScore.Away > ftScore.Away;
     }
 
     private static Result ValidateMissingResult(ResourceItemModel htResult, ResourceItemModel ftResult, MatchInfo matchInfo)
     {
-        if (htResult != null && ftResult == null
-        && matchInfo.HtAwayScore == null && matchInfo.HtHomeScore == null
-            && matchInfo.FinalAwayScore != null && matchInfo.FinalHomeScore != null) // ht is running but ft is not exist
+        if (IsFinalResultExistButHalfTimeResultMissing(htResult, ftResult, matchInfo))
         {
-            return new Result
-            {
-                ErrorCode = 4,
-                ErrorMessage = "FT not exist"
-            };
+            return new Result(4, "FT not exist");
         }
 
-        if (htResult == null && ftResult != null
-            && matchInfo.HtAwayScore == null && matchInfo.HtHomeScore == null)
-        {
-            return new Result
-            {
-                ErrorCode = 5,
-                ErrorMessage = "HT not exist"
-            };
-        }
+        return IsHalfTimeResultMissingButFinalResultExists(htResult, ftResult, matchInfo) ? new Result(5, "HT not exist") : new Result();
+    }
 
-        return new Result();
+    private static bool IsFinalResultExistButHalfTimeResultMissing(ResourceItemModel htResult, ResourceItemModel ftResult, MatchInfo matchInfo)
+    {
+        return htResult != null && ftResult == null
+                                && matchInfo.HtAwayScore == null && matchInfo.HtHomeScore == null
+                                && matchInfo.FinalAwayScore != null && matchInfo.FinalHomeScore != null;
+    }
+
+    private static bool IsHalfTimeResultMissingButFinalResultExists(ResourceItemModel htResult, ResourceItemModel ftResult, MatchInfo matchInfo)
+    {
+        return htResult == null && ftResult != null
+                                && matchInfo.HtAwayScore == null && matchInfo.HtHomeScore == null;
     }
 }

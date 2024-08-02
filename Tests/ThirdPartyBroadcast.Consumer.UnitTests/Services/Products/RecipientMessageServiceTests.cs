@@ -25,7 +25,7 @@ public class RecipientMessageServiceTests
     {
         var match = new MatchInfo
         {
-            EventStatus = "running"
+            EventStatus = EventStatus.Running
         };
 
         matchService.IsReSettleOrRefund(Arg.Any<string>(), Arg.Any<string>()).Returns(false);
@@ -40,7 +40,7 @@ public class RecipientMessageServiceTests
         var match = new MatchInfo
         {
             MatchId = 1,
-            EventStatus = "running"
+            EventStatus = EventStatus.Running
         };
         const string action = ActionName.Refund;
         IEnumerable<TicketInfo> creditTickets = new List<TicketInfo>();
@@ -60,7 +60,7 @@ public class RecipientMessageServiceTests
         var match = new MatchInfo
         {
             MatchId = 1,
-            EventStatus = "running"
+            EventStatus = EventStatus.Running
         };
         const string action = ActionName.ReSettle;
         IEnumerable<TicketInfo> creditTickets = new List<TicketInfo> { new() { CustId = 1 } };

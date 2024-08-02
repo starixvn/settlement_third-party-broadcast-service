@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Options;
-using ThirdPartyBroadcast.Consumer.Criteria;
+﻿using ThirdPartyBroadcast.Consumer.Criteria;
 using ThirdPartyBroadcast.Consumer.Criteria.VirtualBetRadar;
 using ThirdPartyBroadcast.Consumer.Criteria.VirtualSports;
 

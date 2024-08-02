@@ -1,5 +1,4 @@
 ﻿using Fanex.Settlement.Converter.Services;
-using Microsoft.Extensions.Options;
 using ThirdPartyBroadcast.Consumer.Criteria;
 
 namespace ThirdPartyBroadcast.Consumer.Services;
@@ -12,15 +11,9 @@ public interface AnnouncementService
 public class AnnouncementServiceImp(
     IDynamicRepository repository,
     XmlConvertService xmlConvertService,
-    MatchService matchService,
     MessageAnnouncementService messageAnnouncementService,
-    TicketInfoService ticketService,
-    IOptions<AppSettingsKey> appSettingsKey
-)
-    : AnnouncementService
+    TicketInfoService ticketService) : AnnouncementService
 {
-    private MailFunction MailFunction => appSettingsKey.Value.MailFunction;
-
     public async Task SendAnnounceRefund(List<TicketSettleInfo> currentTickets, MatchInfo matchInfo, int adminId)
     {
         var settledTickets = await ticketService.GetTicketsByTransIds(matchInfo.MatchId, matchInfo.SportType, currentTickets);
