@@ -1,4 +1,5 @@
-﻿using ThirdPartyBroadcast.Consumer.Criteria;
+﻿using StackExchange.Redis;
+using ThirdPartyBroadcast.Consumer.Criteria;
 using ThirdPartyBroadcast.Consumer.Criteria.VirtualSportFive;
 using ThirdPartyBroadcast.Consumer.Extensions;
 
@@ -9,16 +10,34 @@ public interface Product3rdService
     Task<Result> Settle(VirtualSportFiveRequest request);
 }
 
-public class Product3rdServiceImp(
-    IDynamicRepository repository,
-    LogDirectlyService logDirectlyService,
-    CalculateService calculateService,
-    TicketInfoService ticketService,
-    AnnouncementService announcementService,
-    RefDataService refDataService,
-    RecipientMessageService recipientMessageService)
-    : Product3rdService
+public class Product3rdServiceImp : Product3rdService
 {
+    private readonly IDynamicRepository repository;
+    private readonly LogDirectlyService logDirectlyService;
+    private readonly CalculateService calculateService;
+    private readonly TicketInfoService ticketService;
+    private readonly AnnouncementService announcementService;
+    private readonly RecipientMessageService recipientMessageService;
+    private readonly RefDataService refDataService;
+
+    public Product3rdServiceImp(
+        IDynamicRepository repository,
+        LogDirectlyService logDirectlyService,
+        CalculateService calculateService,
+        TicketInfoService ticketService,
+        AnnouncementService announcementService,
+        RefDataService refDataService,
+        RecipientMessageService recipientMessageService)
+    {
+        this.repository = repository;
+        this.logDirectlyService = logDirectlyService;
+        this.calculateService = calculateService;
+        this.ticketService = ticketService;
+        this.announcementService = announcementService;
+        this.refDataService = refDataService;
+        this.recipientMessageService = recipientMessageService;
+    }
+
     public async Task<Result> Settle(VirtualSportFiveRequest request)
     {
         var currentMatchInfo = await GetMatchInfo(request.MatchId);
@@ -29,11 +48,9 @@ public class Product3rdServiceImp(
             return validationResult;
         }
 
-        var resources = request.SelectedResources.ToResources().Items;
-
         var currentTickets = await ticketService.GetTicketsByAction(currentMatchInfo.MatchId, currentMatchInfo.SportType, request.Action);
 
-        await UpdateMatchInfo(request, resources);
+        await UpdateMatchInfo(request, currentMatchInfo);
 
         await WriteLogPreSettle(request);
 
@@ -44,7 +61,7 @@ public class Product3rdServiceImp(
 
     private async Task WriteLogPreSettle(VirtualSportFiveRequest request)
     {
-        var message = $"NAP: VS5 - Calculate {request.Action} for matchId: {request.MatchId} Resource Results: {request.SelectedResources}";
+        var message = $@"NAP: VS5 - Calculate {request.Action} for matchId: {request.MatchId} Resource Results: {request.SelectedResources}";
 
         await logDirectlyService.WriteLog(request.MatchId, message);
     }
@@ -67,7 +84,7 @@ public class Product3rdServiceImp(
 
         await WriteLogSettled(request, settleResult);
 
-        await recipientMessageService.Message(request.Action, matchInfo);
+        await recipientMessageService.SendMessageResettle(request, matchInfo);
 
         await announcementService.SendAnnounceRefund(currentTickets, matchInfo, request.AdminId);
 
@@ -84,14 +101,14 @@ public class Product3rdServiceImp(
         return match;
     }
 
-    private async Task UpdateMatchInfo(VirtualSportFiveRequest request, List<ResourceItemModel> resources)
+    private async Task UpdateMatchInfo(VirtualSportFiveRequest request, MatchInfo matchInfo)
     {
         var criteria = new Match3rdUpdateCriteria
         {
             MatchId = request.MatchId,
             SelectedResources = request.SelectedResources,
             BetStatus = GetBetStatus(request.Action),
-            EventStatus = GetEventStatus(request.Action, resources),
+            EventStatus = GetEventStatus(request, matchInfo),
         };
 
         await repository.ExecuteAsync(criteria);
@@ -99,18 +116,19 @@ public class Product3rdServiceImp(
 
     private static string GetBetStatus(string action) => string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase) ? "Refund" : null;
 
-    private static string GetEventStatus(string action, List<ResourceItemModel> resources)
+    private static string GetEventStatus(VirtualSportFiveRequest request, MatchInfo matchInfo)
     {
-        if (string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(request.Action, ActionName.Refund, StringComparison.OrdinalIgnoreCase))
         {
-            return EventStatus.Completed;
+            return "completed";
         }
 
-        var ftResult = resources.Find(r => r.Id == ResourceId.FullTimeResourceId);
-        return string.Equals(action, ActionName.Calculate, StringComparison.OrdinalIgnoreCase)
-            && ftResult is not null
-                ? EventStatus.Completed
-                : EventStatus.Running;
+        var ftResult = request.Resources.Find(resources => resources.Id == ResourceId.FullTimeResourceId);
+        var isCalc = string.Equals(request.Action, ActionName.Calculate, StringComparison.OrdinalIgnoreCase);
+
+        return isCalc && ftResult is not null
+                ? "completed"
+                : matchInfo.EventStatus;
     }
 
     private static Result ValidateResources(VirtualSportFiveRequest request, MatchInfo matchInfo)
@@ -120,15 +138,21 @@ public class Product3rdServiceImp(
             return Result.ErrorRequest();
         }
 
-        var htResult = resources.Find(r => r.Id == ResourceId.HalfTimeResourceId);
-        var ftResult = resources.Find(r => r.Id == ResourceId.FullTimeResourceId);
+        var htResult = resources.Find(resources => resources.Id == ResourceId.HalfTimeResourceId);
+        var ftResult = resources.Find(resources => resources.Id == ResourceId.FullTimeResourceId);
+        request.Resources = resources;
 
         if (string.Equals(request.Action, ActionName.Refund, StringComparison.OrdinalIgnoreCase) && !ValidRefundResources(htResult, ftResult))
         {
             return Result.ErrorRequest();
         }
 
-        return string.Equals(request.Action, ActionName.Calculate, StringComparison.OrdinalIgnoreCase) ? Validator.ValidateScores(htResult, ftResult, matchInfo) : new Result();
+        if (string.Equals(request.Action, ActionName.Calculate, StringComparison.OrdinalIgnoreCase))
+        {
+            return Validator.ValidateScores(htResult, ftResult, matchInfo);
+        }
+
+        return new Result();
     }
 
     private static bool ValidRefundResources(ResourceItemModel htResult, ResourceItemModel ftResult)
@@ -143,7 +167,7 @@ public class Product3rdServiceImp(
 
     private static bool TryGetSources(VirtualSportFiveRequest request, out List<ResourceItemModel> resources)
     {
-        resources = [];
+        resources = new();
 
         try
         {

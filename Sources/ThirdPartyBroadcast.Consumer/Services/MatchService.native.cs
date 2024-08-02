@@ -1,8 +1,11 @@
 ﻿using ThirdPartyBroadcast.Consumer.Criteria;
 using ThirdPartyBroadcast.Consumer.Criteria.VirtualBetRadar;
+using ThirdPartyBroadcast.Consumer.Criteria.VirtualSportFive;
 using ThirdPartyBroadcast.Consumer.Criteria.VirtualSports;
 
 namespace ThirdPartyBroadcast.Consumer.Services;
+
+using Tickets = (IEnumerable<TicketInfo> creditTickets, IEnumerable<TicketInfo> depositTickets);
 
 public interface MatchService
 {
@@ -14,7 +17,9 @@ public interface MatchService
 
     Task UpdateMatchInfoBetRadar(VirtualBetRadarRequest request);
 
-    Task<(IEnumerable<TicketInfo> creditTickets, IEnumerable<TicketInfo> depositTickets)> GetAllTicketsVirtualSports(int matchId);
+    Task<Tickets> GetAllTicketsVirtualSports(int matchId);
+
+    Task<Tickets> GetTickets3rd(int matchId, short sportType, string resources);
 
     Task WriteLogVirtualSports(VirtualSoccerRequest request);
 
@@ -78,7 +83,7 @@ public class MatchServiceImp(
         await repository.ExecuteAsync(criteria);
     }
 
-    public async Task<(IEnumerable<TicketInfo> creditTickets, IEnumerable<TicketInfo> depositTickets)> GetAllTicketsVirtualSports(int matchId)
+    public async Task<Tickets> GetAllTicketsVirtualSports(int matchId)
     {
         var criteria = new VirtualSportsTicketCriteria { MatchId = matchId };
         return await repository.FetchMultipleAsync<TicketInfo, TicketInfo>(criteria);
@@ -117,5 +122,11 @@ public class MatchServiceImp(
         {
             TicketsInfo = ticketInfos.Where(ticket => ticket.SiteName == licensee).ToList()
         });
+    }
+
+    public async Task<Tickets> GetTickets3rd(int matchId, short sportType, string resources)
+    {
+        var criteria = new VirtualSportsFiveTicketCriteria { MatchId = matchId, SportType = sportType, SelectedResources = resources };
+        return await repository.FetchMultipleAsync<TicketInfo, TicketInfo>(criteria);
     }
 }

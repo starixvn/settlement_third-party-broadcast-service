@@ -17,4 +17,5 @@ public class VirtualSportFiveRequest
         : Constants.ActionId.VirtualSportFiveRefund;
 
     public bool IsReSettledTickets { get; set; } = true;
+    public List<ResourceItemModel> Resources { get; set; } = new();
 }
