@@ -1,8 +1,8 @@
 ﻿namespace ThirdPartyBroadcast.Consumer.Services;
 
-using System;
 using Microsoft.Extensions.Options;
-using ThirdPartyBroadcast.Consumer.Models;
+using Models;
+using System;
 
 public interface RecipientMessageService
 {
@@ -22,10 +22,7 @@ public class RecipientMessageServiceImp(
 
         var isMatchReSettle = matchService.IsReSettleOrRefund(request.Action, matchInfo.EventStatus);
 
-        var isHtReSettle = string.Equals(request.Action, ActionName.Calculate, StringComparison.OrdinalIgnoreCase)
-            && htResult is not null
-            && matchInfo.HtHomeScore != null && matchInfo.HtAwayScore != null
-            && (int.Parse(htResult.Home) != matchInfo.HtHomeScore || int.Parse(htResult.Away) != matchInfo.HtAwayScore);
+        var isHtReSettle = IsHtResettle(request.Action, htResult, matchInfo);
 
         if (!isMatchReSettle && !isHtReSettle)
         {
@@ -37,6 +34,16 @@ public class RecipientMessageServiceImp(
         var actionName = GetActionName(request.Action);
         await CreditGroup(actionName, matchInfo, creditTickets.ToList());
         await DepositGroup(actionName, matchInfo, depositTickets.ToList());
+    }
+
+    private static bool IsHtResettle(string action, ResourceItemModel htResult, MatchInfo matchInfo)
+    {
+        if (!string.Equals(action, ActionName.Calculate, StringComparison.OrdinalIgnoreCase) || htResult is null || matchInfo.HtHomeScore is null || matchInfo.HtAwayScore is null)
+        {
+            return false;
+        }
+
+        return int.Parse(htResult.Home) != matchInfo.HtHomeScore || int.Parse(htResult.Away) != matchInfo.HtAwayScore;
     }
 
     public async Task Message(string action, MatchInfo matchInfo)

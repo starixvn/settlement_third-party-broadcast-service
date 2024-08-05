@@ -12,9 +12,7 @@ public class MissingResultValidator : IValidator
 
     public Result Validate(ResourceItemModel htResult, ResourceItemModel ftResult, MatchInfo matchInfo)
     {
-        if (htResult != null && ftResult == null
-            && matchInfo.HtAwayScore == null && matchInfo.HtHomeScore == null
-            && matchInfo.FinalAwayScore != null && matchInfo.FinalHomeScore != null) // ht is running but ft is not exist
+        if (IsFtResultMissing(htResult, ftResult, matchInfo))
         {
             return new Result
             {
@@ -23,8 +21,7 @@ public class MissingResultValidator : IValidator
             };
         }
 
-        if (htResult == null && ftResult != null
-            && matchInfo.HtAwayScore == null && matchInfo.HtHomeScore == null)
+        if (IsHtResultMissing(htResult, ftResult, matchInfo))
         {
             return new Result
             {
@@ -34,5 +31,21 @@ public class MissingResultValidator : IValidator
         }
 
         return _next?.Validate(htResult, ftResult, matchInfo) ?? new Result();
+    }
+
+    private static bool IsFtResultMissing(ResourceItemModel htResult, ResourceItemModel ftResult, MatchInfo matchInfo)
+    {
+        var hasHtResult = htResult != null;
+        var hasFtResult = ftResult != null;
+        var hasFinalScores = matchInfo.FinalAwayScore != null && matchInfo.FinalHomeScore != null;
+        var hasMissingHtScores = matchInfo.HtAwayScore == null && matchInfo.HtHomeScore == null;
+
+        return hasHtResult && !hasFtResult && hasFinalScores && hasMissingHtScores;
+    }
+
+    private static bool IsHtResultMissing(ResourceItemModel htResult, ResourceItemModel ftResult, MatchInfo matchInfo)
+    {
+        return htResult == null && ftResult != null
+                                && matchInfo.HtAwayScore == null && matchInfo.HtHomeScore == null;
     }
 }

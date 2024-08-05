@@ -1,6 +1,4 @@
-﻿using ThirdPartyBroadcast.Consumer.Extensions;
-
-namespace ThirdPartyBroadcast.Consumer.Services.Products.VirtualSportFive;
+﻿namespace ThirdPartyBroadcast.Consumer.Services.Products.VirtualSportFive;
 
 public class MatchScoreValidator : IValidator
 {

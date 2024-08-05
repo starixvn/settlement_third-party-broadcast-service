@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ThirdPartyBroadcast.Consumer.Criteria.VirtualSportFive;
+﻿namespace ThirdPartyBroadcast.Consumer.Criteria.VirtualSportFive;
 
 public class VirtualSportsFiveTicketCriteria : NonQueryCommand
 {
