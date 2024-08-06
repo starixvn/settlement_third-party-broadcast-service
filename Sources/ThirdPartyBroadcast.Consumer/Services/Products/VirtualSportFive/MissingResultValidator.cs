@@ -14,20 +14,12 @@ public class MissingResultValidator : IValidator
     {
         if (IsFtResultMissing(htResult, ftResult, matchInfo))
         {
-            return new Result
-            {
-                ErrorCode = 4,
-                ErrorMessage = "FT not exist"
-            };
+            return new Result(4, "FT not exist");
         }
 
         if (IsHtResultMissing(htResult, ftResult, matchInfo))
         {
-            return new Result
-            {
-                ErrorCode = 5,
-                ErrorMessage = "HT not exist"
-            };
+            return new Result(5, "HT not exist");
         }
 
         return _next?.Validate(htResult, ftResult, matchInfo) ?? new Result();

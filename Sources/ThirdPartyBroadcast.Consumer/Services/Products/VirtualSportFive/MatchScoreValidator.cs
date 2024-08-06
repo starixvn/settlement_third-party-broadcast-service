@@ -12,22 +12,23 @@ public class MatchScoreValidator : IValidator
 
     public Result Validate(ResourceItemModel htResult, ResourceItemModel ftResult, MatchInfo matchInfo)
     {
+        var result = new Result();
         if (htResult != null && ftResult != null)
         {
-            return ValidateHtFtConsistency(htResult, ftResult);
+            result = ValidateHtFtConsistency(htResult, ftResult);
         }
 
         if (htResult != null)
         {
-            return ValidateOnlyHtConsistency(htResult, matchInfo);
+            result = ValidateOnlyHtConsistency(htResult, matchInfo);
         }
 
         if (ftResult != null)
         {
-            return ValidateOnlyFtConsistency(ftResult, matchInfo);
+            result = ValidateOnlyFtConsistency(ftResult, matchInfo);
         }
 
-        return _next?.Validate(htResult, ftResult, matchInfo) ?? new Result();
+        return result.IsSuccessful ? _next?.Validate(htResult, ftResult, matchInfo) : result;
     }
 
     private static Result ValidateOnlyFtConsistency(ResourceItemModel ftResult, MatchInfo matchInfo)
