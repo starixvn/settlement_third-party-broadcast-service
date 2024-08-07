@@ -10,17 +10,9 @@ public interface TicketInfoService
     Task<List<TicketSettleInfo>> GetTicketsByTransIds(int matchId, short sportType, List<TicketSettleInfo> tickets);
 }
 
-public class TicketInfoServiceImp : TicketInfoService
+public class TicketInfoServiceImp(IOptions<AppSettingsKey> appSettingsKey, IDynamicRepository repository)
+    : TicketInfoService
 {
-    private readonly IOptions<AppSettingsKey> appSettingsKey;
-    private readonly IDynamicRepository repository;
-
-    public TicketInfoServiceImp(IOptions<AppSettingsKey> appSettingsKey, IDynamicRepository repository)
-    {
-        this.appSettingsKey = appSettingsKey;
-        this.repository = repository;
-    }
-
     public async Task<List<TicketSettleInfo>> GetTicketsByAction(int matchId, short sportType, string action)
     {
         if (string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase))
@@ -42,7 +34,7 @@ public class TicketInfoServiceImp : TicketInfoService
         return await GetTicketsAllSites(new TicketSettleCriteria { MatchId = matchId, SportType = sportType, TransIDs = transIds });
     }
 
-    public async Task<List<TicketSettleInfo>> GetTicketsAllSites(TicketSettleCriteria criteria)
+    private async Task<List<TicketSettleInfo>> GetTicketsAllSites(TicketSettleCriteria criteria)
     {
         var tasks = appSettingsKey.Value.SiteDbServer.Select(s => GetTicketsOnSite(s, criteria));
 

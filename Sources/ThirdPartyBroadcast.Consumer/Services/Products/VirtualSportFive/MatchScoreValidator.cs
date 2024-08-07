@@ -2,20 +2,21 @@
 
 public class MatchScoreValidator : IValidator
 {
-    private IValidator _next;
+    private IValidator validator;
 
     public IValidator SetNext(IValidator next)
     {
-        _next = next;
-        return _next;
+        validator = next;
+        return validator;
     }
 
     public Result Validate(ResourceItemModel htResult, ResourceItemModel ftResult, MatchInfo matchInfo)
     {
         var result = new Result();
+
         if (htResult != null && ftResult != null)
         {
-            result = ValidateHtFtConsistency(htResult, ftResult);
+            return ValidateHtFtConsistency(htResult, ftResult);
         }
 
         if (htResult != null)
@@ -28,7 +29,7 @@ public class MatchScoreValidator : IValidator
             result = ValidateOnlyFtConsistency(ftResult, matchInfo);
         }
 
-        return result.IsSuccessful ? _next?.Validate(htResult, ftResult, matchInfo) : result;
+        return result.IsSuccessful ? validator?.Validate(htResult, ftResult, matchInfo) : result;
     }
 
     private static Result ValidateOnlyFtConsistency(ResourceItemModel ftResult, MatchInfo matchInfo)
@@ -41,6 +42,7 @@ public class MatchScoreValidator : IValidator
             var message = string.Format(ErrorMessage.Inconsistent, $"{matchInfo.HtHomeScore}-{matchInfo.HtAwayScore}", $"{ftResult.Home}-{ftResult.Away}");
             return new Result(3, message);
         }
+
         return new Result();
     }
 
@@ -60,12 +62,15 @@ public class MatchScoreValidator : IValidator
 
     private static Result ValidateHtFtConsistency(ResourceItemModel htResult, ResourceItemModel ftResult)
     {
-        if (int.Parse(htResult.Home) > int.Parse(ftResult.Home)
-            || int.Parse(htResult.Away) > int.Parse(ftResult.Away))
+        var inValidHome = int.Parse(htResult.Home) > int.Parse(ftResult.Home);
+        var inValidAway = int.Parse(htResult.Away) > int.Parse(ftResult.Away);
+
+        if (inValidHome || inValidAway)
         {
             var message = string.Format(ErrorMessage.Inconsistent, $"{htResult.Home}-{htResult.Away}", $"{ftResult.Home}-{ftResult.Away}");
             return new Result(3, message);
         }
+
         return new Result();
     }
 }

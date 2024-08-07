@@ -4,14 +4,14 @@ namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products.Products.Virt
 
 public class MatchScoreValidatorTests
 {
-    private readonly IValidator _nextValidator;
-    private readonly MatchScoreValidator _validator;
+    private readonly IValidator nextValidator;
+    private readonly MatchScoreValidator validator;
 
     public MatchScoreValidatorTests()
     {
-        _nextValidator = Substitute.For<IValidator>();
-        _validator = new MatchScoreValidator();
-        _validator.SetNext(_nextValidator);
+        nextValidator = Substitute.For<IValidator>();
+        validator = new MatchScoreValidator();
+        validator.SetNext(nextValidator);
     }
 
     [Fact]
@@ -21,7 +21,7 @@ public class MatchScoreValidatorTests
         var ftResult = new ResourceItemModel { Home = "2", Away = "2" };
         var matchInfo = new MatchInfo();
 
-        var result = _validator.Validate(htResult, ftResult, matchInfo);
+        var result = validator.Validate(htResult, ftResult, matchInfo);
 
         Assert.True(result.IsSuccessful);
     }
@@ -33,7 +33,7 @@ public class MatchScoreValidatorTests
         var ftResult = new ResourceItemModel { Home = "2", Away = "2" };
         var matchInfo = new MatchInfo();
 
-        var result = _validator.Validate(htResult, ftResult, matchInfo);
+        var result = validator.Validate(htResult, ftResult, matchInfo);
 
         Assert.False(result.IsSuccessful);
         Assert.Equal(3, result.ErrorCode);
@@ -45,8 +45,9 @@ public class MatchScoreValidatorTests
     {
         var htResult = new ResourceItemModel { Home = "1", Away = "1" };
         var matchInfo = new MatchInfo { FinalHomeScore = 2, FinalAwayScore = 2 };
-
-        var result = _validator.Validate(htResult, null, matchInfo);
+        nextValidator.Validate(Arg.Any<ResourceItemModel>(), Arg.Any<ResourceItemModel>(), Arg.Any<MatchInfo>())
+            .Returns(new Result());
+        var result = validator.Validate(htResult, null, matchInfo);
 
         Assert.True(result.IsSuccessful);
     }
@@ -57,7 +58,7 @@ public class MatchScoreValidatorTests
         var htResult = new ResourceItemModel { Home = "3", Away = "3" };
         var matchInfo = new MatchInfo { FinalHomeScore = 2, FinalAwayScore = 2 };
 
-        var result = _validator.Validate(htResult, null, matchInfo);
+        var result = validator.Validate(htResult, null, matchInfo);
 
         Assert.False(result.IsSuccessful);
         Assert.Equal(3, result.ErrorCode);
@@ -69,8 +70,10 @@ public class MatchScoreValidatorTests
     {
         var ftResult = new ResourceItemModel { Home = "2", Away = "2" };
         var matchInfo = new MatchInfo { HtHomeScore = 1, HtAwayScore = 1 };
+        nextValidator.Validate(Arg.Any<ResourceItemModel>(), Arg.Any<ResourceItemModel>(), Arg.Any<MatchInfo>())
+            .Returns(new Result());
 
-        var result = _validator.Validate(null, ftResult, matchInfo);
+        var result = validator.Validate(null, ftResult, matchInfo);
 
         Assert.True(result.IsSuccessful);
     }
@@ -81,7 +84,7 @@ public class MatchScoreValidatorTests
         var ftResult = new ResourceItemModel { Home = "1", Away = "1" };
         var matchInfo = new MatchInfo { HtHomeScore = 2, HtAwayScore = 2 };
 
-        var result = _validator.Validate(null, ftResult, matchInfo);
+        var result = validator.Validate(null, ftResult, matchInfo);
 
         Assert.False(result.IsSuccessful);
         Assert.Equal(3, result.ErrorCode);
@@ -91,8 +94,8 @@ public class MatchScoreValidatorTests
     [Fact]
     public void Validate_NoResults_ShouldCallNextValidator()
     {
-        var result = _validator.Validate(null, null, new MatchInfo());
+        var result = validator.Validate(null, null, new MatchInfo());
 
-        _nextValidator.Received(1).Validate(null, null, Arg.Any<MatchInfo>());
+        nextValidator.Received(1).Validate(null, null, Arg.Any<MatchInfo>());
     }
 }
