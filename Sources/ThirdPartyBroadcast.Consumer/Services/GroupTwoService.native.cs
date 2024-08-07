@@ -55,16 +55,8 @@ public class GroupTwoServiceImp(
 
     public async Task SettleVS5(string productType, string data)
     {
-        try
-        {
-            var request = JsonConvert.DeserializeObject<VirtualSportFiveRequest>(data);
-            var result = await product3rdService.Settle(request);
-            await logDirectlyService.HandleLog(result, productType, data);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex);
-            throw;
-        }
+        var request = JsonConvert.DeserializeObject<VirtualSportFiveRequest>(data);
+        var result = await product3rdService.Settle(request);
+        await logDirectlyService.HandleLog(result, productType, data);
     }
 }
