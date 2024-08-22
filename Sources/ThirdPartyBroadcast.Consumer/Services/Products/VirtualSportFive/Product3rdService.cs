@@ -1,4 +1,5 @@
-﻿using ThirdPartyBroadcast.Consumer.Criteria;
+﻿using System;
+using ThirdPartyBroadcast.Consumer.Criteria;
 using ThirdPartyBroadcast.Consumer.Criteria.VirtualSportFive;
 using ThirdPartyBroadcast.Consumer.Extensions;
 
@@ -106,14 +107,26 @@ public class Product3rdServiceImp : Product3rdService
         {
             MatchId = request.MatchId,
             SelectedResources = request.SelectedResources,
-            BetStatus = GetBetStatus(request.Action),
+            BetStatus = GetBetStatus(request),
             EventStatus = GetEventStatus(request, matchInfo),
         };
 
         await repository.ExecuteAsync(criteria);
     }
 
-    private static string GetBetStatus(string action) => string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase) ? "Refund" : null;
+    private static string GetBetStatus(VirtualSportFiveRequest request)
+    {
+        if (string.Equals(request.Action, ActionName.Refund, StringComparison.OrdinalIgnoreCase))
+        {
+            var ftResult = request.Resources.Find(resources => resources.Id == ResourceId.FullTimeResourceId);
+
+            var htResult = request.Resources.Find(resources => resources.Id == ResourceId.HalfTimeResourceId);
+
+            return ftResult is not null && htResult is null ? "Refund FT" : "Refund";
+        }
+
+        return null;
+    }
 
     private static string GetEventStatus(VirtualSportFiveRequest request, MatchInfo matchInfo)
     {
