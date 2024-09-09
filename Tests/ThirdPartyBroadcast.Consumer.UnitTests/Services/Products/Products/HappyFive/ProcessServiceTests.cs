@@ -13,7 +13,7 @@ public class ProcessServiceTests
 
     private readonly BusinessServices.HappyFive.BatchTicketsService batchTicketsService;
 
-    private readonly ProcessService service;
+    private readonly ProcessServiceImp service;
 
     public ProcessServiceTests()
     {
@@ -21,7 +21,7 @@ public class ProcessServiceTests
         batchTicketsService = Substitute.For<BusinessServices.HappyFive.BatchTicketsService>();
         var configuration = Substitute.For<IConfiguration>();
         configuration.GetSection("MaxWorker").Value = "1";
-        configuration.GetSection("MaxBatchSize").Value = "2000";
+        configuration.GetSection("MaxBatchSize").Value = "1";
 
         service = new ProcessServiceImp(matchService, batchTicketsService, configuration);
     }

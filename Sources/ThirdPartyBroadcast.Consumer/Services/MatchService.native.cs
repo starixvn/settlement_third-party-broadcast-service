@@ -105,7 +105,7 @@ public class MatchServiceImp(
     {
         var message = $@"NAP: VS BetRadar - Calculate {request.Action} for matchId: {request.MatchId}
               Scores: FT=[{request.Fth}-{request.Fta}]; HT=[{request.Hth}-{request.Hta}]
-              Resource Results: {request.ResourceResult}";
+              ResourceItem Results: {request.ResourceResult}";
 
         await logDirectlyService.WriteLog(request.MatchId, message);
     }

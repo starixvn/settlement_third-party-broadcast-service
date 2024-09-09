@@ -1,6 +1,7 @@
 ﻿namespace ThirdPartyBroadcast.Consumer;
 
 using Criteria;
+using Criteria.BetBuilder;
 using Criteria.BitCoin;
 using Criteria.LeapGaming;
 using Criteria.VirtualBetRadar;

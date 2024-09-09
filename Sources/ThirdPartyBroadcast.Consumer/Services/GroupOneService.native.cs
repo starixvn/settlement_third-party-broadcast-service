@@ -1,6 +1,7 @@
 ﻿namespace ThirdPartyBroadcast.Consumer.Services;
 
 using Products;
+using Products.BetBuilder;
 using Requests;
 
 public interface GroupOneService

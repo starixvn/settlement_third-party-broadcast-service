@@ -1,8 +1,10 @@
-﻿namespace ThirdPartyBroadcast.Consumer.Criteria;
+﻿namespace ThirdPartyBroadcast.Consumer.Criteria.BetBuilder;
 
 public class BetBuilderCriteria : CalculateCriteria
 {
     public int VendorId { get; set; }
+
+    public string SelectedSelection { get; set; }
 
     public string SelectedMarket { get; set; }
 

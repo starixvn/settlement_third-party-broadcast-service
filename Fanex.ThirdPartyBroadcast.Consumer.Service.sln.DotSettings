@@ -22,4 +22,5 @@
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=Betradar/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=Announence/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=Cust/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/UserDictionary/Words/=zhcn/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=matchid/@EntryIndexedValue">True</s:Boolean></wpf:ResourceDictionary>
