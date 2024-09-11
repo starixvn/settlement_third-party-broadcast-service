@@ -4,34 +4,37 @@ namespace ThirdPartyBroadcast.Consumer.Criteria;
 
 public class MessageAnnouncementInsertCriteria : NonQueryCommand
 {
-    public int? MessageId { get; set; }
+	public int? MessageId { get; set; }
 
-    [SpParam(SqlParamName = "Content_en")]
-    public string ContentEng { get; set; }
+	[SpParam(SqlParamName = "Content_en")]
+	public string ContentEng { get; set; }
 
-    [SpParam(SqlParamName = "Content_ch")]
-    public string ContentCh { get; set; }
+	[SpParam(SqlParamName = "Content_ch")]
+	public string ContentCh { get; set; }
 
-    [SpParam(SqlParamName = "Content_cs")]
-    public string ContentCs { get; set; }
+	[SpParam(SqlParamName = "Content_cs")]
+	public string ContentCs { get; set; }
 
-    public int MatchId { get; set; }
+	[SpParam(SqlParamName = "Content_zhcn")]
+	public string ContentNewCs { get; set; }
 
-    public bool IsSticky { get; set; }
+	public int MatchId { get; set; }
 
-    public short MsgType { get; set; } = 1;
+	public bool IsSticky { get; set; }
 
-    public bool IsBatch { get; set; } = true;
+	public short MsgType { get; set; } = 1;
 
-    public short MsgContentsType { get; set; }
+	public bool IsBatch { get; set; } = true;
 
-    public int Creator { get; set; }
+	public short MsgContentsType { get; set; }
 
-    public string CreatorName { get; set; } = string.Empty;
+	public int Creator { get; set; }
 
-    public short? LeagueGroupId { get; set; }
+	public string CreatorName { get; set; } = string.Empty;
 
-    public override string GetSettingKey() => "NAP_SpecialDelete_Message_Insert";
+	public short? LeagueGroupId { get; set; }
 
-    public override bool IsValid() => MatchId > 0;
+	public override string GetSettingKey() => "NAP_SpecialDelete_Message_Insert";
+
+	public override bool IsValid() => MatchId > 0;
 }
