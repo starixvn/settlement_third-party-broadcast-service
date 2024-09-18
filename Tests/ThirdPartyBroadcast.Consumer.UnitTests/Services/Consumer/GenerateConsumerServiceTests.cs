@@ -9,6 +9,8 @@ public class GenerateConsumerServiceTests
 
     private readonly GroupTwoService groupTwoService;
 
+    private readonly GroupThreeService groupThreeService;
+
     private readonly LogDirectlyService logDirectlyService;
 
     private readonly GenerateConsumerService service;
@@ -17,8 +19,9 @@ public class GenerateConsumerServiceTests
     {
         groupOneService = Substitute.For<GroupOneService>();
         groupTwoService = Substitute.For<GroupTwoService>();
+        groupThreeService = Substitute.For<GroupThreeService>();
         logDirectlyService = Substitute.For<LogDirectlyService>();
-        service = new GenerateConsumerServiceImp(groupOneService, groupTwoService, logDirectlyService);
+        service = new GenerateConsumerServiceImp(groupOneService, groupTwoService, groupThreeService, logDirectlyService);
     }
 
     [Fact]

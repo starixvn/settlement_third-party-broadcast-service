@@ -1,14 +1,13 @@
 ﻿using Settlement.Business.Core.Models;
 using System.Diagnostics;
 
-namespace ThirdPartyBroadcast.Consumer.Services.Products;
+namespace ThirdPartyBroadcast.Consumer.Services.Products.HappyFive;
 
 using Criteria;
 using Criteria.HappyFive;
 using Fanex.Settlement.Converter.Services;
-using HappyFive;
 using Models;
-using Settlement.Business.Services;
+using Services;
 using ThirdPartyBroadcast.Consumer.Models.HappyFive;
 
 public interface HappyFiveService
@@ -21,7 +20,7 @@ public class HappyFiveServiceImp(
     IDynamicRepository repository,
     ScaleOutSettleThirdPartyService scaleOutSettleThirdPartyService,
     LogDirectlyService logDirectlyService,
-    MatchService matchService,
+    Settlement.Business.Services.MatchService matchService,
     XmlConvertService xmlConvertService)
     : HappyFiveService
 {

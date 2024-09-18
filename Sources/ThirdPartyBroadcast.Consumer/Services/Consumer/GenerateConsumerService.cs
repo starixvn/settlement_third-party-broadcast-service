@@ -8,6 +8,7 @@ public interface GenerateConsumerService
 public class GenerateConsumerServiceImp(
     GroupOneService groupOneService,
     GroupTwoService groupTwoService,
+    GroupThreeService groupThreeService,
     LogDirectlyService logDirectlyService)
     : GenerateConsumerService
 {
@@ -31,16 +32,25 @@ public class GenerateConsumerServiceImp(
         ProductType.VirtualSports5
     ];
 
+    private static List<string> ProductsGroupThree =>
+    [
+        ProductType.VirtualRacing,
+        ProductType.VirtualSports6
+    ];
+
     public async Task SettleByProduct(string productType, string data)
     {
         if (ProductsGroupOne.Contains(productType))
         {
             await SettleProductByGroupOne(productType, data);
         }
-
-        if (ProductsGroupTwo.Contains(productType))
+        else if (ProductsGroupTwo.Contains(productType))
         {
             await SettleProductByGroupTwo(productType, data);
+        }
+        else if (ProductsGroupThree.Contains(productType))
+        {
+            await SettleProductByGroupThree(productType, data);
         }
 
         await logDirectlyService.WriteInfo(productType, data);
@@ -94,11 +104,21 @@ public class GenerateConsumerServiceImp(
                 break;
 
             case ProductType.VirtualSports5:
-                await groupTwoService.SettleVS5(productType, data);
+                await groupTwoService.SettleVirtualSportFive(productType, data);
                 break;
 
             default:
                 await groupTwoService.SettleVirtualSoccer(productType, data);
+                break;
+        }
+    }
+
+    private async Task SettleProductByGroupThree(string productType, string data)
+    {
+        switch (productType)
+        {
+            case ProductType.VirtualRacing:
+                await groupThreeService.SettleVirtualRacing(productType, data);
                 break;
         }
     }

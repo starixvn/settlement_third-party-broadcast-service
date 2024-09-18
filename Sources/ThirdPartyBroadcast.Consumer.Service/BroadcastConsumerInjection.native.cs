@@ -30,6 +30,7 @@ using ThirdPartyBroadcast.Consumer.Services.Consumer;
 using ThirdPartyBroadcast.Consumer.Services.Products;
 using ThirdPartyBroadcast.Consumer.Services.Products.BetBuilder;
 using ThirdPartyBroadcast.Consumer.Services.Products.HappyFive;
+using ThirdPartyBroadcast.Consumer.Services.Products.VirtualRacing;
 using ThirdPartyBroadcast.Consumer.Services.Products.VirtualSportFive;
 
 namespace ThirdPartyBroadcast.Consumer.Service;
@@ -51,6 +52,8 @@ public static class BroadcastConsumerInjection
         service.AddSingleton<BitCoinService, BitCoinServiceImp>();
         service.AddSingleton<GroupOneService, GroupOneServiceImp>();
         service.AddSingleton<GroupTwoService, GroupTwoServiceImp>();
+        service.AddSingleton<GroupThreeService, GroupThreeServiceImp>();
+        service.AddSingleton<VirtualRacingService, VirtualRacingServiceImp>();
         service.AddSingleton<OutrightService, OutrightServiceImp>();
         service.AddSingleton<HappyFiveService, HappyFiveServiceImp>();
         service.AddSingleton<NumberGameService, NumberGameServiceImp>();
@@ -68,6 +71,7 @@ public static class BroadcastConsumerInjection
         service.AddTransient<RecipientMessageService, RecipientMessageServiceImp>();
         service.AddTransient<TicketInfoService, TicketInfoServiceImp>();
         service.AddTransient<Services.MatchService, Services.MatchServiceImp>();
+
         service.AddSingleton<IMaintenanceService, MaintenanceServiceImp>();
         service.AddSingleton(new UMClientConfiguration().Initialize(configuration));
         service.AddSingleton<IUMCacheService, UMCacheService>();
