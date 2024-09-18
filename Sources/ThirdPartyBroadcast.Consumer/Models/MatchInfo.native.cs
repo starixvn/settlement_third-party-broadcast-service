@@ -7,11 +7,11 @@ public class MatchInfo
 	public RefDataService RefDataService { get; set; }
 
 	public int MatchId { get; set; }
-    public bool IsMatch3rd { get; set; } = false;
+	public bool IsMatch3rd { get; set; } = false;
 	public string EventStatus { get; set; }
-    public DateTime EventDate { get; set; }
+	public DateTime EventDate { get; set; }
 
-    public short SportType { get; set; }
+	public short SportType { get; set; }
 
 	public string SportName => RefDataService.GetSportName(SportType, ContentLanguage.English);
 
@@ -25,8 +25,8 @@ public class MatchInfo
 
 	public short? LeagueGroupId { get; set; }
 
-    public string TeamName => $"{RefDataService.GetTeamName(HomeId, ContentLanguage.English, IsMatch3rd)} -vs- {RefDataService.GetTeamName(AwayId, ContentLanguage.English, IsMatch3rd)}";
-		=> $"{RefDataService.GetTeamName(HomeId, ContentLanguage.English)} -vs- {RefDataService.GetTeamName(AwayId, ContentLanguage.English)}";
+	public string TeamName
+		=> $"{RefDataService.GetTeamName(HomeId, ContentLanguage.English, IsMatch3rd)} -vs- {RefDataService.GetTeamName(AwayId, ContentLanguage.English, IsMatch3rd)}";
 
 	public string TeamNameCh => GetTeamName(ContentLanguage.Cantonese);
 
@@ -34,6 +34,7 @@ public class MatchInfo
 
 	public string TeamNameNewCs => GetTeamName(ContentLanguage.NewMandarin);
 
+	public string LeagueName => RefDataService.GetLeagueName(LeagueId, ContentLanguage.English);
 
 	public string LeagueNameCh => GetLeagueName(ContentLanguage.Cantonese);
 
@@ -49,15 +50,15 @@ public class MatchInfo
 
 	private string GetTeamName(string languageCode)
 	{
-        var home = RefDataService.GetTeamName(HomeId, languageCode, IsMatch3rd);
-        var away = RefDataService.GetTeamName(AwayId, languageCode, IsMatch3rd);
+		var home = RefDataService.GetTeamName(HomeId, languageCode, IsMatch3rd);
+		var away = RefDataService.GetTeamName(AwayId, languageCode, IsMatch3rd);
 
 		return (string.IsNullOrEmpty(home) || string.IsNullOrEmpty(away)) ? TeamName : $"{home} -vs- {away}";
 	}
 
 	private string GetLeagueName(string languageCode)
 	{
-        var value = RefDataService.GetLeagueName(LeagueId, languageCode, IsMatch3rd);
+		var value = RefDataService.GetLeagueName(LeagueId, languageCode, IsMatch3rd);
 
 		return (string.IsNullOrEmpty(value)) ? LeagueName : value;
 	}

@@ -21,7 +21,7 @@ public static class EventStatus
 {
 	public const string Completed = "completed";
 
-    public const string Running = "running";
+	public const string Running = "running";
 }
 
 public static class ResourceId
@@ -74,8 +74,8 @@ public static class ActionId
 
 	public const int NgRefundFt = 119;
 
-    public const int VirtualSportFiveCal = 81053;
-    public const int VirtualSportFiveRefund = 81054;
+	public const int VirtualSportFiveCal = 81053;
+	public const int VirtualSportFiveRefund = 81054;
 }
 
 public static class ActionName
@@ -119,11 +119,11 @@ public static class SportType
 
 public static class ErrorCode
 {
-    public const int NotExistValue = 1_000_003;
+	public const int NotExistValue = 1_000_003;
 }
 
 public static class ErrorMessage
 {
-    public const string NotExistValue = "The input score values are not valid!";
-    public const string Inconsistent = "HT({0}) is inconsistent with FT({1})";
+	public const string NotExistValue = "The input score values are not valid!";
+	public const string Inconsistent = "HT({0}) is inconsistent with FT({1})";
 }
