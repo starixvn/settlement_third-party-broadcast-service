@@ -13,6 +13,8 @@ public class LeapGamingServiceTests
 
     private readonly AnnouncementService announcementService;
 
+    private readonly TicketInfoService ticketInfoService;
+
     public LeapGamingServiceTests()
     {
         calculateService = Substitute.For<CalculateService>();
@@ -20,13 +22,13 @@ public class LeapGamingServiceTests
         matchService = Substitute.For<MatchService>();
         announcementService = Substitute.For<AnnouncementService>();
         var recipientMessageService = Substitute.For<RecipientMessageService>();
-
+        ticketInfoService = Substitute.For<TicketInfoService>();
         var mapperConfig = new MapperConfigurationExpression();
         mapperConfig.AddProfile<ThirdPartyBroadcastMappingProfile>();
         var config = new MapperConfiguration(mapperConfig);
         var mapper = new Mapper(config);
 
-        service = new LeapGamingServiceImp(mapper, calculateService, repository, matchService, announcementService, recipientMessageService);
+        service = new LeapGamingServiceImp(mapper, calculateService, repository, matchService, ticketInfoService, recipientMessageService, announcementService);
     }
 
     [Fact]
@@ -59,11 +61,11 @@ public class LeapGamingServiceTests
         Received.InOrder(() =>
         {
             matchService.GetMatchInfo(Arg.Any<int>());
-            matchService.GetTicketsByAction(Arg.Any<int>(), Arg.Any<string>());
+            ticketInfoService.GetTicketsByAction(Arg.Any<int>(), Arg.Any<short>(), Arg.Any<string>());
             matchService.UpdateMatchInfoLeapGaming(Arg.Any<LeapGamingRequest>());
             matchService.WriteLogLeapGaming(Arg.Any<int>());
             calculateService.Execute(Arg.Any<LeapGamingCriteria>());
-            announcementService.Handle(Arg.Any<List<TicketSettleInfo>>(), Arg.Any<MatchInfo>(), Arg.Any<int>());
+            announcementService.SendAnnounceRefund(Arg.Any<List<TicketSettleInfo>>(), Arg.Any<MatchInfo>(), Arg.Any<int>());
         });
     }
 }

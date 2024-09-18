@@ -1,9 +1,11 @@
-﻿using Microsoft.Extensions.Options;
-using ThirdPartyBroadcast.Consumer.Criteria;
+﻿using ThirdPartyBroadcast.Consumer.Criteria;
 using ThirdPartyBroadcast.Consumer.Criteria.VirtualBetRadar;
+using ThirdPartyBroadcast.Consumer.Criteria.VirtualSportFive;
 using ThirdPartyBroadcast.Consumer.Criteria.VirtualSports;
 
 namespace ThirdPartyBroadcast.Consumer.Services;
+
+using Tickets = (IEnumerable<TicketInfo> creditTickets, IEnumerable<TicketInfo> depositTickets);
 
 public interface MatchService
 {
@@ -15,17 +17,15 @@ public interface MatchService
 
     Task UpdateMatchInfoBetRadar(VirtualBetRadarRequest request);
 
-    Task<(IEnumerable<TicketInfo> creditTickets, IEnumerable<TicketInfo> depositTickets)> GetAllTicketsVirtualSports(int matchId);
+    Task<Tickets> GetAllTicketsVirtualSports(int matchId);
+
+    Task<Tickets> GetTickets3rd(int matchId, short sportType, string resources);
 
     Task WriteLogVirtualSports(VirtualSoccerRequest request);
 
     Task WriteLogLeapGaming(int matchId);
 
     Task WriteLogBetRadar(VirtualBetRadarRequest request);
-
-    Task<List<TicketSettleInfo>> GetTicketsByAction(int matchId, string action);
-
-    Task<List<TicketSettleInfo>> GetTicketsByTransIds(int matchId, List<TicketSettleInfo> tickets);
 
     bool IsReSettleOrRefund(string action, string eventStatus);
 
@@ -37,8 +37,7 @@ public class MatchServiceImp(
     IMapper mapper,
     ScaleOutSettleThirdPartyService scaleOutSettleThirdPartyService,
     LogDirectlyService logDirectlyService,
-    RefDataService refDataService,
-    IOptions<AppSettingsKey> appSettingsKey)
+    RefDataService refDataService)
     : MatchService
 {
     public async Task<MatchInfo> GetMatchInfo(int matchId)
@@ -84,7 +83,7 @@ public class MatchServiceImp(
         await repository.ExecuteAsync(criteria);
     }
 
-    public async Task<(IEnumerable<TicketInfo> creditTickets, IEnumerable<TicketInfo> depositTickets)> GetAllTicketsVirtualSports(int matchId)
+    public async Task<Tickets> GetAllTicketsVirtualSports(int matchId)
     {
         var criteria = new VirtualSportsTicketCriteria { MatchId = matchId };
         return await repository.FetchMultipleAsync<TicketInfo, TicketInfo>(criteria);
@@ -111,42 +110,6 @@ public class MatchServiceImp(
         await logDirectlyService.WriteLog(request.MatchId, message);
     }
 
-    public async Task<List<TicketSettleInfo>> GetTicketsByAction(int matchId, string action)
-    {
-        if (string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase))
-        {
-            return await GetAllTickets(new TicketSettleCriteria { MatchId = matchId });
-        }
-
-        return [];
-    }
-
-    public async Task<List<TicketSettleInfo>> GetTicketsByTransIds(int matchId, List<TicketSettleInfo> tickets)
-    {
-        if (tickets.Count == 0)
-        {
-            return [];
-        }
-
-        var transIds = string.Join(',', tickets.Select(x => x.TransId).ToArray());
-        return await GetAllTickets(new TicketSettleCriteria { MatchId = matchId, TransIDs = transIds });
-    }
-
-    private async Task<List<TicketSettleInfo>> GetAllTickets(TicketSettleCriteria criteria)
-    {
-        var result = new List<TicketSettleInfo>();
-        foreach (var server in appSettingsKey.Value.SiteDbServer)
-        {
-            criteria.DbServer = server;
-
-            var ticketInfo = await repository.FetchAsync<TicketSettleInfo>(criteria);
-
-            result.AddRange(ticketInfo);
-        }
-
-        return result;
-    }
-
     public bool IsReSettleOrRefund(string action, string eventStatus) =>
         (!string.IsNullOrWhiteSpace(eventStatus) && string.Equals(eventStatus.ToLowerInvariant(), EventStatus.Completed))
         || string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase);
@@ -159,5 +122,11 @@ public class MatchServiceImp(
         {
             TicketsInfo = ticketInfos.Where(ticket => ticket.SiteName == licensee).ToList()
         });
+    }
+
+    public async Task<Tickets> GetTickets3rd(int matchId, short sportType, string resources)
+    {
+        var criteria = new VirtualSportsFiveTicketCriteria { MatchId = matchId, SportType = sportType, SelectedResources = resources };
+        return await repository.FetchMultipleAsync<TicketInfo, TicketInfo>(criteria);
     }
 }

@@ -29,6 +29,7 @@ using ThirdPartyBroadcast.Consumer.Services;
 using ThirdPartyBroadcast.Consumer.Services.Consumer;
 using ThirdPartyBroadcast.Consumer.Services.Products;
 using ThirdPartyBroadcast.Consumer.Services.Products.HappyFive;
+using ThirdPartyBroadcast.Consumer.Services.Products.VirtualSportFive;
 
 namespace ThirdPartyBroadcast.Consumer.Service;
 
@@ -57,11 +58,13 @@ public static class BroadcastConsumerInjection
         service.AddSingleton<VirtualBetRadarService, VirtualBetRadarServiceImp>();
         service.AddSingleton<VirtualSportsService, VirtualSportsServiceImp>();
         service.AddSingleton<LeapGamingService, LeapGamingServiceImp>();
+        service.AddSingleton<Product3rdService, Product3rdServiceImp>();
         service.AddSingleton<SendMailService, SendMailServiceImp>();
         service.AddSingleton<PinGoalService, PinGoalServiceImp>();
         service.AddTransient<AnnouncementService, AnnouncementServiceImp>();
         service.AddTransient<MessageAnnouncementService, MessageAnnouncementServiceImp>();
         service.AddTransient<RecipientMessageService, RecipientMessageServiceImp>();
+        service.AddTransient<TicketInfoService, TicketInfoServiceImp>();
         service.AddTransient<Services.MatchService, Services.MatchServiceImp>();
         service.AddSingleton<IMaintenanceService, MaintenanceServiceImp>();
         service.AddSingleton(new UMClientConfiguration().Initialize(configuration));

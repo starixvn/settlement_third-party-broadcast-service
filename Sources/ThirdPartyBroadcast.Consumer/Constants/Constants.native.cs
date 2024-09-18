@@ -20,6 +20,8 @@ public static class EmailType
 public static class EventStatus
 {
 	public const string Completed = "completed";
+
+	public const string Running = "running";
 }
 
 public static class ResourceId
@@ -71,6 +73,9 @@ public static class ActionId
 	public const int NgCalHt = 118;
 
 	public const int NgRefundFt = 119;
+
+	public const int VirtualSportFiveCal = 81053;
+	public const int VirtualSportFiveRefund = 81054;
 }
 
 public static class ActionName
@@ -110,4 +115,15 @@ public static class ContentLanguage
 public static class SportType
 {
 	public const short VirtualCockFighting = 188;
+}
+
+public static class ErrorCode
+{
+	public const int NotExistValue = 1_000_003;
+}
+
+public static class ErrorMessage
+{
+	public const string NotExistValue = "The input score values are not valid!";
+	public const string Inconsistent = "HT({0}) is inconsistent with FT({1})";
 }

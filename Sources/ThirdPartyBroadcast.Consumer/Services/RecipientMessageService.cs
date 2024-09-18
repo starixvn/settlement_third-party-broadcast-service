@@ -1,10 +1,14 @@
 ﻿namespace ThirdPartyBroadcast.Consumer.Services;
 
 using Microsoft.Extensions.Options;
+using Models;
+using System;
 
 public interface RecipientMessageService
 {
     Task Message(string action, MatchInfo matchInfo);
+
+    Task SendMessageResettle(VirtualSportFiveRequest request, MatchInfo matchInfo);
 }
 
 public class RecipientMessageServiceImp(
@@ -12,6 +16,36 @@ public class RecipientMessageServiceImp(
     SendMailService sendMailService,
     IOptions<AppSettingsKey> appSettingsKey) : RecipientMessageService
 {
+    public async Task SendMessageResettle(VirtualSportFiveRequest request, MatchInfo matchInfo)
+    {
+        var htResult = request.Resources.Find(resources => resources.Id == ResourceId.HalfTimeResourceId);
+
+        var isMatchReSettle = matchService.IsReSettleOrRefund(request.Action, matchInfo.EventStatus);
+
+        var isHtReSettle = IsHtResettle(request.Action, htResult, matchInfo);
+
+        if (!isMatchReSettle && !isHtReSettle)
+        {
+            return;
+        }
+
+        var (creditTickets, depositTickets) = await matchService.GetTickets3rd(matchInfo.MatchId, matchInfo.SportType, request.SelectedResources);
+
+        var actionName = GetActionName(request.Action);
+        await CreditGroup(actionName, matchInfo, creditTickets.ToList());
+        await DepositGroup(actionName, matchInfo, depositTickets.ToList());
+    }
+
+    private static bool IsHtResettle(string action, ResourceItemModel htResult, MatchInfo matchInfo)
+    {
+        if (!string.Equals(action, ActionName.Calculate, StringComparison.OrdinalIgnoreCase) || htResult is null || matchInfo.HtHomeScore is null || matchInfo.HtAwayScore is null)
+        {
+            return false;
+        }
+
+        return int.Parse(htResult.Home) != matchInfo.HtHomeScore || int.Parse(htResult.Away) != matchInfo.HtAwayScore;
+    }
+
     public async Task Message(string action, MatchInfo matchInfo)
     {
         if (matchService.IsReSettleOrRefund(action, matchInfo.EventStatus))

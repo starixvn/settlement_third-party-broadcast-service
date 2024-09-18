@@ -5,19 +5,18 @@ namespace ThirdPartyBroadcast.Consumer.Services;
 
 public interface AnnouncementService
 {
-    Task Handle(List<TicketSettleInfo> currentTickets, MatchInfo matchInfo, int adminId);
+    Task SendAnnounceRefund(List<TicketSettleInfo> currentTickets, MatchInfo matchInfo, int adminId);
 }
 
 public class AnnouncementServiceImp(
     IDynamicRepository repository,
     XmlConvertService xmlConvertService,
-    MatchService matchService,
-    MessageAnnouncementService messageAnnouncementService)
-    : AnnouncementService
+    MessageAnnouncementService messageAnnouncementService,
+    TicketInfoService ticketService) : AnnouncementService
 {
-    public async Task Handle(List<TicketSettleInfo> currentTickets, MatchInfo matchInfo, int adminId)
+    public async Task SendAnnounceRefund(List<TicketSettleInfo> currentTickets, MatchInfo matchInfo, int adminId)
     {
-        var settledTickets = await matchService.GetTicketsByTransIds(matchInfo.MatchId, currentTickets);
+        var settledTickets = await ticketService.GetTicketsByTransIds(matchInfo.MatchId, matchInfo.SportType, currentTickets);
 
         if (settledTickets.Count > 0)
         {

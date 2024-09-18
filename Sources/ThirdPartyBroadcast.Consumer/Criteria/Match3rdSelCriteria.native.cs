@@ -1,6 +1,6 @@
-﻿namespace ThirdPartyBroadcast.Consumer.Criteria.BitCoin;
+﻿namespace ThirdPartyBroadcast.Consumer.Criteria;
 
-public class BitCoinEventStatusCriteria : CriteriaBase
+public class Match3rdSelCriteria : CriteriaBase
 {
     public int MatchId { get; set; }
 

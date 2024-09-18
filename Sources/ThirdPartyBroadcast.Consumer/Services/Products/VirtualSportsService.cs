@@ -14,13 +14,14 @@ public class VirtualSportsServiceImp(
     IMapper mapper,
     CalculateService calculateService,
     AnnouncementService announcementService,
-    RecipientMessageService recipientMessageService)
+    RecipientMessageService recipientMessageService,
+    TicketInfoService ticketService)
     : VirtualSportsService
 {
     public async Task<Result> Settle(VirtualSoccerRequest request)
     {
         var matchInfo = await matchService.GetMatchInfo(request.MatchId);
-        var currentTickets = await matchService.GetTicketsByAction(request.MatchId, request.Action);
+        var currentTickets = await ticketService.GetTicketsByAction(request.MatchId, matchInfo.SportType, request.Action);
 
         await matchService.UpdateMatchInfoVirtualSports(request);
 
@@ -38,7 +39,7 @@ public class VirtualSportsServiceImp(
 
         await recipientMessageService.Message(request.Action, matchInfo);
 
-        await announcementService.Handle(currentTickets, matchInfo, criteria.AdminId);
+        await announcementService.SendAnnounceRefund(currentTickets, matchInfo, criteria.AdminId);
 
         return settleResult;
     }

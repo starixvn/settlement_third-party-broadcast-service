@@ -5,7 +5,10 @@ namespace ThirdPartyBroadcast.Consumer.Criteria;
 public class TicketSettleCriteria : CriteriaBase
 {
     public int? MatchId { get; set; }
+
     public string TransIDs { get; set; }
+
+    public short SportType { get; set; }
 
     [SpParam(Ignored = true)]
     public string DbServer { get; set; }

@@ -18,7 +18,8 @@ public class VirtualBetRadarServiceImp(
     CalculateService calculateService,
     MatchService matchService,
     AnnouncementService announcementService,
-    RecipientMessageService recipientMessageService)
+    RecipientMessageService recipientMessageService,
+    TicketInfoService ticketService)
     : VirtualBetRadarService
 {
     public async Task<Result> Settle(VirtualBetRadarRequest request)
@@ -32,7 +33,7 @@ public class VirtualBetRadarServiceImp(
         }
 
         var currentMatchInfo = await matchService.GetMatchInfo(request.MatchId);
-        var currentTickets = await matchService.GetTicketsByAction(request.MatchId, request.Action);
+        var currentTickets = await ticketService.GetTicketsByAction(request.MatchId, currentMatchInfo.SportType, request.Action);
 
         await matchService.UpdateMatchInfoBetRadar(request);
 
@@ -52,7 +53,7 @@ public class VirtualBetRadarServiceImp(
 
         await recipientMessageService.Message(request.Action, matchInfo);
 
-        await announcementService.Handle(currentTickets, matchInfo, request.AdminId);
+        await announcementService.SendAnnounceRefund(currentTickets, matchInfo, request.AdminId);
 
         return settleResult;
     }

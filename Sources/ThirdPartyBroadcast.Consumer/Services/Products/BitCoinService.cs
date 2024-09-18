@@ -1,5 +1,6 @@
 ﻿namespace ThirdPartyBroadcast.Consumer.Services.Products;
 
+using Criteria;
 using Criteria.BitCoin;
 using System;
 
@@ -42,9 +43,10 @@ public class BitCoinServiceImp(
 
     private async Task<string> GetEventStatus(int matchId)
     {
-        var criteria = new BitCoinEventStatusCriteria { MatchId = matchId };
+        var criteria = new Match3rdSelCriteria { MatchId = matchId };
 
-        return await repository.GetAsync<string>(criteria);
+        var match = await repository.GetAsync<MatchInfo>(criteria);
+        return match.EventStatus;
     }
 
     private async Task Notification(BitCoinRequest request, string eventStatus)

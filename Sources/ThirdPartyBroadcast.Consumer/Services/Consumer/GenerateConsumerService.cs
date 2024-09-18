@@ -27,7 +27,8 @@ public class GenerateConsumerServiceImp(
         ProductType.VirtualSports,
         ProductType.LeapGaming,
         ProductType.CockFighting,
-        ProductType.PinGoal
+        ProductType.PinGoal,
+        ProductType.VirtualSports5
     ];
 
     public async Task SettleByProduct(string productType, string data)
@@ -90,6 +91,10 @@ public class GenerateConsumerServiceImp(
 
             case ProductType.PinGoal:
                 await groupTwoService.SettlePinGoal(productType, data);
+                break;
+
+            case ProductType.VirtualSports5:
+                await groupTwoService.SettleVS5(productType, data);
                 break;
 
             default:
