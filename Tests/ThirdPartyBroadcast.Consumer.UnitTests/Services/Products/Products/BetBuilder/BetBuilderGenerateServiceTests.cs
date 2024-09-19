@@ -30,7 +30,7 @@ public class BetBuilderGenerateServiceTests
         {
             AdminId = 1,
             MatchId = 1,
-            Resources = "<Resources><ResourceItem Id=\"200\" Result=\"Won\" /><ResourceItem Id=\"201\" Result=\"Won\" /><ResourceItem Id=\"202\" Result=\"Lose\" /></Resources>"
+            Resources = "<Resources><Resource Id=\"200\" Result=\"Won\" /><Resource Id=\"201\" Result=\"Won\" /><Resource Id=\"202\" Result=\"Lose\" /></Resources>"
         };
         var reason = new List<ReasonModel>
         {
@@ -50,11 +50,11 @@ public class BetBuilderGenerateServiceTests
     [Fact]
     public void RemoveSelectionWarning_NotExistedReason_ReturnsRightSelection()
     {
-        const string resources = "<Resources><ResourceItem Id=\"200\" Result=\"Won\" /><ResourceItem Id=\"201\" Result=\"Won\" /><ResourceItem Id=\"202\" Result=\"Lose\" /></Resources>";
+        const string resources = "<Resources><Resource Id=\"200\" Result=\"Won\" /><Resource Id=\"201\" Result=\"Won\" /><Resource Id=\"202\" Result=\"Lose\" /></Resources>";
 
         var result = service.RemoveSelectionWarning(resources, new List<ReasonModel>());
 
-        const string expectedSelection = "<Resources><ResourceItem Id=\"200\" Result=\"Won\" /><ResourceItem Id=\"201\" Result=\"Won\" /><ResourceItem Id=\"202\" Result=\"Lose\" /></Resources>";
+        const string expectedSelection = "<Resources><Resource Id=\"200\" Result=\"Won\" /><Resource Id=\"201\" Result=\"Won\" /><Resource Id=\"202\" Result=\"Lose\" /></Resources>";
 
         Assert.Equal(expectedSelection, result);
     }
@@ -62,7 +62,7 @@ public class BetBuilderGenerateServiceTests
     [Fact]
     public void RemoveSelectionWarning_IsExistedReason_ReturnsRightSelection()
     {
-        const string resources = "<Resources><ResourceItem Id=\"200\" Result=\"Won\" /><ResourceItem Id=\"201\" Result=\"Won\" /><ResourceItem Id=\"202\" Result=\"Lose\" /></Resources>";
+        const string resources = "<Resources><Resource Id=\"200\" Result=\"Won\" /><Resource Id=\"201\" Result=\"Won\" /><Resource Id=\"202\" Result=\"Lose\" /></Resources>";
         var reason = new List<ReasonModel>
         {
             new()
@@ -74,7 +74,7 @@ public class BetBuilderGenerateServiceTests
 
         var result = service.RemoveSelectionWarning(resources, reason);
 
-        const string expectedSelection = "<Resources><ResourceItem Id=\"200\" Result=\"Won\" /><ResourceItem Id=\"202\" Result=\"Lose\" /></Resources>";
+        const string expectedSelection = "<Resources><Resource Id=\"200\" Result=\"Won\" /><Resource Id=\"202\" Result=\"Lose\" /></Resources>";
 
         Assert.Equal(expectedSelection, result);
     }
@@ -82,7 +82,7 @@ public class BetBuilderGenerateServiceTests
     [Fact]
     public void RemoveSelectionWarning_AllSelectionIsExistedReasonWarning_ReturnsEmpty()
     {
-        const string resources = "<Resources><ResourceItem Id=\"200\" Result=\"Won\" /><ResourceItem Id=\"201\" Result=\"Won\" /><ResourceItem Id=\"202\" Result=\"Lose\" /></Resources>";
+        const string resources = "<Resources><Resource Id=\"200\" Result=\"Won\" /><Resource Id=\"201\" Result=\"Won\" /><Resource Id=\"202\" Result=\"Lose\" /></Resources>";
         var reason = new List<ReasonModel>
         {
             new()

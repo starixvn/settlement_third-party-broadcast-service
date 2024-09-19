@@ -5,6 +5,6 @@ namespace ThirdPartyBroadcast.Consumer.Models.BetBuilder;
 [XmlRoot("Resources")]
 public class Resources
 {
-    [XmlElement("ResourceItem")]
+    [XmlElement("Resource")]
     public List<ResourceItem> ResourceItem { get; set; }
 }

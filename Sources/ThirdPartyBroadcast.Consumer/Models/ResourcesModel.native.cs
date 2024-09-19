@@ -5,6 +5,6 @@ namespace ThirdPartyBroadcast.Consumer.Models;
 [XmlRoot("Resources")]
 public class ResourcesModel
 {
-    [XmlElement("ResourceItem")]
+    [XmlElement("Resource")]
     public List<ResourceItemModel> Items { get; set; }
 }
