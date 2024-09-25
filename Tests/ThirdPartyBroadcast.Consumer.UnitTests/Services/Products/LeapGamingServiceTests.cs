@@ -63,7 +63,7 @@ public class LeapGamingServiceTests
             matchService.GetMatchInfo(Arg.Any<int>());
             ticketInfoService.GetTicketsByAction(Arg.Any<int>(), Arg.Any<short>(), Arg.Any<string>());
             matchService.UpdateMatchInfoLeapGaming(Arg.Any<LeapGamingRequest>());
-            matchService.WriteLogLeapGaming(Arg.Any<int>());
+            matchService.WriteLog(Arg.Any<int>());
             calculateService.Execute(Arg.Any<LeapGamingCriteria>());
             announcementService.SendAnnounceRefund(Arg.Any<List<TicketSettleInfo>>(), Arg.Any<MatchInfo>(), Arg.Any<int>());
         });

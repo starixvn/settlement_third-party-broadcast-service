@@ -35,7 +35,7 @@ public class LeapGamingServiceImp(
 
         await matchService.UpdateMatchInfoLeapGaming(request);
 
-        await matchService.WriteLogLeapGaming(request.MatchId);
+        await matchService.WriteLog(request.MatchId);
 
         var result = await HandleSettle(currentTickets, currentMatchInfo, request);
 

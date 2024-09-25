@@ -1,5 +1,5 @@
-﻿using Fanex.Settlement.ScaleOut.Request;
-using Settlement.Business.Core.Models;
+﻿using Settlement.Business.Core.Models;
+using ThirdPartyBroadcast.Consumer.Criteria;
 using ThirdPartyBroadcast.Consumer.Criteria.HappyFive;
 using ThirdPartyBroadcast.Consumer.Services.Products.HappyFive;
 using Result = ThirdPartyBroadcast.Consumer.Models.Result;
@@ -12,26 +12,22 @@ public class HappyFiveServiceTests
 
     private readonly SettleSitesService settleSitesService;
 
-    private readonly ScaleOutSettleThirdPartyService scaleOutSettleThirdPartyService;
-
     private readonly Settlement.Business.Services.MatchService matchService;
 
-    private readonly HappyFiveService service;
-
-    private readonly LogDirectlyService logDirectlyService;
+    private readonly HappyFiveServiceImp service;
 
     private readonly XmlConvertService xmlConvertService;
+
+    private readonly MatchService broadcastMatchService;
 
     public HappyFiveServiceTests()
     {
         repository = Substitute.For<IDynamicRepository>();
         settleSitesService = Substitute.For<SettleSitesService>();
-        scaleOutSettleThirdPartyService = Substitute.For<ScaleOutSettleThirdPartyService>();
-        logDirectlyService = Substitute.For<LogDirectlyService>();
         xmlConvertService = Substitute.For<XmlConvertService>();
         matchService = Substitute.For<Settlement.Business.Services.MatchService>();
-
-        service = new HappyFiveServiceImp(settleSitesService, repository, scaleOutSettleThirdPartyService, logDirectlyService, matchService, xmlConvertService);
+        broadcastMatchService = Substitute.For<MatchService>();
+        service = new HappyFiveServiceImp(settleSitesService, repository, broadcastMatchService, matchService, xmlConvertService);
     }
 
     [Fact]
@@ -70,11 +66,13 @@ public class HappyFiveServiceTests
 
         Received.InOrder(() =>
         {
-            scaleOutSettleThirdPartyService.UpdateMatchInfo3rd(Arg.Any<UpdateMatchInfo3RdRequest>());
-            logDirectlyService.Message(Arg.Any<int>());
-            logDirectlyService.WriteLog(Arg.Any<int>(), Arg.Any<string>());
+            broadcastMatchService.UpdateMatchInfoHappyFive(Arg.Any<HappyFiveRequest>());
+            broadcastMatchService.WriteLog(Arg.Any<int>());
+            matchService.GetResourceHappy5(Arg.Any<int>(), Arg.Any<string>());
             settleSitesService.Settle(Arg.Any<HappyFiveRequest>(), Arg.Any<List<Resources>>());
+            repository.ExecuteAsync(Arg.Any<WriteLogCriteria>());
         });
+
         await repository.DidNotReceive().ExecuteAsync(Arg.Any<UpdateBallsCriteria>());
         xmlConvertService.DidNotReceive().Serialize(Arg.Any<Resources>());
     }
@@ -101,11 +99,12 @@ public class HappyFiveServiceTests
 
         Received.InOrder(() =>
         {
-            scaleOutSettleThirdPartyService.UpdateMatchInfo3rd(Arg.Any<UpdateMatchInfo3RdRequest>());
-            logDirectlyService.Message(Arg.Any<int>());
-            logDirectlyService.WriteLog(Arg.Any<int>(), Arg.Any<string>());
+            broadcastMatchService.UpdateMatchInfoHappyFive(Arg.Any<HappyFiveRequest>());
+            broadcastMatchService.WriteLog(Arg.Any<int>());
+            matchService.GetResourceHappy5(Arg.Any<int>(), Arg.Any<string>());
             settleSitesService.Settle(Arg.Any<HappyFiveRequest>(), Arg.Any<List<Resources>>());
             repository.ExecuteAsync(Arg.Any<UpdateBallsCriteria>());
+            repository.ExecuteAsync(Arg.Any<WriteLogCriteria>());
         });
     }
 }

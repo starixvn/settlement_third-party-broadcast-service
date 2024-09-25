@@ -11,19 +11,19 @@ public class ProcessServiceTests
 {
     private readonly BusinessServices.MatchService matchService;
 
-    private readonly BusinessServices.HappyFive.BatchTicketsService batchTicketsService;
+    private readonly BusinessServices.Products.HappyFiveProcessService processService;
 
     private readonly ProcessServiceImp service;
 
     public ProcessServiceTests()
     {
         matchService = Substitute.For<BusinessServices.MatchService>();
-        batchTicketsService = Substitute.For<BusinessServices.HappyFive.BatchTicketsService>();
+        processService = Substitute.For<BusinessServices.Products.HappyFiveProcessService>();
         var configuration = Substitute.For<IConfiguration>();
         configuration.GetSection("MaxWorker").Value = "1";
         configuration.GetSection("MaxBatchSize").Value = "1";
 
-        service = new ProcessServiceImp(matchService, batchTicketsService, configuration);
+        service = new ProcessServiceImp(matchService, processService, configuration);
     }
 
     [Fact]
@@ -46,7 +46,7 @@ public class ProcessServiceTests
 
         var resources = new List<BusinessModels.Resources>();
 
-        matchService.LockMatch(request.MatchId, 1, Arg.Any<string>()).Returns(result);
+        matchService.LockMatch(request.MatchId, 1, Arg.Any<string>(), Arg.Any<int>()).Returns(result);
 
         var actual = await service.Settle(request, site, resources);
         const string expected = "Match Id = 1 - SiteDb = DB1 - Match is locked";
@@ -74,13 +74,13 @@ public class ProcessServiceTests
 
         var resources = new List<BusinessModels.Resources>();
 
-        matchService.LockMatch(request.MatchId, 1, site).Returns(result);
-        batchTicketsService.Settle(Arg.Any<BatchTicketRequest>()).Returns(result);
+        matchService.LockMatch(request.MatchId, 1, site, Arg.Any<int>()).Returns(result);
+        processService.Settle(Arg.Any<BatchTicketRequest>()).Returns(result);
 
         var actual = await service.Settle(request, site, resources);
 
-        await batchTicketsService.Received().Settle(Arg.Any<BatchTicketRequest>());
-        await matchService.Received().LockMatch(request.MatchId, 0, site);
+        await processService.Received().Settle(Arg.Any<BatchTicketRequest>());
+        await matchService.Received().LockMatch(request.MatchId, 0, site, Arg.Any<int>());
 
         Assert.True(actual.IsSuccessful);
     }
@@ -105,13 +105,13 @@ public class ProcessServiceTests
 
         var resources = new List<BusinessModels.Resources>();
 
-        matchService.LockMatch(request.MatchId, 1, site).Returns(result);
-        batchTicketsService.When(s => s.Settle(Arg.Any<BatchTicketRequest>()))
+        matchService.LockMatch(request.MatchId, 1, site, Arg.Any<int>()).Returns(result);
+        processService.When(s => s.Settle(Arg.Any<BatchTicketRequest>()))
             .Throw(new Exception("Didn't work"));
 
         var actual = await service.Settle(request, site, resources);
-        await matchService.Received().LockMatch(request.MatchId, 0, site);
-        await batchTicketsService.Received().Settle(Arg.Any<BatchTicketRequest>());
+        await matchService.Received().LockMatch(request.MatchId, 0, site, Arg.Any<int>());
+        await processService.Received().Settle(Arg.Any<BatchTicketRequest>());
 
         const string expected = "Match Id = 1 - SiteDb = DB1 - Didn't work";
 

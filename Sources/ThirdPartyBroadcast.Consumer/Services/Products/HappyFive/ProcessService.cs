@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Settlement.Business.Core.Constants;
 using Settlement.Business.Requests;
 using BusinessModels = Settlement.Business.Core.Models;
 using BusinessServices = Settlement.Business.Services;
@@ -12,14 +13,14 @@ public interface ProcessService
 
 public class ProcessServiceImp(
     BusinessServices.MatchService matchService,
-    BusinessServices.HappyFive.BatchTicketsService batchTicketsService,
+    BusinessServices.Products.HappyFiveProcessService processService,
     IConfiguration configuration) : ProcessService
 {
     public async Task<BusinessModels.Result> Settle(HappyFiveRequest request, string site, List<BusinessModels.Resources> resources)
     {
         try
         {
-            var result = await matchService.LockMatch(request.MatchId, 1, site);
+            var result = await matchService.LockMatch(request.MatchId, 1, site, LockMatchType.Match);
             if (!result.IsSuccessful)
             {
                 var errorMessage = GetErrorMessage(request.MatchId, site, result.ErrMessage);
@@ -31,14 +32,14 @@ public class ProcessServiceImp(
             }
 
             var batchTicketRequest = CreateBatchTicketRequest(request, site, resources);
-            result = await batchTicketsService.Settle(batchTicketRequest);
-            await matchService.LockMatch(request.MatchId, 0, site);
+            result = await processService.Settle(batchTicketRequest);
+            await matchService.LockMatch(request.MatchId, 0, site, LockMatchType.Match);
             return result;
         }
         catch (Exception exception)
         {
             var errorMessage = GetErrorMessage(request.MatchId, site, exception.Message);
-            await matchService.LockMatch(request.MatchId, 0, site);
+            await matchService.LockMatch(request.MatchId, 0, site, LockMatchType.Match);
 
             return new BusinessModels.Result
             {

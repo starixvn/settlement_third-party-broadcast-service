@@ -1,5 +1,7 @@
-﻿using ThirdPartyBroadcast.Consumer.Criteria;
+﻿using Settlement.Business.Core.Models;
+using ThirdPartyBroadcast.Consumer.Criteria;
 using ThirdPartyBroadcast.Consumer.Criteria.VirtualBetRadar;
+using ThirdPartyBroadcast.Consumer.Criteria.VirtualRacing;
 using ThirdPartyBroadcast.Consumer.Criteria.VirtualSportFive;
 using ThirdPartyBroadcast.Consumer.Criteria.VirtualSports;
 
@@ -11,11 +13,17 @@ public interface MatchService
 {
     Task<MatchInfo> GetMatchInfo(int matchId);
 
+    MatchInfo GetRacingInfo(RaceInfo raceInfo);
+
     Task UpdateMatchInfoVirtualSports(VirtualSoccerRequest request);
 
     Task UpdateMatchInfoLeapGaming(LeapGamingRequest request);
 
     Task UpdateMatchInfoBetRadar(VirtualBetRadarRequest request);
+
+    Task UpdateMatchInfoHappyFive(HappyFiveRequest request);
+
+    Task UpdateMatchInfoRacing(VirtualRacingRequest request);
 
     Task<Tickets> GetAllTicketsVirtualSports(int matchId);
 
@@ -23,7 +31,7 @@ public interface MatchService
 
     Task WriteLogVirtualSports(VirtualSoccerRequest request);
 
-    Task WriteLogLeapGaming(int matchId);
+    Task WriteLog(int matchId);
 
     Task WriteLogBetRadar(VirtualBetRadarRequest request);
 
@@ -46,6 +54,21 @@ public class MatchServiceImp(
         var match = await repository.GetAsync<MatchInfo>(criteria);
         match.RefDataService = refDataService;
         return match;
+    }
+
+    public MatchInfo GetRacingInfo(RaceInfo raceInfo)
+    {
+        return new MatchInfo
+        {
+            MatchId = raceInfo.EventId,
+            IsMatch3rd = true,
+            EventStatus = raceInfo.EventStatus,
+            LeagueId = raceInfo.LeagueId,
+            SportType = raceInfo.SportType,
+            KickOffTime = raceInfo.EventTime,
+            VendorId = raceInfo.VendorMatchId,
+            RefDataService = refDataService
+        };
     }
 
     public async Task UpdateMatchInfoVirtualSports(VirtualSoccerRequest request)
@@ -83,6 +106,32 @@ public class MatchServiceImp(
         await repository.ExecuteAsync(criteria);
     }
 
+    public async Task UpdateMatchInfoHappyFive(HappyFiveRequest request)
+    {
+        var updateRequest = new UpdateMatchInfo3RdRequest
+        {
+            Command = EventStatus.Completed,
+            MatchId = request.MatchId,
+            Action = request.Action,
+            Creator = request.AdminId
+        };
+        await scaleOutSettleThirdPartyService.UpdateMatchInfo3rd(updateRequest);
+    }
+
+    public async Task UpdateMatchInfoRacing(VirtualRacingRequest request)
+    {
+        var betStatus = string.Equals(request.Action, ActionName.Refund, StringComparison.OrdinalIgnoreCase)
+            ? ActionName.Refund
+            : string.Empty;
+
+        var updateResult = new UpdateResultCriteria
+        {
+            EventId = request.EventId,
+            BetStatus = betStatus
+        };
+        await repository.ExecuteAsync(updateResult);
+    }
+
     public async Task<Tickets> GetAllTicketsVirtualSports(int matchId)
     {
         var criteria = new VirtualSportsTicketCriteria { MatchId = matchId };
@@ -95,7 +144,7 @@ public class MatchServiceImp(
         await logDirectlyService.WriteLog(request.MatchId, message);
     }
 
-    public async Task WriteLogLeapGaming(int matchId)
+    public async Task WriteLog(int matchId)
     {
         var message = logDirectlyService.Message(matchId);
         await logDirectlyService.WriteLog(matchId, message);

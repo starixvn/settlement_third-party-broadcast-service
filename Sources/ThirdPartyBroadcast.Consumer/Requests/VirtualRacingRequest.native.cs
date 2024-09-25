@@ -4,9 +4,11 @@ public class VirtualRacingRequest
 {
     public int EventId { get; set; }
 
+    public byte Racers { get; set; }
+
     public int AdminId { get; set; }
 
-    public int SportType { get; set; }
+    public short SportType { get; set; }
 
     public string Action { get; set; } = ActionName.Calculate;
 
@@ -15,6 +17,6 @@ public class VirtualRacingRequest
     public string Ip { get; set; } = string.Empty;
 
     private static int ActionIdValue(string actionName) => string.Equals(actionName, ActionName.Calculate, StringComparison.OrdinalIgnoreCase)
-        ? Constants.ActionId.HappyFiveCalc
-        : Constants.ActionId.HappyFiveRefund;
+        ? Constants.ActionId.VirtualBetRadarCalc
+        : Constants.ActionId.VirtualBetRadarRefund;
 }

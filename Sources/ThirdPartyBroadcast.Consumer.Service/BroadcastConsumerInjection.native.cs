@@ -55,7 +55,7 @@ public static class BroadcastConsumerInjection
         service.AddSingleton<GroupThreeService, GroupThreeServiceImp>();
         service.AddSingleton<VirtualRacingService, VirtualRacingServiceImp>();
         service.AddSingleton<OutrightService, OutrightServiceImp>();
-        service.AddSingleton<HappyFiveService, HappyFiveServiceImp>();
+
         service.AddSingleton<NumberGameService, NumberGameServiceImp>();
         service.AddSingleton<BetBuilderService, BetBuilderServiceImp>();
         service.AddSingleton<BetBuilderGenerateService, BetBuilderGenerateServiceImp>();
@@ -94,24 +94,40 @@ public static class BroadcastConsumerInjection
         MailClientHandler.StartAsync();
     }
 
+    private static void InitializeBusinessByProductsServices(this IServiceCollection services)
+    {
+        services.AddSingleton<HappyFiveService, HappyFiveServiceImp>();
+        services.AddSingleton<Services.Products.HappyFive.ProcessService, Services.Products.HappyFive.ProcessServiceImp>();
+        services.AddSingleton<Services.Products.HappyFive.SettleSitesService, Services.Products.HappyFive.SettleSitesServiceImp>();
+
+        services.AddSingleton<VirtualRacingService, VirtualRacingServiceImp>();
+        services.AddSingleton<RacersValidator, RacersValidatorImp>();
+        services.AddSingleton<Services.Products.VirtualRacing.ProcessService, Services.Products.VirtualRacing.ProcessServiceImp>();
+        services.AddSingleton<Services.Products.VirtualRacing.SettleSitesService, Services.Products.VirtualRacing.SettleSitesServiceImp>();
+    }
+
     public static void InitializeBusinessServices(this IServiceCollection services)
     {
-        services.AddSingleton<Settlement.Business.Services.HappyFive.BatchTicketsService, Settlement.Business.Services.HappyFive.BatchTicketsServiceImp>();
-        services.AddSingleton<Settlement.Business.Services.HappyFive.CommandService, Settlement.Business.Services.HappyFive.CommandServiceImp>();
-        services.AddSingleton<Settlement.Business.Services.HappyFive.ProcessService, Settlement.Business.Services.HappyFive.ProcessServiceImp>();
+        services.AddSingleton<Settlement.Business.Services.Products.HappyFiveProcessService, Settlement.Business.Services.Products.HappyFiveProcessServiceImp>();
+        services.AddSingleton<Settlement.Business.Services.Products.RacingProcessService, Settlement.Business.Services.Products.RacingProcessServiceImp>();
         services.AddSingleton<Settlement.Business.Services.MatchService, Settlement.Business.Services.MatchServiceImp>();
+
+        services.AddSingleton<SettleService, SettleServiceImp>();
+        services.AddSingleton<TicketValueService, TicketValueServiceImp>();
+        services.AddSingleton<GenerateSettleTicketService, GenerateSettleTicketServiceImp>();
+
         services.AddSingleton<CustomerService, CustomerServiceImp>();
         services.AddSingleton<ModdsService, ModdsServiceImp>();
         services.AddSingleton<ModdsValueService, ModdsValueServiceImp>();
         services.AddSingleton<PrepareTicketService, PrepareTicketServiceImp>();
-        services.AddSingleton<InsertHistoryData, InsertHistoryDataImp>();
+        services.AddSingleton<HistoryData, HistoryDataImp>();
         services.AddSingleton<TicketService, TicketServiceImp>();
         services.AddSingleton<WinLimitService, WinLimitServiceImp>();
         services.AddSingleton<WinLostService, WinLostServiceImp>();
         services.AddSingleton<WinLostByModdsService, WinLostByModdsServiceImp>();
         services.AddSingleton<CommissionService, CommissionServiceImp>();
-        services.AddSingleton<ProcessService, ProcessServiceImp>();
-        services.AddSingleton<SettleSitesService, SettleSitesServiceImp>();
+
+        services.InitializeBusinessByProductsServices();
 
         services.AddControllers().AddJsonOptions(options =>
         {

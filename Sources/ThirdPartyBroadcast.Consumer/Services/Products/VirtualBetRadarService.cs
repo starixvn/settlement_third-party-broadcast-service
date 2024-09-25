@@ -39,9 +39,7 @@ public class VirtualBetRadarServiceImp(
 
         await matchService.WriteLogBetRadar(request);
 
-        var result = await HandleSettle(currentTickets, currentMatchInfo, request);
-
-        return result;
+        return await HandleSettle(currentTickets, currentMatchInfo, request);
     }
 
     private async Task<Result> HandleSettle(List<TicketSettleInfo> currentTickets, MatchInfo matchInfo, VirtualBetRadarRequest request)

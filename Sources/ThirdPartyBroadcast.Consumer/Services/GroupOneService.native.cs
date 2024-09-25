@@ -2,8 +2,8 @@
 
 using Products;
 using Products.BetBuilder;
+using Products.HappyFive;
 using Requests;
-using ThirdPartyBroadcast.Consumer.Services.Products.HappyFive;
 
 public interface GroupOneService
 {
