@@ -51,9 +51,9 @@
 
 	<ItemGroup>
 		<PackageReference Include="AutoMapper" Version="13.0.1" />
-		<PackageReference Include="Fanex.Caching" Version="2.2.4" />
-		<PackageReference Include="Fanex.Caching.Redis" Version="2.2.4" />
-		<PackageReference Include="Fanex.Data.SqlServer" Version="4.2.5.3" />
+		<PackageReference Include="Fanex.Caching" Version="2.2.5" />
+		<PackageReference Include="Fanex.Caching.Redis" Version="2.2.5" />
+		<PackageReference Include="Fanex.Data.SqlServer" Version="4.2.6" />
 		<!-- ReSharper disable once VulnerablePackage -->
 		<PackageReference Include="Fanex.Logging.Extensions.AspNetCore" Version="1.0.1" />
 		<PackageReference Include="Fanex.Logging.Extensions.Database" Version="1.0.8" />
