@@ -1,13 +1,18 @@
-﻿namespace ThirdPartyBroadcast.Consumer.Services.Products.VirtualRacing;
+﻿using Settlement.Business.Core.Models;
+using Result = ThirdPartyBroadcast.Consumer.Models.Result;
+
+namespace ThirdPartyBroadcast.Consumer.Services.Products.VirtualRacing;
 
 public interface RacersValidator
 {
-    Result ValidateBeforeSettle(VirtualRacingRequest request, IEnumerable<Settlement.Business.Core.Models.Outright> outright);
+    Result ValidateBeforeSettle(VirtualRacingRequest request, IEnumerable<Outright> outright);
+
+    IEnumerable<Outright> PlacingResult(int sportType, byte racers, IEnumerable<Outright> outright);
 }
 
 public class RacersValidatorImp : RacersValidator
 {
-    public Result ValidateBeforeSettle(VirtualRacingRequest request, IEnumerable<Settlement.Business.Core.Models.Outright> outright)
+    public Result ValidateBeforeSettle(VirtualRacingRequest request, IEnumerable<Outright> outright)
     {
         if (string.Equals(request.Action, ActionName.Refund, StringComparison.OrdinalIgnoreCase))
         {
@@ -26,7 +31,7 @@ public class RacersValidatorImp : RacersValidator
         return ValidateRacers(request.Racers, outright.ToList());
     }
 
-    private static Result ValidateRacers(byte racers, List<Settlement.Business.Core.Models.Outright> outright)
+    private static Result ValidateRacers(byte racers, IReadOnlyCollection<Outright> outright)
     {
         var resultPlacing = outright.Where(x => x.Placing == 0);
         if (racers == resultPlacing.Count())
@@ -44,7 +49,7 @@ public class RacersValidatorImp : RacersValidator
             return new Result
             {
                 ErrorCode = 3,
-                ErrorMessage = $"Inconsistent number of Racers from match setting({racers}) and results({numberRacers}) received."
+                ErrorMessage = $"Inconsistent between Racers Setting({racers}) & racer results({numberRacers}) received."
             };
         }
 
@@ -57,5 +62,14 @@ public class RacersValidatorImp : RacersValidator
         var horsesRaces = sportType == SportType.VirtualHorses && racers is 8 or 10 or 12 or 14;
 
         return dogRaces || horsesRaces;
+    }
+
+    public IEnumerable<Outright> PlacingResult(int sportType, byte racers, IEnumerable<Outright> outright)
+    {
+        int[] validPlacings = sportType == SportType.VirtualDogs && racers == 6
+            ? [1, 2]
+            : [1, 2, 3];
+
+        return outright.Where(x => validPlacings.Contains(x.Placing));
     }
 }

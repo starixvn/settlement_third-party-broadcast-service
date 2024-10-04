@@ -72,7 +72,8 @@ public class VirtualRacingServiceImp(
         }
         else
         {
-            var racers = string.Join(", ", outright.Select(ball => $"{ball.Orid} ({ball.Placing})").ToArray());
+            var placingResult = racersValidator.PlacingResult(request.SportType, request.Racers, outright);
+            var racers = string.Join("; ", placingResult.Select(ball => $"{ball.Placing}. {ball.RacerId}").ToArray());
             remark = $"IsAuto: 1<br/>Results: {racers}<br/>Duration: {duration} ms {message}";
         }
 
