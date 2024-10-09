@@ -67,6 +67,7 @@ public class MatchServiceImp(
             SportType = raceInfo.SportType,
             KickOffTime = raceInfo.EventTime,
             VendorId = raceInfo.VendorMatchId,
+            Distance = raceInfo.Distance,
             RefDataService = refDataService
         };
     }

@@ -44,7 +44,7 @@
   <ItemGroup>
     <PackageReference Include="Fanex.Caching" Version="2.2.5" />
     <PackageReference Include="Fanex.RemotingRef" Version="1.5.4" />
-    <PackageReference Include="Fanex.Settlement.Business" Version="1.0.23-alpha06" />
+    <PackageReference Include="Fanex.Settlement.Business" Version="1.0.23-alpha07" />
     <PackageReference Include="Fanex.Settlement.Converter" Version="1.0.0.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.10.0" />
     <PackageReference Include="NSubstitute" Version="5.1.0" />

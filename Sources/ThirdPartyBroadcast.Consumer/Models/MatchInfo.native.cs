@@ -30,6 +30,8 @@ public class MatchInfo
 
     public string VendorId { get; set; }
 
+    public string Distance { get; set; }
+
     public string TeamName => GetTeamName(ContentLanguage.English);
 
     public string TeamNameCh => GetTeamName(ContentLanguage.Cantonese);
@@ -60,7 +62,7 @@ public class MatchInfo
     {
         if (SportType is Constants.SportType.VirtualDogs or Constants.SportType.VirtualHorses)
         {
-            return $"{RefDataService.GetEvent(languageCode)} {VendorId}";
+            return $"{RefDataService.GetEvent(languageCode)} {VendorId} - ID {Distance}";
         }
 
         var home = RefDataService.GetTeamName(HomeId, languageCode, IsMatch3rd);
