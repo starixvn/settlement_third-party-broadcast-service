@@ -28,6 +28,7 @@ using StackExchange.Redis;
 using ThirdPartyBroadcast.Consumer.Services;
 using ThirdPartyBroadcast.Consumer.Services.Consumer;
 using ThirdPartyBroadcast.Consumer.Services.Products;
+using ThirdPartyBroadcast.Consumer.Services.Products.BetBuilder;
 using ThirdPartyBroadcast.Consumer.Services.Products.HappyFive;
 using ThirdPartyBroadcast.Consumer.Services.Products.VirtualSportFive;
 
@@ -54,6 +55,7 @@ public static class BroadcastConsumerInjection
         service.AddSingleton<HappyFiveService, HappyFiveServiceImp>();
         service.AddSingleton<NumberGameService, NumberGameServiceImp>();
         service.AddSingleton<BetBuilderService, BetBuilderServiceImp>();
+        service.AddSingleton<BetBuilderGenerateService, BetBuilderGenerateServiceImp>();
         service.AddSingleton<FastMarketService, FastMarketServiceImp>();
         service.AddSingleton<VirtualBetRadarService, VirtualBetRadarServiceImp>();
         service.AddSingleton<VirtualSportsService, VirtualSportsServiceImp>();

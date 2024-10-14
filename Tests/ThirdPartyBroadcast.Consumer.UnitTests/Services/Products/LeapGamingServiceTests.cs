@@ -9,7 +9,7 @@ public class LeapGamingServiceTests
 
     private readonly MatchService matchService;
 
-    private readonly LeapGamingService service;
+    private readonly LeapGamingServiceImp service;
 
     private readonly AnnouncementService announcementService;
 
@@ -55,7 +55,7 @@ public class LeapGamingServiceTests
         {
             Action = "CAL",
             MatchId = 1,
-            SelectedResources = "<Resources> <Resource Id=\"00\" Home=\"1\" Away=\"1\"/> <Resource Id=\"01\" Home=\"1\" Away=\"1\"/></Resources>"
+            SelectedResources = "<Resources> <ResourceItem Id=\"00\" Home=\"1\" Away=\"1\"/> <ResourceItem Id=\"01\" Home=\"1\" Away=\"1\"/></Resources>"
         });
 
         Received.InOrder(() =>

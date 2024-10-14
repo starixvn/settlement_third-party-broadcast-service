@@ -5,6 +5,6 @@ namespace ThirdPartyBroadcast.Consumer.Models.HappyFive;
 [XmlRoot("Resources")]
 public class Resources
 {
-    [XmlElement("Resource")]
+    [XmlElement("ResourceItem")]
     public List<ResourcesItem> ResourceItems { get; set; }
 }
