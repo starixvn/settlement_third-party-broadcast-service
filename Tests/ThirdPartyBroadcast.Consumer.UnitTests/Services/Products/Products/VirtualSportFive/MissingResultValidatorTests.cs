@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ThirdPartyBroadcast.Consumer.Services.Products.VirtualSportFive;
+﻿using ThirdPartyBroadcast.Consumer.Services.Products.VirtualSportFive;
 
 namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products.Products.VirtualSportFive;
 
@@ -23,7 +18,6 @@ public class MissingResultValidatorTests
     public void Validate_HtResultExistsFtResultNullWithFtScore_ShouldReturnError()
     {
         var htResult = new ResourceItemModel { Home = "1", Away = "1" };
-        ResourceItemModel ftResult = null;
         var matchInfo = new MatchInfo
         {
             HtHomeScore = null,
@@ -32,7 +26,7 @@ public class MissingResultValidatorTests
             FinalAwayScore = 2
         };
 
-        var result = _validator.Validate(htResult, ftResult, matchInfo);
+        var result = _validator.Validate(htResult, null, matchInfo);
 
         Assert.False(result.IsSuccessful);
         Assert.Equal(4, result.ErrorCode);
@@ -42,7 +36,6 @@ public class MissingResultValidatorTests
     [Fact]
     public void Validate_HtResultNullFtResultExistsWithHtScore_ShouldReturnError()
     {
-        ResourceItemModel htResult = null;
         var ftResult = new ResourceItemModel { Home = "2", Away = "2" };
         var matchInfo = new MatchInfo
         {
@@ -50,7 +43,7 @@ public class MissingResultValidatorTests
             HtAwayScore = null
         };
 
-        var result = _validator.Validate(htResult, ftResult, matchInfo);
+        var result = _validator.Validate(null, ftResult, matchInfo);
 
         Assert.False(result.IsSuccessful);
         Assert.Equal(5, result.ErrorCode);

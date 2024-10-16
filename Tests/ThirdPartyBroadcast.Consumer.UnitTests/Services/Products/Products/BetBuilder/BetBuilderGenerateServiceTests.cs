@@ -161,7 +161,7 @@ public class BetBuilderGenerateServiceTests
         await service.WriteLog(request);
 
         const string expectedMessage = "NAP: Calculate CAL for matchId: 1 IsAuto:True; BetType:38";
-        await logDirectlyService.Received().WriteLog(Arg.Any<int>(), Arg.Is<string>(expectedMessage));
+        await logDirectlyService.Received().WriteLog(Arg.Any<int>(), Arg.Is(expectedMessage));
     }
 
     [Fact]
@@ -179,6 +179,6 @@ public class BetBuilderGenerateServiceTests
         await service.WriteLog(request);
 
         const string expectedMessage = "NAP: Calculate CAL for matchId: 1 Resource;<br/> IsAuto:True; BetType:38";
-        await logDirectlyService.Received().WriteLog(Arg.Any<int>(), Arg.Is<string>(expectedMessage));
+        await logDirectlyService.Received().WriteLog(Arg.Any<int>(), Arg.Is(expectedMessage));
     }
 }

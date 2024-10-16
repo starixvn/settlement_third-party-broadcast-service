@@ -2,6 +2,7 @@
 
 using Products;
 using Products.BetBuilder;
+using Products.HappyFive;
 using Requests;
 
 public interface GroupOneService

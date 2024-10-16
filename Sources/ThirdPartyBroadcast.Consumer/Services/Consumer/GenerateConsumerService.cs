@@ -1,4 +1,6 @@
-﻿namespace ThirdPartyBroadcast.Consumer.Services.Consumer;
+﻿using Fanex.Logging;
+
+namespace ThirdPartyBroadcast.Consumer.Services.Consumer;
 
 public interface GenerateConsumerService
 {
@@ -8,6 +10,7 @@ public interface GenerateConsumerService
 public class GenerateConsumerServiceImp(
     GroupOneService groupOneService,
     GroupTwoService groupTwoService,
+    GroupThreeService groupThreeService,
     LogDirectlyService logDirectlyService)
     : GenerateConsumerService
 {
@@ -37,10 +40,13 @@ public class GenerateConsumerServiceImp(
         {
             await SettleProductByGroupOne(productType, data);
         }
-
-        if (ProductsGroupTwo.Contains(productType))
+        else if (ProductsGroupTwo.Contains(productType))
         {
             await SettleProductByGroupTwo(productType, data);
+        }
+        else
+        {
+            await SettleProductByGroupThree(productType, data);
         }
 
         await logDirectlyService.WriteInfo(productType, data);
@@ -94,12 +100,24 @@ public class GenerateConsumerServiceImp(
                 break;
 
             case ProductType.VirtualSports5:
-                await groupTwoService.SettleVS5(productType, data);
+                await groupTwoService.SettleVirtualSportFive(productType, data);
                 break;
 
             default:
                 await groupTwoService.SettleVirtualSoccer(productType, data);
                 break;
+        }
+    }
+
+    private async Task SettleProductByGroupThree(string productType, string data)
+    {
+        if (productType == ProductType.VirtualRacing)
+        {
+            await groupThreeService.SettleVirtualRacing(productType, data);
+        }
+        else
+        {
+            await LogService.ErrorAsync($"ThirdPartyBroadcast Service: ProductType {productType} hasn't implemented yet.");
         }
     }
 }

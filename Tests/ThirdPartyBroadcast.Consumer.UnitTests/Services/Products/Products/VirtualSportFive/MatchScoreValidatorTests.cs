@@ -94,7 +94,7 @@ public class MatchScoreValidatorTests
     [Fact]
     public void Validate_NoResults_ShouldCallNextValidator()
     {
-        var result = validator.Validate(null, null, new MatchInfo());
+        validator.Validate(null, null, new MatchInfo());
 
         nextValidator.Received(1).Validate(null, null, Arg.Any<MatchInfo>());
     }

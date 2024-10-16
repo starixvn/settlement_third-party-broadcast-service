@@ -32,6 +32,6 @@ public class CorrectScoreValidator : IValidator
             };
         }
 
-        return _next?.Validate(htResult, ftResult, matchInfo) ?? new Result(); // success
+        return _next?.Validate(htResult, ftResult, matchInfo) ?? new Result();
     }
 }

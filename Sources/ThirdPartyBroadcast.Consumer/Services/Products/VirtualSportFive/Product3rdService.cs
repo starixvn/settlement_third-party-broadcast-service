@@ -1,5 +1,4 @@
-﻿using System;
-using ThirdPartyBroadcast.Consumer.Criteria;
+﻿using ThirdPartyBroadcast.Consumer.Criteria;
 using ThirdPartyBroadcast.Consumer.Criteria.VirtualSportFive;
 using ThirdPartyBroadcast.Consumer.Extensions;
 
@@ -10,34 +9,16 @@ public interface Product3rdService
     Task<Result> Settle(VirtualSportFiveRequest request);
 }
 
-public class Product3rdServiceImp : Product3rdService
+public class Product3rdServiceImp(
+    IDynamicRepository repository,
+    LogDirectlyService logDirectlyService,
+    CalculateService calculateService,
+    TicketInfoService ticketService,
+    AnnouncementService announcementService,
+    RefDataService refDataService,
+    RecipientMessageService recipientMessageService)
+    : Product3rdService
 {
-    private readonly IDynamicRepository repository;
-    private readonly LogDirectlyService logDirectlyService;
-    private readonly CalculateService calculateService;
-    private readonly TicketInfoService ticketService;
-    private readonly AnnouncementService announcementService;
-    private readonly RecipientMessageService recipientMessageService;
-    private readonly RefDataService refDataService;
-
-    public Product3rdServiceImp(
-        IDynamicRepository repository,
-        LogDirectlyService logDirectlyService,
-        CalculateService calculateService,
-        TicketInfoService ticketService,
-        AnnouncementService announcementService,
-        RefDataService refDataService,
-        RecipientMessageService recipientMessageService)
-    {
-        this.repository = repository;
-        this.logDirectlyService = logDirectlyService;
-        this.calculateService = calculateService;
-        this.ticketService = ticketService;
-        this.announcementService = announcementService;
-        this.refDataService = refDataService;
-        this.recipientMessageService = recipientMessageService;
-    }
-
     public async Task<Result> Settle(VirtualSportFiveRequest request)
     {
         var currentMatchInfo = await GetMatchInfo(request.MatchId);
@@ -150,8 +131,8 @@ public class Product3rdServiceImp : Product3rdService
             return Result.ErrorRequest();
         }
 
-        var htResult = resources.Find(resources => resources.Id == ResourceId.HalfTimeResourceId);
-        var ftResult = resources.Find(resources => resources.Id == ResourceId.FullTimeResourceId);
+        var htResult = resources.Find(r => r.Id == ResourceId.HalfTimeResourceId);
+        var ftResult = resources.Find(r => r.Id == ResourceId.FullTimeResourceId);
         request.Resources = resources;
 
         if (string.Equals(request.Action, ActionName.Refund, StringComparison.OrdinalIgnoreCase) && !ValidRefundResources(htResult, ftResult))

@@ -55,7 +55,7 @@ public class LeapGamingServiceTests
         {
             Action = "CAL",
             MatchId = 1,
-            SelectedResources = "<Resources> <ResourceItem Id=\"00\" Home=\"1\" Away=\"1\"/> <ResourceItem Id=\"01\" Home=\"1\" Away=\"1\"/></Resources>"
+            SelectedResources = "<Resources><Resource Id=\"00\" Home=\"1\" Away=\"1\"/><Resource Id=\"01\" Home=\"1\" Away=\"1\"/></Resources>"
         });
 
         Received.InOrder(() =>
@@ -63,7 +63,7 @@ public class LeapGamingServiceTests
             matchService.GetMatchInfo(Arg.Any<int>());
             ticketInfoService.GetTicketsByAction(Arg.Any<int>(), Arg.Any<short>(), Arg.Any<string>());
             matchService.UpdateMatchInfoLeapGaming(Arg.Any<LeapGamingRequest>());
-            matchService.WriteLogLeapGaming(Arg.Any<int>());
+            matchService.WriteLog(Arg.Any<int>());
             calculateService.Execute(Arg.Any<LeapGamingCriteria>());
             announcementService.SendAnnounceRefund(Arg.Any<List<TicketSettleInfo>>(), Arg.Any<MatchInfo>(), Arg.Any<int>());
         });

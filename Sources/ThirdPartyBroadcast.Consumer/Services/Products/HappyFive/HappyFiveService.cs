@@ -1,14 +1,12 @@
 ﻿using Settlement.Business.Core.Models;
 using System.Diagnostics;
 
-namespace ThirdPartyBroadcast.Consumer.Services.Products;
+namespace ThirdPartyBroadcast.Consumer.Services.Products.HappyFive;
 
 using Criteria;
 using Criteria.HappyFive;
 using Fanex.Settlement.Converter.Services;
-using HappyFive;
 using Models;
-using Settlement.Business.Services;
 using ThirdPartyBroadcast.Consumer.Models.HappyFive;
 
 public interface HappyFiveService
@@ -19,9 +17,8 @@ public interface HappyFiveService
 public class HappyFiveServiceImp(
     SettleSitesService settleSitesService,
     IDynamicRepository repository,
-    ScaleOutSettleThirdPartyService scaleOutSettleThirdPartyService,
-    LogDirectlyService logDirectlyService,
-    MatchService matchService,
+    MatchService broadcastMatchService,
+    Settlement.Business.Services.MatchService matchService,
     XmlConvertService xmlConvertService)
     : HappyFiveService
 {
@@ -29,19 +26,21 @@ public class HappyFiveServiceImp(
     {
         var result = await ValidateBeforeSettle(request);
 
-        if (result.IsSuccessful)
+        if (!result.IsSuccessful)
         {
-            await UpdateMatchInfo(request);
-            await WriteLog(request.MatchId);
-
-            var (resources, balls) = await matchService.GetResourceHappy5(request.MatchId, request.Action);
-            var watch = Stopwatch.StartNew();
-            result = await settleSitesService.Settle(request, resources.ToList());
-            watch.Stop();
-
-            await UpdateBalls(result, request, balls);
-            await WriteLogSettled(request, result, balls, watch.ElapsedMilliseconds);
+            return result;
         }
+
+        await broadcastMatchService.UpdateMatchInfoHappyFive(request);
+        await broadcastMatchService.WriteLog(request.MatchId);
+
+        var (resources, balls) = await matchService.GetResourceHappy5(request.MatchId, request.Action);
+        var watch = Stopwatch.StartNew();
+        result = await settleSitesService.Settle(request, resources.ToList());
+        watch.Stop();
+
+        await UpdateBalls(result, request, balls);
+        await WriteLogSettled(request, result, balls, watch.ElapsedMilliseconds);
 
         return result;
     }
@@ -66,12 +65,6 @@ public class HappyFiveServiceImp(
         };
     }
 
-    private async Task WriteLog(int matchId)
-    {
-        var logMessage = logDirectlyService.Message(matchId);
-        await logDirectlyService.WriteLog(matchId, logMessage);
-    }
-
     private static bool IsCalculate(string actionName) => string.Equals(actionName, ActionName.Calculate, StringComparison.OrdinalIgnoreCase);
 
     private async Task<Result> ValidateBeforeSettle(HappyFiveRequest request)
@@ -88,18 +81,6 @@ public class HappyFiveServiceImp(
         }
 
         return new Result();
-    }
-
-    private async Task UpdateMatchInfo(HappyFiveRequest request)
-    {
-        var updateRequest = new UpdateMatchInfo3RdRequest
-        {
-            Command = EventStatus.Completed,
-            MatchId = request.MatchId,
-            Action = request.Action,
-            Creator = request.AdminId
-        };
-        await scaleOutSettleThirdPartyService.UpdateMatchInfo3rd(updateRequest);
     }
 
     private async Task UpdateBalls(Result result, HappyFiveRequest request, IEnumerable<Ball> balls)

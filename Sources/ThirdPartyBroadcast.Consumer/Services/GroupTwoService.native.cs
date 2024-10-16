@@ -13,7 +13,7 @@ public interface GroupTwoService
 
     Task SettlePinGoal(string productType, string data);
 
-    Task SettleVS5(string productType, string data);
+    Task SettleVirtualSportFive(string productType, string data);
 }
 
 public class GroupTwoServiceImp(
@@ -53,7 +53,7 @@ public class GroupTwoServiceImp(
         await logDirectlyService.HandleLog(result, productType, data);
     }
 
-    public async Task SettleVS5(string productType, string data)
+    public async Task SettleVirtualSportFive(string productType, string data)
     {
         var request = JsonConvert.DeserializeObject<VirtualSportFiveRequest>(data);
         var result = await product3rdService.Settle(request);
