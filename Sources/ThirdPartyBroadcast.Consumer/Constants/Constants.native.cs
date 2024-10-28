@@ -26,6 +26,12 @@ public static class EventStatus
 
 public static class ResourceId
 {
+    public const string Quarter1 = "Q1";
+    public const string Quarter2 = "Q2";
+    public const string Quarter3 = "Q3";
+    public const string Quarter4 = "Q4";
+    public const string OverTime = "OT";
+
     public const string FullTimeResourceId = "00";
 
     public const string HalfTimeResourceId = "01";
@@ -75,7 +81,12 @@ public static class ActionId
     public const int NgRefundFt = 119;
 
     public const int VirtualSportFiveCal = 81053;
+
     public const int VirtualSportFiveRefund = 81054;
+
+    public const int VirtualBetbyCal = 81055;
+
+    public const int VirtualBetbyRefund = 81056;
 }
 
 public static class ActionName
@@ -119,6 +130,10 @@ public static class SportType
     public const int VirtualDogs = 177;
 
     public const int VirtualHorses = 198;
+
+    public const int VirtualBetbyBasketball = 134;
+
+    public const int HappyFive = 164;
 }
 
 public static class ErrorCode

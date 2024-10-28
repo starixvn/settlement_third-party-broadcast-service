@@ -21,7 +21,6 @@ public class GenerateConsumerServiceImp(
         ProductType.NumberGame,
         ProductType.BetBuilder,
         ProductType.FastMarket,
-        ProductType.HappyFive
     ];
 
     private static List<string> ProductsGroupTwo =>
@@ -77,7 +76,7 @@ public class GenerateConsumerServiceImp(
                 break;
 
             default:
-                await groupOneService.SettleHappyFive(productType, data);
+                await LogService.ErrorAsync($"ThirdPartyBroadcast Service: ProductType {productType} hasn't implemented yet.");
                 break;
         }
     }
@@ -103,21 +102,35 @@ public class GenerateConsumerServiceImp(
                 await groupTwoService.SettleVirtualSportFive(productType, data);
                 break;
 
-            default:
+            case ProductType.VirtualSports:
                 await groupTwoService.SettleVirtualSoccer(productType, data);
+                break;
+
+            default:
+                await LogService.ErrorAsync($"ThirdPartyBroadcast Service: ProductType {productType} hasn't implemented yet.");
                 break;
         }
     }
 
     private async Task SettleProductByGroupThree(string productType, string data)
     {
-        if (productType == ProductType.VirtualRacing)
+        switch (productType)
         {
-            await groupThreeService.SettleVirtualRacing(productType, data);
-        }
-        else
-        {
-            await LogService.ErrorAsync($"ThirdPartyBroadcast Service: ProductType {productType} hasn't implemented yet.");
+            case ProductType.VirtualRacing:
+                await groupThreeService.SettleVirtualRacing(productType, data);
+                break;
+
+            case ProductType.HappyFive:
+                await groupThreeService.SettleHappyFive(productType, data);
+                break;
+
+            case ProductType.VirtualSports6:
+                await groupThreeService.SettleVirtualBetby(productType, data);
+                break;
+
+            default:
+                await LogService.ErrorAsync($"ThirdPartyBroadcast Service: ProductType {productType} hasn't implemented yet.");
+                break;
         }
     }
 }

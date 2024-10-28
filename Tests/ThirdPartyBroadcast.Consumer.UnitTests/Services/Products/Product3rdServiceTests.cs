@@ -19,8 +19,8 @@ public class Product3rdServiceTests
         calculateService = Substitute.For<CalculateService>();
         ticketService = Substitute.For<TicketInfoService>();
         var announcementService = Substitute.For<AnnouncementService>();
-        var refDataService = Substitute.For<RefDataService>();
         var recipientMessageService = Substitute.For<RecipientMessageService>();
+        var matchService = Substitute.For<MatchService>();
 
         service = new Product3rdServiceImp(
             repository,
@@ -28,7 +28,7 @@ public class Product3rdServiceTests
             calculateService,
             ticketService,
             announcementService,
-            refDataService,
+            matchService,
             recipientMessageService
         );
     }

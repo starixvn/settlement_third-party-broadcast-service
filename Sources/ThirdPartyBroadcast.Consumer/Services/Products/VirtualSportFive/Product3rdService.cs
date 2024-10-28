@@ -15,13 +15,13 @@ public class Product3rdServiceImp(
     CalculateService calculateService,
     TicketInfoService ticketService,
     AnnouncementService announcementService,
-    RefDataService refDataService,
+    MatchService matchService,
     RecipientMessageService recipientMessageService)
     : Product3rdService
 {
     public async Task<Result> Settle(VirtualSportFiveRequest request)
     {
-        var currentMatchInfo = await GetMatchInfo(request.MatchId);
+        var currentMatchInfo = await matchService.GetMatch3rdInfo(request.MatchId);
 
         var validationResult = ValidateResources(request, currentMatchInfo);
         if (!validationResult.IsSuccessful)
@@ -42,7 +42,7 @@ public class Product3rdServiceImp(
 
     private async Task WriteLogPreSettle(VirtualSportFiveRequest request)
     {
-        var message = $@"NAP: VS5 - Calculate {request.Action} for matchId: {request.MatchId} Resource Results: {request.SelectedResources}";
+        var message = $"NAP: VS5 - Calculate {request.Action} for matchId: {request.MatchId} Resource Results: {request.SelectedResources}";
 
         await logDirectlyService.WriteLog(request.MatchId, message);
     }
@@ -65,21 +65,11 @@ public class Product3rdServiceImp(
 
         await WriteLogSettled(request, settleResult);
 
-        await recipientMessageService.SendMessageResettle(request, matchInfo);
+        await recipientMessageService.SendMessageResettle(request.Action, matchInfo, request.Resources);
 
         await announcementService.SendAnnounceRefund(currentTickets, matchInfo, request.AdminId);
 
         return settleResult;
-    }
-
-    private async Task<MatchInfo> GetMatchInfo(int matchId)
-    {
-        var criteria = new Match3rdSelCriteria { MatchId = matchId };
-        var match = await repository.GetAsync<MatchInfo>(criteria);
-        match.IsMatch3rd = true;
-        match.RefDataService = refDataService;
-
-        return match;
     }
 
     private async Task UpdateMatchInfo(VirtualSportFiveRequest request, MatchInfo matchInfo)
