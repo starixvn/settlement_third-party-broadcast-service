@@ -2,6 +2,7 @@
 using Fanex.Logging.Extensions;
 using Microsoft.Extensions.Options;
 using ThirdPartyBroadcast.Consumer.Criteria;
+using ThirdPartyBroadcast.Consumer.Extensions;
 
 namespace ThirdPartyBroadcast.Consumer.Services;
 
@@ -29,8 +30,7 @@ public class LogDirectlyServiceImp(
     {
         if (appSettingsKey.Value.EnableWriteLog)
         {
-            var productName = GetProductName(productType);
-            await LogService.InfoAsync($"ThirdPartyBroadcast Service - Product Name:{productName} - Match info: {data}");
+            await LogService.InfoAsync($"ThirdPartyBroadcast Service - Product Name:{productType.ToProductName()} - Match info: {data}");
         }
     }
 
@@ -58,7 +58,7 @@ public class LogDirectlyServiceImp(
         {
             var info = new Dictionary<string, object>
             {
-                { "Product Name", GetProductName(productType) },
+                { "Product Name", productType.ToProductName() },
                 { "Match Info", data },
                 { "Details", result.ErrorMessage },
             };
@@ -69,18 +69,5 @@ public class LogDirectlyServiceImp(
 
             await LogService.ErrorAsync(logMessage);
         }
-    }
-
-    private static string GetProductName(string code)
-    {
-        foreach (var field in typeof(ProductType).GetFields())
-        {
-            if (string.Equals((string)field.GetValue(null), code))
-            {
-                return field.Name;
-            }
-        }
-
-        return string.Empty;
     }
 }

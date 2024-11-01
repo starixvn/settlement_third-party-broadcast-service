@@ -11,4 +11,12 @@ public static class StringExtensions
 
         return (ResourcesModel)serializer.Deserialize(sr);
     }
+
+    public static string ToProductName(this string code)
+    {
+        var field = typeof(ProductType).GetFields().ToList()
+            .Find(f => string.Equals((string)f.GetValue(null), code));
+
+        return field?.Name ?? string.Empty;
+    }
 }

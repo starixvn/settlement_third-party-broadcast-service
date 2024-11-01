@@ -18,7 +18,7 @@ public class VirtualBetbyGenerateServiceImp(
     IDynamicRepository repository,
     GenerateMatchInfoService generateMatchInfoService,
     LogDirectlyService logDirectlyService,
-    FullTimeScoreValidator fullTimeScoreValidator) : VirtualBetbyGenerateService
+    ScoreValidatorService scoreValidatorService) : VirtualBetbyGenerateService
 {
     public Result ValidateResources(VirtualBetbyRequest request, List<ResourceItemModel> currentResources)
     {
@@ -33,7 +33,7 @@ public class VirtualBetbyGenerateServiceImp(
 
         if (string.Equals(request.Action, ActionName.Calculate, StringComparison.OrdinalIgnoreCase) && isExistedFullTime)
         {
-            return fullTimeScoreValidator.Validate(request, currentResources);
+            return scoreValidatorService.Validate(request, currentResources);
         }
 
         return new Result();

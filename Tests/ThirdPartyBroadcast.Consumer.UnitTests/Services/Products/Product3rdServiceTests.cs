@@ -10,6 +10,7 @@ public class Product3rdServiceTests
     private readonly LogDirectlyService logDirectlyService;
     private readonly CalculateService calculateService;
     private readonly TicketInfoService ticketService;
+    private readonly MatchService matchService;
     private readonly Product3rdServiceImp service;
 
     public Product3rdServiceTests()
@@ -20,7 +21,7 @@ public class Product3rdServiceTests
         ticketService = Substitute.For<TicketInfoService>();
         var announcementService = Substitute.For<AnnouncementService>();
         var recipientMessageService = Substitute.For<RecipientMessageService>();
-        var matchService = Substitute.For<MatchService>();
+        matchService = Substitute.For<MatchService>();
 
         service = new Product3rdServiceImp(
             repository,
@@ -67,9 +68,9 @@ public class Product3rdServiceTests
 
         var matchInfo = new MatchInfo { MatchId = 1, SportType = 147, EventDate = DateTime.Now };
 
-        repository.GetAsync<MatchInfo>(Arg.Any<Match3rdSelCriteria>()).Returns(matchInfo);
+        matchService.GetMatch3rdInfo(Arg.Any<int>()).Returns(matchInfo);
 
-        ticketService.GetTicketsByAction(matchInfo.MatchId, matchInfo.SportType, request.Action).Returns(new List<TicketSettleInfo>());
+        ticketService.GetTicketsByAction(matchInfo.MatchId, matchInfo.SportType, request.Action).Returns([]);
         calculateService.Execute(Arg.Any<VirtualSportFiveSettleCriteria>()).Returns(new Result());
 
         // Act
@@ -94,7 +95,7 @@ public class Product3rdServiceTests
 
         var matchInfo = new MatchInfo { MatchId = 1, SportType = 148, EventDate = DateTime.Now };
 
-        repository.GetAsync<MatchInfo>(Arg.Any<Match3rdSelCriteria>()).Returns(matchInfo);
+        matchService.GetMatch3rdInfo(Arg.Any<int>()).Returns(matchInfo);
 
         ticketService.GetTicketsByAction(matchInfo.MatchId, matchInfo.SportType, request.Action).Returns([]);
         calculateService.Execute(Arg.Any<VirtualSportFiveSettleCriteria>()).Returns(new Result());
@@ -121,7 +122,7 @@ public class Product3rdServiceTests
 
         var matchInfo = new MatchInfo { MatchId = 1, SportType = 148, EventDate = DateTime.Now };
 
-        repository.GetAsync<MatchInfo>(Arg.Any<Match3rdSelCriteria>()).Returns(matchInfo);
+        matchService.GetMatch3rdInfo(Arg.Any<int>()).Returns(matchInfo);
 
         ticketService.GetTicketsByAction(matchInfo.MatchId, matchInfo.SportType, request.Action).Returns([]);
         calculateService.Execute(Arg.Any<VirtualSportFiveSettleCriteria>()).Returns(new Result());

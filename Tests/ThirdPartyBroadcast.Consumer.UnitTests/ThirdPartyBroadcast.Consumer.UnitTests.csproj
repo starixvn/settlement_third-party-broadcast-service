@@ -63,4 +63,8 @@
     <ProjectReference Include="..\..\Sources\ThirdPartyBroadcast.Consumer\ThirdPartyBroadcast.Consumer.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Services\Products\Products\VirtualRacing\" />
+  </ItemGroup>
+
 </Project>

@@ -69,7 +69,8 @@ public static class BroadcastConsumerInjection
         service.AddSingleton<VirtualBetbyService, VirtualBetbyServiceImp>();
         service.AddSingleton<VirtualBetbyGenerateService, VirtualBetbyGenerateServiceImp>();
         service.AddSingleton<GenerateMatchInfoService, GenerateMatchInfoServiceImp>();
-        service.AddSingleton<FullTimeScoreValidator, FullTimeScoreValidatorImp>();
+        service.AddSingleton<FullTimeScoreService, FullTimeScoreServiceImp>();
+        service.AddSingleton<ScoreValidatorService, ScoreValidatorServiceImp>();
         service.AddSingleton<ResultDetailService, ResultDetailServiceImp>();
 
         service.AddTransient<AnnouncementService, AnnouncementServiceImp>();
