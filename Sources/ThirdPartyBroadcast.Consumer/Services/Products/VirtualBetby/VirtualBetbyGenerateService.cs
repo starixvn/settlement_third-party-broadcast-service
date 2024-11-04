@@ -5,13 +5,15 @@ namespace ThirdPartyBroadcast.Consumer.Services.Products.VirtualBetby;
 
 public interface VirtualBetbyGenerateService
 {
-    Result ValidateResources(VirtualBetbyRequest request, List<ResourceItemModel> currentResources);
+    Result ValidateResources(VirtualBetbyRequest request, IEnumerable<ResourceItemModel> currentResources);
 
-    Task UpdateMatchInfo(VirtualBetbyRequest request, MatchInfo matchInfo);
+    Task UpdateMatch3rdInfo(VirtualBetbyRequest request, MatchInfo matchInfo);
+
+    Task UpdateResultDetail3rdInfo(VirtualBetbyRequest request);
 
     Task WriteLogPreSettle(VirtualBetbyRequest request);
 
-    Task WriteLogSettled(VirtualBetbyRequest request, Result result);
+    Task WriteLogSettled(VirtualBetbyRequest request, Result result, long duration);
 }
 
 public class VirtualBetbyGenerateServiceImp(
@@ -20,14 +22,14 @@ public class VirtualBetbyGenerateServiceImp(
     LogDirectlyService logDirectlyService,
     ScoreValidatorService scoreValidatorService) : VirtualBetbyGenerateService
 {
-    public Result ValidateResources(VirtualBetbyRequest request, List<ResourceItemModel> currentResources)
+    public Result ValidateResources(VirtualBetbyRequest request, IEnumerable<ResourceItemModel> currentResources)
     {
         if (!TryGetSources(request, out var resources))
         {
             return Result.ErrorRequest();
         }
 
-        request.Resources = resources;
+        request.Resources = GetMarkedList(resources, currentResources);
 
         var isExistedFullTime = resources.Exists(r => r.Id == ResourceId.FullTimeResourceId);
 
@@ -37,6 +39,18 @@ public class VirtualBetbyGenerateServiceImp(
         }
 
         return new Result();
+    }
+
+    private static List<ResourceItemModel> GetMarkedList(IEnumerable<ResourceItemModel> newResources, IEnumerable<ResourceItemModel> currentResources)
+    {
+        var resources = new HashSet<string>(currentResources.Select(p => p.Id));
+        return newResources.Select(item => new ResourceItemModel
+        {
+            Id = item.Id,
+            Home = item.Home,
+            Away = item.Away,
+            IsDuplicated = resources.Contains(item.Id)
+        }).ToList();
     }
 
     private static bool TryGetSources(VirtualBetbyRequest request, out List<ResourceItemModel> resources)
@@ -60,18 +74,22 @@ public class VirtualBetbyGenerateServiceImp(
         }
     }
 
-    public async Task UpdateMatchInfo(VirtualBetbyRequest request, MatchInfo matchInfo)
+    public async Task UpdateResultDetail3rdInfo(VirtualBetbyRequest request)
     {
         var criteriaResultDetail = new ResultDetail3rdUpdateCriteria
         {
             MatchId = request.MatchId,
             SportType = request.SportType,
             AdminId = request.AdminId,
+            Action = request.Action,
             IsAuto = true,
             SelectedResources = request.SelectedResources
         };
         await repository.ExecuteAsync(criteriaResultDetail);
+    }
 
+    public async Task UpdateMatch3rdInfo(VirtualBetbyRequest request, MatchInfo matchInfo)
+    {
         var isExisted = request.Resources.Exists(r => r.Id is ResourceId.FullTimeResourceId or ResourceId.HalfTimeResourceId);
 
         if (isExisted)
@@ -95,26 +113,19 @@ public class VirtualBetbyGenerateServiceImp(
         await logDirectlyService.WriteLog(request.MatchId, message);
     }
 
-    public async Task WriteLogSettled(VirtualBetbyRequest request, Result result)
+    public async Task WriteLogSettled(VirtualBetbyRequest request, Result result, long duration)
     {
-        var criteria = CreateWriteLogCriteria(request, result);
+        var message = result.ErrorCode > 0 ? $"<br/>{result.ErrorMessage}" : string.Empty;
+
+        var scores = scoreValidatorService.GetInconsistentMessage(request.Resources);
+
+        var remark = $"IsAuto: 1<br/>Results: {scores};<br/>Duration: {duration} ms{message}";
+
+        var criteria = new WriteLogCriteria(request.MatchId, request.ActionId, request.AdminId, request.Ip)
+        {
+            Remark = remark
+        };
 
         await repository.ExecuteAsync(criteria);
-    }
-
-    private static WriteLogCriteria CreateWriteLogCriteria(VirtualBetbyRequest request, Result result)
-    {
-        var resources = request.Resources;
-        var message = $"VS6 - Calculate({request.Action}) {(result.ErrorCode > 0 ? result.ErrorMessage : string.Empty)}";
-        var criteria = new WriteLogCriteria(request.MatchId, message, request.ActionId, request.AdminId, request.Ip);
-        var htResult = resources.Find(i => i.Id == ResourceId.HalfTimeResourceId) ?? new ResourceItemModel();
-        var ftResult = resources.Find(i => i.Id == ResourceId.FullTimeResourceId) ?? new ResourceItemModel();
-
-        criteria.FinalAwayScore = int.TryParse(ftResult.Away, out var away) ? away : 0;
-        criteria.FinalHomeScore = int.TryParse(ftResult.Home, out var home) ? home : 0;
-        criteria.HtAwayScore = int.TryParse(htResult.Away, out var htAway) ? htAway : 0;
-        criteria.HtHomeScore = int.TryParse(htResult.Home, out var htHome) ? htHome : 0;
-
-        return criteria;
     }
 }

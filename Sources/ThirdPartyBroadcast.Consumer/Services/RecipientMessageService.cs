@@ -1,4 +1,6 @@
-﻿namespace ThirdPartyBroadcast.Consumer.Services;
+﻿using System.Collections;
+
+namespace ThirdPartyBroadcast.Consumer.Services;
 
 using Microsoft.Extensions.Options;
 using Models;
@@ -50,9 +52,10 @@ public class RecipientMessageServiceImp(
 
     public async Task Message3rd(string action, MatchInfo matchInfo, List<ResourceItemModel> resources)
     {
-        if (matchService.IsReSettleOrRefund(action, matchInfo.EventStatus))
+        var resettleResource = resources.Where(r => r.IsDuplicated).ToList();
+        if (IsReSettleByResourceOrRefund(action, resettleResource))
         {
-            var resourceIds = string.Join(',', resources.Select(r => r.Id));
+            var resourceIds = string.Join(',', resettleResource.Select(r => r.Id));
 
             var (creditTickets, depositTickets) = await matchService.GetTickets3rd(matchInfo.MatchId, matchInfo.SportType, resourceIds);
 
@@ -61,6 +64,9 @@ public class RecipientMessageServiceImp(
             await DepositGroup(actionName, matchInfo, depositTickets.ToList());
         }
     }
+
+    private static bool IsReSettleByResourceOrRefund(string action, ICollection resources) =>
+        resources.Count > 0 || string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase);
 
     public async Task Message(string action, MatchInfo matchInfo)
     {

@@ -1,4 +1,6 @@
-﻿using ThirdPartyBroadcast.Consumer.Criteria.VirtualBetby;
+﻿using System.Diagnostics;
+using ThirdPartyBroadcast.Consumer.Criteria.VirtualBetby;
+using ThirdPartyBroadcast.Consumer.Extensions;
 
 namespace ThirdPartyBroadcast.Consumer.Services.Products.VirtualBetby;
 
@@ -30,7 +32,11 @@ public class VirtualBetbyServiceImp(
 
         var currentTickets = await ticketService.GetTicketsByAction(request.MatchId, request.SportType, request.Action, request.Resources);
 
-        await virtualBetbyGenerateService.UpdateMatchInfo(request, matchInfo);
+        request.SelectedResources = request.Resources.ToStrings();
+
+        await virtualBetbyGenerateService.UpdateResultDetail3rdInfo(request);
+
+        await virtualBetbyGenerateService.UpdateMatch3rdInfo(request, matchInfo);
 
         await virtualBetbyGenerateService.WriteLogPreSettle(request);
 
@@ -50,9 +56,11 @@ public class VirtualBetbyServiceImp(
             AdminId = request.AdminId,
             Ip = request.Ip,
         };
+        var watch = Stopwatch.StartNew();
         var settleResult = await calculateService.Execute(criteria);
+        watch.Stop();
 
-        await virtualBetbyGenerateService.WriteLogSettled(request, settleResult);
+        await virtualBetbyGenerateService.WriteLogSettled(request, settleResult, watch.ElapsedMilliseconds);
 
         await recipientMessageService.Message3rd(request.Action, matchInfo, request.Resources);
 

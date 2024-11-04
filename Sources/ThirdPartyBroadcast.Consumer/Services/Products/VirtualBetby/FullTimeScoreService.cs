@@ -5,8 +5,6 @@ public interface FullTimeScoreService
     bool CheckForAllQuarters(IReadOnlyCollection<ResourceItemModel> resources);
 
     bool IsFullTimeEqualToQuarterScores(IEnumerable<ResourceItemModel> quarters, ResourceItemModel fullTime);
-
-    string GetInconsistentMessage(List<ResourceItemModel> finalResources);
 }
 
 public class FullTimeScoreServiceImp : FullTimeScoreService
@@ -31,20 +29,5 @@ public class FullTimeScoreServiceImp : FullTimeScoreService
         var totalAway = scores.Sum(score => Convert.ToInt32(score.Away));
 
         return (totalHome, totalAway);
-    }
-
-    public string GetInconsistentMessage(List<ResourceItemModel> finalResources)
-    {
-        var listResults = new List<string>
-        {
-            ResourceId.FullTimeResourceId, ResourceId.Quarter1, ResourceId.Quarter2, ResourceId.Quarter3, ResourceId.Quarter4, ResourceId .OverTime
-        };
-        var messages = (from item in listResults
-                        let score = finalResources.Find(r => r.Id == item)
-                        where score != null
-                        let title = item.Equals(ResourceId.FullTimeResourceId) ? "FT" : item
-                        select $"{title}({score.Home} - {score.Away})").ToList();
-
-        return string.Join(", ", messages);
     }
 }
