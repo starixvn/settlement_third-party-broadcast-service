@@ -4,22 +4,14 @@ namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products.Products.Virt
 
 public class VirtualBetbyGenerateServiceTests
 {
-    private readonly IDynamicRepository repository;
-
-    private readonly GenerateMatchInfoService generateMatchInfoService;
-
-    private readonly LogDirectlyService logDirectlyService;
-
-    private readonly ScoreService scoreService;
-
     private readonly VirtualBetbyGenerateServiceImp service;
 
     public VirtualBetbyGenerateServiceTests()
     {
-        repository = Substitute.For<IDynamicRepository>();
-        generateMatchInfoService = Substitute.For<GenerateMatchInfoService>();
-        logDirectlyService = Substitute.For<LogDirectlyService>();
-        scoreService = Substitute.For<ScoreService>();
+        var repository = Substitute.For<IDynamicRepository>();
+        var generateMatchInfoService = Substitute.For<GenerateMatchInfoService>();
+        var logDirectlyService = Substitute.For<LogDirectlyService>();
+        var scoreService = Substitute.For<ScoreService>();
         service = new VirtualBetbyGenerateServiceImp(repository, generateMatchInfoService, logDirectlyService, scoreService);
     }
 
@@ -47,6 +39,31 @@ public class VirtualBetbyGenerateServiceTests
     }
 
     [Fact]
+    public void ValidateResources_CorrectScoreValidatorAndActionIsCalc_ReturnErrorMessage()
+    {
+        var request = new VirtualBetbyRequest
+        {
+            MatchId = 1,
+            Action = "Cal",
+            SelectedResources = "<Resources><Resource Id=\"OT\" Home=\"12\" Away=\"\" /><Resource Id=\"Q1\" Home=\"\" Away=\"\" /></Resources>"
+        };
+
+        var resources = new List<ResourceItemModel>
+        {
+            new()
+            {
+                Id = "Q1",
+                Home = "4",
+                Away = "5"
+            }
+        };
+
+        var result = service.ValidateResources(request, resources);
+
+        Assert.Equal("Invalid Q1 score.", result.ErrorMessage);
+    }
+
+    [Fact]
     public void ValidateResources_HalfTimeScoreValidatorAndActionIsCalcNotEnoughQuarter_ReturnErrorMessage()
     {
         var request = new VirtualBetbyRequest
@@ -63,6 +80,37 @@ public class VirtualBetbyGenerateServiceTests
                 Id = "Q1",
                 Home = "4",
                 Away = "5"
+            }
+        };
+
+        var result = service.ValidateResources(request, resources);
+
+        Assert.Equal("Cannot Calculate HT due to related quarters have not been calculated or selected to calculate.", result.ErrorMessage);
+    }
+
+    [Fact]
+    public void ValidateResources_HalfTimeScoreValidatorAndActionIsCalcAnyQuarterRefundNotEnoughQuarter_ReturnErrorMessage()
+    {
+        var request = new VirtualBetbyRequest
+        {
+            MatchId = 1,
+            Action = "Cal",
+            SelectedResources = "<Resources><Resource Id=\"01\" Home=\"1\" Away=\"3\" /></Resources>"
+        };
+
+        var resources = new List<ResourceItemModel>
+        {
+            new()
+            {
+                Id = "Q1",
+                Home = "1",
+                Away = "3"
+            },
+            new()
+            {
+                Id = "Q2",
+                Home = "",
+                Away = ""
             }
         };
 
@@ -93,7 +141,7 @@ public class VirtualBetbyGenerateServiceTests
 
         var result = service.ValidateResources(request, resources);
 
-        Assert.Equal("Inconsistent value Q1(1 - 1), Q2(2 - 2).", result.ErrorMessage);
+        Assert.Equal("Inconsistent value Q1(1 - 1), Q2(2 - 2), HT(4 - 3).", result.ErrorMessage);
     }
 
     [Fact]
@@ -183,6 +231,51 @@ public class VirtualBetbyGenerateServiceTests
                 Id = "01",
                 Home = "4",
                 Away = "5"
+            }
+        };
+
+        var result = service.ValidateResources(request, resources);
+
+        const string expectedMessage = "Cannot Calculate FT due to all quarters have not been calculated or selected to calculate.";
+
+        Assert.Equal(expectedMessage, result.ErrorMessage);
+    }
+
+    [Fact]
+    public void ValidateResources_FullTimeScoreValidatorAndActionIsCalcAnyQuarterRefundNotEnoughQuarter_ReturnErrorMessage()
+    {
+        var request = new VirtualBetbyRequest
+        {
+            MatchId = 1,
+            Action = "Cal",
+            SelectedResources = "<Resources><Resource Id=\"Q1\" Home=\"2\" Away=\"2\" /><Resource Id=\"00\" Home=\"4\" Away=\"5\" /></Resources>"
+        };
+
+        var resources = new List<ResourceItemModel>
+        {
+            new()
+            {
+                Id = "Q1",
+                Home = "1",
+                Away = "1"
+            },
+            new()
+            {
+                Id = "Q2",
+                Home = "1",
+                Away = "0"
+            },
+            new()
+            {
+                Id = "Q3",
+                Home = "",
+                Away = ""
+            },
+            new()
+            {
+                Id = "Q4",
+                Home = "1",
+                Away = "3"
             }
         };
 
@@ -290,7 +383,7 @@ public class VirtualBetbyGenerateServiceTests
 
         var result = service.ValidateResources(request, resources);
 
-        const string expectedMessage = "Inconsistent value Q1(2 - 2), Q2(1 - 0), Q3(1 - 2), Q4(1 - 2), FT(3 - 5).";
+        const string expectedMessage = "Inconsistent value Q1(2 - 2), Q2(1 - 0), HT(4 - 5), Q3(1 - 2), Q4(1 - 2), FT(3 - 5).";
 
         Assert.Equal(expectedMessage, result.ErrorMessage);
     }

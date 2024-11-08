@@ -107,7 +107,7 @@ public static class BroadcastConsumerInjection
         services.AddSingleton<Services.Products.HappyFive.SettleSitesService, Services.Products.HappyFive.SettleSitesServiceImp>();
 
         services.AddSingleton<VirtualRacingService, VirtualRacingServiceImp>();
-        services.AddSingleton<RacersValidator, RacersValidatorImp>();
+        services.AddSingleton<RacersValidatorService, RacersValidatorServiceImp>();
         services.AddSingleton<Services.Products.VirtualRacing.ProcessService, Services.Products.VirtualRacing.ProcessServiceImp>();
         services.AddSingleton<Services.Products.VirtualRacing.SettleSitesService, Services.Products.VirtualRacing.SettleSitesServiceImp>();
     }

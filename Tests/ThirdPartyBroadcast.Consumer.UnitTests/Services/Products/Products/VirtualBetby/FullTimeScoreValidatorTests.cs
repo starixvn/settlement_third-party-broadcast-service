@@ -23,7 +23,7 @@ public class FullTimeScoreValidatorTests
     {
         var request = new VirtualBetbyRequest
         {
-            SelectedResources = "<Resources><Resource Id=\"Q1\" Home=\"12\" Away=\"2\" /><Resource Id=\"Q4\" Home=\"4\" Away=\"3\" /></Resources>"
+            SelectedResources = "<Resources><Resource Id=\"00\" Home=\"12\" Away=\"2\" /><Resource Id=\"Q1\" Home=\"12\" Away=\"2\" /><Resource Id=\"Q4\" Home=\"4\" Away=\"3\" /></Resources>"
         };
         request.Resources = request.SelectedResources.ToResources().Items;
 
@@ -67,7 +67,7 @@ public class FullTimeScoreValidatorTests
     {
         var request = new VirtualBetbyRequest
         {
-            SelectedResources = "<Resources><Resource Id=\"Q1\" Home=\"12\" Away=\"2\" /><Resource Id=\"Q4\" Home=\"4\" Away=\"3\" /></Resources>"
+            SelectedResources = "<Resources><Resource Id=\"00\" Home=\"12\" Away=\"2\" /> Id=\"Q1\" Home=\"12\" Away=\"2\" /><Resource Id=\"Q4\" Home=\"4\" Away=\"3\" /></Resources>"
         };
         request.Resources = request.SelectedResources.ToResources().Items;
 
@@ -114,7 +114,7 @@ public class FullTimeScoreValidatorTests
     {
         var request = new VirtualBetbyRequest
         {
-            SelectedResources = "<Resources></Resources>"
+            SelectedResources = "<Resources><Resource Id=\"00\" Home=\"15\" Away=\"15\" /></Resources>"
         };
         request.Resources = request.SelectedResources.ToResources().Items;
 

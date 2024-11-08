@@ -7,7 +7,7 @@ public class CalculateServiceTests
 {
     private readonly IDynamicRepository repository;
 
-    private readonly CalculateService service;
+    private readonly CalculateServiceImp service;
 
     public CalculateServiceTests()
     {

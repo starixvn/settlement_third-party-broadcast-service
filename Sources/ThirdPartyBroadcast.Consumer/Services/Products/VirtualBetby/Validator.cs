@@ -12,11 +12,12 @@ public static class ValidatorFactory
     public static IValidator CreateValidatorChain()
     {
         var scoreService = new ScoreServiceImp();
+        var correctScoreValidator = new CorrectScoreValidator(scoreService);
         var halfTimeScoreValidator = new HalfTimeScoreValidator(scoreService);
         var fullTimeScoreValidator = new FullTimeScoreValidator(scoreService);
+        correctScoreValidator.SetNext(halfTimeScoreValidator)
+                            .SetNext(fullTimeScoreValidator);
 
-        halfTimeScoreValidator.SetNext(fullTimeScoreValidator);
-
-        return halfTimeScoreValidator;
+        return correctScoreValidator;
     }
 }

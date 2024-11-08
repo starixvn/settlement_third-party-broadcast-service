@@ -10,6 +10,8 @@ public interface ScoreService
 
     string GetScoreMessage(List<ResourceItemModel> finalResources, string action);
 
+    string ResourceName(string resourceId);
+
     List<ResourceItemModel> GetMarkedList(IEnumerable<ResourceItemModel> newResources, IEnumerable<ResourceItemModel> currentResources);
 }
 
@@ -17,16 +19,20 @@ public class ScoreServiceImp : ScoreService
 {
     public bool CheckForAllQuarters(IReadOnlyCollection<ResourceItemModel> resources)
     {
-        return resources.Any(item => item.Id.Equals(ResourceId.Quarter1))
-               && resources.Any(item => item.Id.Equals(ResourceId.Quarter2))
-               && resources.Any(item => item.Id.Equals(ResourceId.Quarter3))
-               && resources.Any(item => item.Id.Equals(ResourceId.Quarter4));
+        return CheckForHalftimeQuarters(resources)
+               && resources.Any(item => item.Id.Equals(ResourceId.Quarter3) && IsCorrectedScore(item))
+               && resources.Any(item => item.Id.Equals(ResourceId.Quarter4) && IsCorrectedScore(item));
     }
 
     public bool CheckForHalftimeQuarters(IReadOnlyCollection<ResourceItemModel> resources)
     {
-        return resources.Any(item => item.Id.Equals(ResourceId.Quarter1))
-               && resources.Any(item => item.Id.Equals(ResourceId.Quarter2));
+        return resources.Any(item => item.Id.Equals(ResourceId.Quarter1) && IsCorrectedScore(item))
+               && resources.Any(item => item.Id.Equals(ResourceId.Quarter2) && IsCorrectedScore(item));
+    }
+
+    private static bool IsCorrectedScore(ResourceItemModel resource)
+    {
+        return !string.IsNullOrWhiteSpace(resource.Home) && !string.IsNullOrWhiteSpace(resource.Away);
     }
 
     public bool IsScoreEqualToQuarterScores(IEnumerable<ResourceItemModel> quarters, ResourceItemModel score)
@@ -64,7 +70,7 @@ public class ScoreServiceImp : ScoreService
         return string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase) ? string.Empty : $"({score.Home} - {score.Away})";
     }
 
-    private static string ResourceName(string resourceId)
+    public string ResourceName(string resourceId)
     {
         if (resourceId.Equals(ResourceId.HalfTimeResourceId))
         {

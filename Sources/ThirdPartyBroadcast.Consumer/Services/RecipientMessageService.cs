@@ -1,6 +1,4 @@
-﻿using System.Collections;
-
-namespace ThirdPartyBroadcast.Consumer.Services;
+﻿namespace ThirdPartyBroadcast.Consumer.Services;
 
 using Microsoft.Extensions.Options;
 using Models;
@@ -20,6 +18,10 @@ public class RecipientMessageServiceImp(
     SendMailService sendMailService,
     IOptions<AppSettingsKey> appSettingsKey) : RecipientMessageService
 {
+    private MailInfo MailVirtualSport => appSettingsKey.Value.MailFunction.VirtualSport;
+
+    private MailInfo MailVirtualBetby => appSettingsKey.Value.MailFunction.VirtualBetby;
+
     public async Task SendMessageResettle(string action, MatchInfo matchInfo, List<ResourceItemModel> resources)
     {
         var htResult = resources.Find(resource => resource.Id == ResourceId.HalfTimeResourceId);
@@ -36,8 +38,8 @@ public class RecipientMessageServiceImp(
         var (creditTickets, depositTickets) = await matchService.GetTickets3rd(matchInfo.MatchId, matchInfo.SportType, resourceIds);
 
         var actionName = GetActionName(action);
-        await CreditGroup(actionName, matchInfo, creditTickets.ToList());
-        await DepositGroup(actionName, matchInfo, depositTickets.ToList());
+        await CreditGroup(actionName, matchInfo, creditTickets.ToList(), MailVirtualSport.CreditMailId);
+        await DepositGroup(actionName, matchInfo, depositTickets.ToList(), MailVirtualSport.DepositMailId);
     }
 
     private static bool IsHtResettle(string action, ResourceItemModel htResult, MatchInfo matchInfo)
@@ -52,21 +54,32 @@ public class RecipientMessageServiceImp(
 
     public async Task Message3rd(string action, MatchInfo matchInfo, List<ResourceItemModel> resources)
     {
-        var resettleResource = resources.Where(r => r.IsDuplicated).ToList();
-        if (IsReSettleByResourceOrRefund(action, resettleResource))
+        if (IsReSettleByResourceOrRefund(action, resources))
         {
-            var resourceIds = string.Join(',', resettleResource.Select(r => r.Id));
+            var resourceIds = GetResourcesIds(action, resources);
 
             var (creditTickets, depositTickets) = await matchService.GetTickets3rd(matchInfo.MatchId, matchInfo.SportType, resourceIds);
 
             var actionName = GetActionName(action);
-            await CreditGroup(actionName, matchInfo, creditTickets.ToList());
-            await DepositGroup(actionName, matchInfo, depositTickets.ToList());
+            await CreditGroup(actionName, matchInfo, creditTickets.ToList(), MailVirtualBetby.CreditMailId);
+            await DepositGroup(actionName, matchInfo, depositTickets.ToList(), MailVirtualBetby.DepositMailId);
         }
     }
 
-    private static bool IsReSettleByResourceOrRefund(string action, ICollection resources) =>
-        resources.Count > 0 || string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase);
+    private static string GetResourcesIds(string action, IEnumerable<ResourceItemModel> resources)
+    {
+        var resettleResource = string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase)
+            ? resources
+            : resources.Where(r => r.IsDuplicated).ToList();
+
+        return string.Join(',', resettleResource.Select(r => r.Id));
+    }
+
+    private static bool IsReSettleByResourceOrRefund(string action, IEnumerable<ResourceItemModel> resources)
+    {
+        var resettleResource = resources.Where(r => r.IsDuplicated).ToList();
+        return resettleResource.Count > 0 || string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase);
+    }
 
     public async Task Message(string action, MatchInfo matchInfo)
     {
@@ -75,8 +88,9 @@ public class RecipientMessageServiceImp(
             var (creditTickets, depositTickets) = await matchService.GetAllTicketsVirtualSports(matchInfo.MatchId);
 
             var actionName = GetActionName(action);
-            await CreditGroup(actionName, matchInfo, creditTickets.ToList());
-            await DepositGroup(actionName, matchInfo, depositTickets.ToList());
+
+            await CreditGroup(actionName, matchInfo, creditTickets.ToList(), MailVirtualSport.CreditMailId);
+            await DepositGroup(actionName, matchInfo, depositTickets.ToList(), MailVirtualSport.DepositMailId);
         }
     }
 
@@ -84,14 +98,13 @@ public class RecipientMessageServiceImp(
         ? ActionName.Refund
         : ActionName.ReSettle;
 
-    private async Task CreditGroup(string actionName, MatchInfo matchInfo, IReadOnlyCollection<TicketInfo> ticketsInfo)
+    private async Task CreditGroup(string actionName, MatchInfo matchInfo, IReadOnlyCollection<TicketInfo> ticketsInfo, int mailId)
     {
         if (ticketsInfo.Count < 1)
         {
             return;
         }
 
-        var mailId = appSettingsKey.Value.MailFunction.VirtualSport.CreditMailId;
         var mailModel = new NotificationModel
         {
             MatchInfo = matchInfo,
@@ -105,7 +118,7 @@ public class RecipientMessageServiceImp(
         await sendMailService.SendMailByFunctionId(mailModel);
     }
 
-    private async Task DepositGroup(string actionName, MatchInfo matchInfo, IReadOnlyCollection<TicketInfo> ticketsInfo)
+    private async Task DepositGroup(string actionName, MatchInfo matchInfo, IReadOnlyCollection<TicketInfo> ticketsInfo, int mailId)
     {
         if (ticketsInfo.Count < 1)
         {
@@ -113,7 +126,6 @@ public class RecipientMessageServiceImp(
         }
 
         var tickets = matchService.SplitTicketByLicensee(ticketsInfo).ToList();
-        var mailId = appSettingsKey.Value.MailFunction.VirtualSport.DepositMailId;
 
         var mailModel = new NotificationModel
         {

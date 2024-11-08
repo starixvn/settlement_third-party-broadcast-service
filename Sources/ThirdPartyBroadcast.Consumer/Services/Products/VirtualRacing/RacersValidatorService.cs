@@ -3,14 +3,14 @@ using Result = ThirdPartyBroadcast.Consumer.Models.Result;
 
 namespace ThirdPartyBroadcast.Consumer.Services.Products.VirtualRacing;
 
-public interface RacersValidator
+public interface RacersValidatorService
 {
     Result ValidateBeforeSettle(VirtualRacingRequest request, IEnumerable<Outright> outright);
 
     IEnumerable<Outright> PlacingResult(int sportType, byte racers, IEnumerable<Outright> outright);
 }
 
-public class RacersValidatorImp : RacersValidator
+public class RacersValidatorServiceImp : RacersValidatorService
 {
     public Result ValidateBeforeSettle(VirtualRacingRequest request, IEnumerable<Outright> outright)
     {
