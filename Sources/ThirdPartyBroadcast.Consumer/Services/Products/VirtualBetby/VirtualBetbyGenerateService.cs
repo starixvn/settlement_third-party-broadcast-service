@@ -20,7 +20,7 @@ public class VirtualBetbyGenerateServiceImp(
     IDynamicRepository repository,
     GenerateMatchInfoService generateMatchInfoService,
     LogDirectlyService logDirectlyService,
-    ScoreValidatorService scoreValidatorService) : VirtualBetbyGenerateService
+    ScoreService scoreService) : VirtualBetbyGenerateService
 {
     public Result ValidateResources(VirtualBetbyRequest request, IEnumerable<ResourceItemModel> currentResources)
     {
@@ -31,11 +31,10 @@ public class VirtualBetbyGenerateServiceImp(
 
         request.Resources = GetMarkedList(resources, currentResources);
 
-        var isExistedFullTime = resources.Exists(r => r.Id == ResourceId.FullTimeResourceId);
-
-        if (string.Equals(request.Action, ActionName.Calculate, StringComparison.OrdinalIgnoreCase) && isExistedFullTime)
+        if (string.Equals(request.Action, ActionName.Calculate, StringComparison.OrdinalIgnoreCase))
         {
-            return scoreValidatorService.Validate(request, currentResources);
+            var validator = ValidatorFactory.CreateValidatorChain();
+            return validator.Validate(request, currentResources);
         }
 
         return new Result();
@@ -117,7 +116,7 @@ public class VirtualBetbyGenerateServiceImp(
     {
         var message = result.ErrorCode > 0 ? $"<br/>{result.ErrorMessage}" : string.Empty;
 
-        var scores = scoreValidatorService.GetInconsistentMessage(request.Resources);
+        var scores = scoreService.GetScoreMessage(request.Resources, request.Action);
 
         var remark = $"IsAuto: 1<br/>Results: {scores};<br/>Duration: {duration} ms{message}";
 

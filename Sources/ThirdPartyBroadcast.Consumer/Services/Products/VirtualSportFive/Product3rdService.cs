@@ -133,8 +133,7 @@ public class Product3rdServiceImp(
         if (string.Equals(request.Action, ActionName.Calculate, StringComparison.OrdinalIgnoreCase))
         {
             var validator = ValidatorFactory.CreateValidatorChain();
-            var result = validator.Validate(htResult, ftResult, matchInfo);
-            return result;
+            return validator.Validate(htResult, ftResult, matchInfo);
         }
 
         return new Result();
