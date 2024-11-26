@@ -1,10 +1,15 @@
-﻿namespace ThirdPartyBroadcast.Consumer.Criteria.VirtualSports;
+﻿using Fanex.Data;
+
+namespace ThirdPartyBroadcast.Consumer.Criteria.VirtualSports;
 
 public class VirtualSportsTicketCriteria : NonQueryCommand
 {
     public int MatchId { get; set; }
 
-    public override string GetSettingKey() => "NAP_Admin_SendNotify_VS";
+    [SpParam(Ignored = true)]
+    public string DbServer { get; set; }
+
+    public override string GetSettingKey() => $"NAP_Admin_SendNotify_VS_{DbServer}";
 
     public override bool IsValid() => MatchId > 0;
 }

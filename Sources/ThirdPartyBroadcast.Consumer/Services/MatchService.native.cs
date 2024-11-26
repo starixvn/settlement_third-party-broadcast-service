@@ -147,12 +147,6 @@ public class MatchServiceImp(
         await repository.ExecuteAsync(updateResult);
     }
 
-    public async Task<Tickets> GetAllTicketsVirtualSports(int matchId)
-    {
-        var criteria = new VirtualSportsTicketCriteria { MatchId = matchId };
-        return await repository.FetchMultipleAsync<TicketInfo, TicketInfo>(criteria);
-    }
-
     public async Task WriteLogVirtualSports(VirtualSoccerRequest request)
     {
         var message = $"NAP: Calculate {request.Action} for matchId: {request.MatchId} score: {request.Fth}-{request.Fta}";
@@ -186,6 +180,27 @@ public class MatchServiceImp(
         {
             TicketsInfo = ticketInfos.Where(ticket => ticket.SiteName == licensee).ToList()
         });
+    }
+
+    public async Task<Tickets> GetAllTicketsVirtualSports(int matchId)
+    {
+        var criteria = new VirtualSportsTicketCriteria { MatchId = matchId };
+        var tasks = appSettingsKey.Value.SiteDbServer.Select(s => GetTicketsVirtualSportsOnSite(s, criteria));
+
+        var result = await Task.WhenAll(tasks);
+
+        var tickets = result.SelectMany(x => x).ToList();
+        var creditTickets = tickets.Where(x => !x.IsDeposit);
+        var depositTickets = tickets.Where(x => x.IsDeposit);
+
+        return (creditTickets, depositTickets);
+    }
+
+    private async Task<IEnumerable<TicketInfo>> GetTicketsVirtualSportsOnSite(string server, VirtualSportsTicketCriteria criteria)
+    {
+        criteria.DbServer = server;
+
+        return await repository.FetchAsync<TicketInfo>(criteria);
     }
 
     public async Task<Tickets> GetTickets3rd(int matchId, short sportType, string resources)
