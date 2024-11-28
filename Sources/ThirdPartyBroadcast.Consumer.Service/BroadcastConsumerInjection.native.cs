@@ -30,6 +30,7 @@ using ThirdPartyBroadcast.Consumer.Services.Consumer;
 using ThirdPartyBroadcast.Consumer.Services.Products;
 using ThirdPartyBroadcast.Consumer.Services.Products.BetBuilder;
 using ThirdPartyBroadcast.Consumer.Services.Products.HappyFive;
+using ThirdPartyBroadcast.Consumer.Services.Products.VirtualBetby;
 using ThirdPartyBroadcast.Consumer.Services.Products.VirtualRacing;
 using ThirdPartyBroadcast.Consumer.Services.Products.VirtualSportFive;
 
@@ -55,7 +56,6 @@ public static class BroadcastConsumerInjection
         service.AddSingleton<GroupThreeService, GroupThreeServiceImp>();
         service.AddSingleton<VirtualRacingService, VirtualRacingServiceImp>();
         service.AddSingleton<OutrightService, OutrightServiceImp>();
-
         service.AddSingleton<NumberGameService, NumberGameServiceImp>();
         service.AddSingleton<BetBuilderService, BetBuilderServiceImp>();
         service.AddSingleton<BetBuilderGenerateService, BetBuilderGenerateServiceImp>();
@@ -66,6 +66,12 @@ public static class BroadcastConsumerInjection
         service.AddSingleton<Product3rdService, Product3rdServiceImp>();
         service.AddSingleton<SendMailService, SendMailServiceImp>();
         service.AddSingleton<PinGoalService, PinGoalServiceImp>();
+        service.AddSingleton<VirtualBetbyService, VirtualBetbyServiceImp>();
+        service.AddSingleton<VirtualBetbyGenerateService, VirtualBetbyGenerateServiceImp>();
+        service.AddSingleton<GenerateMatchInfoService, GenerateMatchInfoServiceImp>();
+        service.AddSingleton<ScoreService, ScoreServiceImp>();
+        service.AddSingleton<ResultDetailService, ResultDetailServiceImp>();
+
         service.AddTransient<AnnouncementService, AnnouncementServiceImp>();
         service.AddTransient<MessageAnnouncementService, MessageAnnouncementServiceImp>();
         service.AddTransient<RecipientMessageService, RecipientMessageServiceImp>();
@@ -101,7 +107,7 @@ public static class BroadcastConsumerInjection
         services.AddSingleton<Services.Products.HappyFive.SettleSitesService, Services.Products.HappyFive.SettleSitesServiceImp>();
 
         services.AddSingleton<VirtualRacingService, VirtualRacingServiceImp>();
-        services.AddSingleton<RacersValidator, RacersValidatorImp>();
+        services.AddSingleton<RacersValidatorService, RacersValidatorServiceImp>();
         services.AddSingleton<Services.Products.VirtualRacing.ProcessService, Services.Products.VirtualRacing.ProcessServiceImp>();
         services.AddSingleton<Services.Products.VirtualRacing.SettleSitesService, Services.Products.VirtualRacing.SettleSitesServiceImp>();
     }

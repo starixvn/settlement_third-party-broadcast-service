@@ -2,7 +2,6 @@
 
 using Products;
 using Products.BetBuilder;
-using Products.HappyFive;
 using Requests;
 
 public interface GroupOneService
@@ -10,8 +9,6 @@ public interface GroupOneService
     Task SettleOutright(string productType, string data);
 
     Task SettleBitCoin(string productType, string data);
-
-    Task SettleHappyFive(string productType, string data);
 
     Task SettleNumberGame(string productType, string data);
 
@@ -24,7 +21,6 @@ public class GroupOneServiceImp(
     OutrightService outrightService,
     BitCoinService bitCoinService,
     LogDirectlyService logDirectlyService,
-    HappyFiveService happyFiveService,
     NumberGameService numberGameService,
     BetBuilderService betBuilderService,
     FastMarketService fastMarketService)
@@ -41,13 +37,6 @@ public class GroupOneServiceImp(
     {
         var request = JsonConvert.DeserializeObject<BitCoinRequest>(data);
         var result = await bitCoinService.Settle(request);
-        await logDirectlyService.HandleLog(result, productType, data);
-    }
-
-    public async Task SettleHappyFive(string productType, string data)
-    {
-        var request = JsonConvert.DeserializeObject<HappyFiveRequest>(data);
-        var result = await happyFiveService.Settle(request);
         await logDirectlyService.HandleLog(result, productType, data);
     }
 

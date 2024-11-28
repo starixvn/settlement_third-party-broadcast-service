@@ -12,4 +12,7 @@ public class ResourceItemModel
 
     [XmlAttribute("Away")]
     public string Away { get; set; }
+
+    [XmlIgnore]
+    public bool IsDuplicated { get; set; }
 }

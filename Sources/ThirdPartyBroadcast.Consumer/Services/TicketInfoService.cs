@@ -7,6 +7,8 @@ public interface TicketInfoService
 {
     Task<List<TicketSettleInfo>> GetTicketsByAction(int matchId, short sportType, string action);
 
+    Task<List<TicketSettleInfo>> GetTicketsByAction(int matchId, short sportType, string action, List<ResourceItemModel> resources);
+
     Task<List<TicketSettleInfo>> GetTicketsByTransIds(int matchId, short sportType, List<TicketSettleInfo> tickets);
 }
 
@@ -18,6 +20,17 @@ public class TicketInfoServiceImp(IOptions<AppSettingsKey> appSettingsKey, IDyna
         if (string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase))
         {
             return await GetTicketsAllSites(new TicketSettleCriteria { MatchId = matchId, SportType = sportType });
+        }
+
+        return [];
+    }
+
+    public async Task<List<TicketSettleInfo>> GetTicketsByAction(int matchId, short sportType, string action, List<ResourceItemModel> resources)
+    {
+        if (string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase))
+        {
+            var resourceIds = string.Join(',', resources.Select(r => r.Id));
+            return await GetTicketsAllSites(new TicketSettleCriteria { MatchId = matchId, SportType = sportType, ResourceIds = resourceIds });
         }
 
         return [];

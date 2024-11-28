@@ -1,4 +1,4 @@
-﻿namespace ThirdPartyBroadcast.Consumer.Criteria.VirtualSportFive;
+﻿namespace ThirdPartyBroadcast.Consumer.Criteria;
 
 public class Match3rdUpdateCriteria : NonQueryCommand
 {

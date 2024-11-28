@@ -12,6 +12,8 @@ public class MatchInfo
 
     public string EventStatus { get; set; }
 
+    public string BetStatus { get; set; }
+
     public DateTime EventDate { get; set; }
 
     public short SportType { get; set; }

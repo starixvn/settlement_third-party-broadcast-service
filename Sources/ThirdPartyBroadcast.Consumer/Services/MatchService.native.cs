@@ -1,4 +1,5 @@
-﻿using Settlement.Business.Core.Models;
+﻿using Microsoft.Extensions.Options;
+using Settlement.Business.Core.Models;
 using ThirdPartyBroadcast.Consumer.Criteria;
 using ThirdPartyBroadcast.Consumer.Criteria.VirtualBetRadar;
 using ThirdPartyBroadcast.Consumer.Criteria.VirtualRacing;
@@ -12,6 +13,8 @@ using Tickets = (IEnumerable<TicketInfo> creditTickets, IEnumerable<TicketInfo> 
 public interface MatchService
 {
     Task<MatchInfo> GetMatchInfo(int matchId);
+
+    Task<MatchInfo> GetMatch3rdInfo(int matchId);
 
     MatchInfo GetRacingInfo(RaceInfo raceInfo);
 
@@ -45,7 +48,8 @@ public class MatchServiceImp(
     IMapper mapper,
     ScaleOutSettleThirdPartyService scaleOutSettleThirdPartyService,
     LogDirectlyService logDirectlyService,
-    RefDataService refDataService)
+    RefDataService refDataService,
+    IOptions<AppSettingsKey> appSettingsKey)
     : MatchService
 {
     public async Task<MatchInfo> GetMatchInfo(int matchId)
@@ -53,6 +57,16 @@ public class MatchServiceImp(
         var criteria = new GetMatchCriteria { MatchId = matchId };
         var match = await repository.GetAsync<MatchInfo>(criteria);
         match.RefDataService = refDataService;
+        return match;
+    }
+
+    public async Task<MatchInfo> GetMatch3rdInfo(int matchId)
+    {
+        var criteria = new Match3rdSelCriteria { MatchId = matchId };
+        var match = await repository.GetAsync<MatchInfo>(criteria);
+        match.IsMatch3rd = true;
+        match.RefDataService = refDataService;
+
         return match;
     }
 
@@ -176,7 +190,22 @@ public class MatchServiceImp(
 
     public async Task<Tickets> GetTickets3rd(int matchId, short sportType, string resources)
     {
-        var criteria = new VirtualSportsFiveTicketCriteria { MatchId = matchId, SportType = sportType, SelectedResources = resources };
-        return await repository.FetchMultipleAsync<TicketInfo, TicketInfo>(criteria);
+        var criteria = new VirtualSportsFiveTicketCriteria { MatchId = matchId, SportType = sportType, ResourceIds = resources };
+
+        var tasks = appSettingsKey.Value.SiteDbServer.Select(s => GetTickets3rdOnSite(s, criteria));
+
+        var result = await Task.WhenAll(tasks);
+
+        var tickets = result.SelectMany(x => x).ToList();
+        var creditTickets = tickets.Where(x => !x.IsDeposit);
+        var depositTickets = tickets.Where(x => x.IsDeposit);
+
+        return (creditTickets, depositTickets);
+    }
+
+    private Task<IEnumerable<TicketInfo>> GetTickets3rdOnSite(string server, VirtualSportsFiveTicketCriteria criteria)
+    {
+        criteria.DbServer = server;
+        return repository.FetchAsync<TicketInfo>(criteria);
     }
 }

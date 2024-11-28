@@ -1,12 +1,19 @@
-﻿namespace ThirdPartyBroadcast.Consumer.Criteria.VirtualSportFive;
+﻿using Fanex.Data;
+
+namespace ThirdPartyBroadcast.Consumer.Criteria.VirtualSportFive;
 
 public class VirtualSportsFiveTicketCriteria : NonQueryCommand
 {
     public int MatchId { get; set; }
+
     public short SportType { get; set; }
-    public string SelectedResources { get; set; }
 
-    public override string GetSettingKey() => "NAP_Set_Match3rd_SendNotify";
+    public string ResourceIds { get; set; }
 
-    public override bool IsValid() => MatchId > 0 && !string.IsNullOrEmpty(SelectedResources);
+    [SpParam(Ignored = true)]
+    public string DbServer { get; set; }
+
+    public override string GetSettingKey() => $"NAP_Set_Match3rd_SendNotify_{DbServer}";
+
+    public override bool IsValid() => MatchId > 0 && !string.IsNullOrEmpty(ResourceIds);
 }

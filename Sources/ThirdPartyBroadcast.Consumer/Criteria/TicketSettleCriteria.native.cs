@@ -10,6 +10,8 @@ public class TicketSettleCriteria : CriteriaBase
 
     public short SportType { get; set; }
 
+    public string ResourceIds { get; set; }
+
     [SpParam(Ignored = true)]
     public string DbServer { get; set; }
 

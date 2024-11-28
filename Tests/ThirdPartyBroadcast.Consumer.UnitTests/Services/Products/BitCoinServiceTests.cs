@@ -48,7 +48,7 @@ public class BitCoinServiceTests
         var result = await service.Settle(new BitCoinRequest());
 
         Assert.True(result.IsSuccessful);
-        await repository.Received().ExecuteAsync(Arg.Any<BitCoinUpdateMatchCriteria>());
+        await repository.Received().ExecuteAsync(Arg.Any<ResultDetail3rdUpdateCriteria>());
         await repository.Received().ExecuteAsync(Arg.Any<UpdateEventStatusCriteria>());
         await calculateService.Received().Execute(Arg.Any<BitCoinCriteria>());
         await repository.DidNotReceive().ExecuteAsync(Arg.Any<NotifyCriteria>());
@@ -65,7 +65,7 @@ public class BitCoinServiceTests
         var result = await service.Settle(new BitCoinRequest { Action = action });
 
         Assert.True(result.IsSuccessful);
-        await repository.Received().ExecuteAsync(Arg.Any<BitCoinUpdateMatchCriteria>());
+        await repository.Received().ExecuteAsync(Arg.Any<ResultDetail3rdUpdateCriteria>());
         await repository.Received().ExecuteAsync(Arg.Any<UpdateEventStatusCriteria>());
         await calculateService.Received().Execute(Arg.Any<BitCoinCriteria>());
         await repository.Received().ExecuteAsync(Arg.Any<NotifyCriteria>());

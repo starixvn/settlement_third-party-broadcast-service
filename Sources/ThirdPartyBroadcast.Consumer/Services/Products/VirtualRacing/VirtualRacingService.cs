@@ -13,7 +13,7 @@ public interface VirtualRacingService
 }
 
 public class VirtualRacingServiceImp(
-    RacersValidator racersValidator,
+    RacersValidatorService racersValidatorService,
     SettleSitesService settleSitesService,
     IDynamicRepository repository,
     MatchService broadcastMatchService,
@@ -31,7 +31,7 @@ public class VirtualRacingServiceImp(
         request.SportType = raceInfo.RaceInfo.SportType;
         request.Racers = raceInfo.RaceInfo.Racers;
 
-        var result = racersValidator.ValidateBeforeSettle(request, raceInfo.Outright);
+        var result = racersValidatorService.ValidateBeforeSettle(request, raceInfo.Outright);
 
         if (!result.IsSuccessful)
         {
@@ -72,7 +72,7 @@ public class VirtualRacingServiceImp(
         }
         else
         {
-            var placingResult = racersValidator.PlacingResult(request.SportType, request.Racers, outright);
+            var placingResult = racersValidatorService.PlacingResult(request.SportType, request.Racers, outright);
             var racers = string.Join("; ", placingResult.Select(ball => $"{ball.Placing}. {ball.RacerId}").ToArray());
             remark = $"IsAuto: 1<br/>Results: {racers}<br/>Duration: {duration} ms {message}";
         }

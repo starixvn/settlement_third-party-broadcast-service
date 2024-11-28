@@ -1,5 +1,6 @@
 ﻿using Fanex.Logging;
 using Fanex.Logging.Extensions;
+using ThirdPartyBroadcast.Consumer.Extensions;
 
 namespace ThirdPartyBroadcast.Consumer.Services.Consumer;
 
@@ -30,7 +31,7 @@ public class ProcessingFaultConsumerService : IConsumer<Fault<IBroadcastApiProce
         {
             var info = new Dictionary<string, object>
             {
-                { "Product Name", GetProductName(productType) },
+                { "Product Name", productType.ToProductName() },
                 { "Match Info", data },
                 { "Details", result.ErrorMessage },
             };
@@ -41,18 +42,5 @@ public class ProcessingFaultConsumerService : IConsumer<Fault<IBroadcastApiProce
 
             await LogService.ErrorAsync(logMessage);
         }
-    }
-
-    private static string GetProductName(string code)
-    {
-        foreach (var field in typeof(ProductType).GetFields())
-        {
-            if (string.Equals((string)field.GetValue(null), code))
-            {
-                return field.Name;
-            }
-        }
-
-        return string.Empty;
     }
 }

@@ -14,5 +14,7 @@ public class TicketInfo
 
     public string SiteName { get; set; }
 
+    public bool IsDeposit { get; set; }
+
     public IEnumerable<TicketInfo> TicketsInfo { get; set; }
 }

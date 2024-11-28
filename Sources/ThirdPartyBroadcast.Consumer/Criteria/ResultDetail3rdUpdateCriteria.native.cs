@@ -1,8 +1,10 @@
-﻿namespace ThirdPartyBroadcast.Consumer.Criteria.BitCoin;
+﻿namespace ThirdPartyBroadcast.Consumer.Criteria;
 
-public class BitCoinUpdateMatchCriteria : NonQueryCommand
+public class ResultDetail3rdUpdateCriteria : NonQueryCommand
 {
     public int MatchId { get; set; }
+
+    public short SportType { get; set; }
 
     public string Action { get; set; }
 
@@ -13,6 +15,8 @@ public class BitCoinUpdateMatchCriteria : NonQueryCommand
     public string GameResult { get; set; }
 
     public int ResultId { get; set; }
+
+    public string SelectedResources { get; set; }
 
     public override string GetSettingKey() => "NAP_Admin_Result3rd_Update";
 

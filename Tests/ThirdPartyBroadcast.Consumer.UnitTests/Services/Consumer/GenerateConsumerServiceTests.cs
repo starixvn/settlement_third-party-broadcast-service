@@ -9,6 +9,8 @@ public class GenerateConsumerServiceTests
 
     private readonly GroupTwoService groupTwoService;
 
+    private readonly GroupThreeService groupThreeService;
+
     private readonly LogDirectlyService logDirectlyService;
 
     private readonly GenerateConsumerServiceImp service;
@@ -17,7 +19,7 @@ public class GenerateConsumerServiceTests
     {
         groupOneService = Substitute.For<GroupOneService>();
         groupTwoService = Substitute.For<GroupTwoService>();
-        var groupThreeService = Substitute.For<GroupThreeService>();
+        groupThreeService = Substitute.For<GroupThreeService>();
         logDirectlyService = Substitute.For<LogDirectlyService>();
         service = new GenerateConsumerServiceImp(groupOneService, groupTwoService, groupThreeService, logDirectlyService);
     }
@@ -72,7 +74,7 @@ public class GenerateConsumerServiceTests
     {
         const string productType = ProductType.HappyFive;
         await service.SettleByProduct(productType, string.Empty);
-        await groupOneService.Received().SettleHappyFive(Arg.Any<string>(), Arg.Any<string>());
+        await groupThreeService.Received().SettleHappyFive(Arg.Any<string>(), Arg.Any<string>());
         await logDirectlyService.Received().WriteInfo(Arg.Any<string>(), Arg.Any<string>());
     }
 

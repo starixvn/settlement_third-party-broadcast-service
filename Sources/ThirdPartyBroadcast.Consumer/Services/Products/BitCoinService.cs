@@ -65,7 +65,7 @@ public class BitCoinServiceImp(
 
     private async Task UpdateMatchInfo(BitCoinRequest request)
     {
-        var criteria = mapper.Map<BitCoinRequest, BitCoinUpdateMatchCriteria>(request);
+        var criteria = mapper.Map<BitCoinRequest, ResultDetail3rdUpdateCriteria>(request);
         await repository.ExecuteAsync(criteria);
 
         var updateEventStatus = new UpdateEventStatusCriteria

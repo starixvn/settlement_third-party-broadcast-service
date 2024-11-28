@@ -7,12 +7,12 @@ public class CalculateServiceTests
 {
     private readonly IDynamicRepository repository;
 
-    private readonly CalculateService service;
+    private readonly CalculateServiceImp service;
 
     public CalculateServiceTests()
     {
         repository = Substitute.For<IDynamicRepository>();
-        var appSettingsKey = new AppSettingsKey { SiteDbServer = new List<string> { "01", "02" } };
+        var appSettingsKey = new AppSettingsKey { SiteDbServer = ["01", "02"] };
         var options = Options.Create(appSettingsKey);
 
         service = new CalculateServiceImp(repository, options);
