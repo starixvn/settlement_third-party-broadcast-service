@@ -9,7 +9,7 @@
 		<Setting Key="NAP_Admin_Settlement_s164_Validation_Event" SpName="NAP_Admin_Settlement_s164_Validation_Event" DbName="DBPRO.bodb02.wsv_nap" />
 		<Setting Key="NAP_Admin_Settlement_Betbuilder_Validation_Event" SpName="NAP_Admin_Settlement_Betbuilder_Validation_Event" DbName="DBPRO.bodb02.wsv_nap" />
 		<Setting Key="NAP_Set_Match3rdSel" SpName="NAP_Set_Match3rdSel" DbName="DBPRO.bodb02.wsv_nap" />
-		<Setting Key="NAP_Admin_Result3rd_Update" SpName="NAP_Admin_Result3rd_Update_UAT1" DbName="DBPRO.bodb02.wsv_nap" />
+		<Setting Key="NAP_Admin_Result3rd_Update" SpName="NAP_Admin_Result3rd_Update" DbName="DBPRO.bodb02.wsv_nap" />
 		<Setting Key="NAP_Admin_Match3rd_Update" SpName="NAP_Admin_Match3rd_Update" DbName="DBPRO.bodb02.wsv_nap" />
 		<Setting Key="NAP_Admin_SendNotify_Bitcoin" SpName="NAP_Admin_SendNotify_Bitcoin" DbName="DBTXN.bodb02.wsv_nap" />
 		<Setting Key="NAP_UpdateMatch_Remark" SpName="NAP_UpdateMatch_Remark" DbName="DBPRO.bodb02.wsv_nap" />
@@ -17,11 +17,11 @@
 		<Setting Key="WriteLog_UserLog_Settle" SpName="WriteLog_UserLog_Settle" DbName="DBLOG.bodb_CustomerLog.wsv_nap" />
 		<Setting Key="NAP_UserLog_WriteLogPreSettlement" SpName="NAP_UserLog_WriteLogPreSettlement" DbName="DBUserLog.LogTDB.wsv_nap" />
 		<Setting Key="NAP_Set_Match_VS_Sel" SpName="NAP_Set_Match_VS_Sel" DbName="DBPRO.bodb02.wsv_nap" />
-		<Setting Key="NAP_Admin_SendNotify_VS" SpName="NAP_Admin_SendNotify_VS_UAT1" DbName="DBTXN.bodb02.wsv_nap" />
+		<Setting Key="NAP_Admin_SendNotify_VS" SpName="NAP_Admin_SendNotify_VS" DbName="DBTXN.bodb02.wsv_nap" />
 		<Setting Key="NAP_SpecialDelete_Message_Insert" SpName="NAP_SpecialDelete_Message_Insert" DbName="DBMSG.bodb_Message.wsv_nap" />
 		<Setting Key="NAP_SpecialDelete_BatchMessage_Upload" SpName="NAP_SpecialDelete_BatchMessage_Upload" DbName="DBMSG.bodb_Message.wsv_nap" />
 		<Function Name="Match3rd">
-			<Setting Key="NAP_Set_Match3rd_Info_Update" SpName="NAP_Set_Match3rd_Info_Update_UAT1" DbName="DBPRO.bodb02.wsv_nap" />
+			<Setting Key="NAP_Set_Match3rd_Info_Update" SpName="NAP_Set_Match3rd_Info_Update" DbName="DBPRO.bodb02.wsv_nap" />
 			<Setting Key="NAP_Admin_Result_Update_BingoBall" SpName="NAP_Admin_Result_Update_BingoBall" DbName="DBPRO.bodb02.wsv_nap" />
 			<Setting Key="Task_Winlimit_InsertHistoryData" SpName="Task_Winlimit_InsertHistoryData" DbName="DBCUST.CustDB.wsv_nap" />
 			<Setting Key="NAP_Set_Happy5_Result_Sel" SpName="NAP_Set_Happy5_Result_Sel" DbName="DBPRO.bodb02.wsv_nap" />
@@ -30,7 +30,7 @@
 		</Function>
 		<Setting Key="NAP_Admin_VS_Betradar_HorseDog_Result_Sel" SpName="NAP_Admin_VS_Betradar_HorseDog_Result_Sel" DbName="DBPRO.bodb02.wsv_nap" />
 		<Setting Key="NAP_Admin_VS_Betradar_HorseDog_Result_Upd" SpName="NAP_Admin_VS_Betradar_HorseDog_Result_Upd" DbName="DBPRO.bodb02.wsv_nap" />
-		<Setting Key="NAP_Set_ResultDetail3rd_Sel" SpName="NAP_Set_ResultDetail3rd_Sel_UAT1" DbName="DBPRO.bodb02.wsv_nap" />
+		<Setting Key="NAP_Set_ResultDetail3rd_Sel" SpName="NAP_Set_ResultDetail3rd_Sel" DbName="DBPRO.bodb02.wsv_nap" />
 	</Function>
 	<Function Name="Transfer the logic business to Application Layer">
 		<Function Name="NAP_Admin_Settlement_BatchTicket_Sel">
@@ -166,10 +166,10 @@
 			</Function>
 		</Function>
 		<Function Name="TicketInfo">
-			<Setting Key="NAP_Set_VS_TicketInfo_Sel_DBTXN" SpName="NAP_Set_VS_TicketInfo_Sel_UAT1" DbName="DBTXN.bodb02.wsv_nap" />
-			<Setting Key="NAP_Set_VS_TicketInfo_Sel_DBSITE01" SpName="NAP_Set_VS_TicketInfo_Sel_UAT1" DbName="DBSITE01.bodb02.wsv_nap" />
-			<Setting Key="NAP_Set_VS_TicketInfo_Sel_DBSITE02" SpName="NAP_Set_VS_TicketInfo_Sel_UAT1" DbName="DBSITE02.bodb02.wsv_nap" />
-			<Setting Key="NAP_Set_VS_TicketInfo_Sel_DBSITE03" SpName="NAP_Set_VS_TicketInfo_Sel_UAT1" DbName="DBSITE03.bodb02.wsv_nap" />
+			<Setting Key="NAP_Set_VS_TicketInfo_Sel_DBTXN" SpName="NAP_Set_VS_TicketInfo_Sel" DbName="DBTXN.bodb02.wsv_nap" />
+			<Setting Key="NAP_Set_VS_TicketInfo_Sel_DBSITE01" SpName="NAP_Set_VS_TicketInfo_Sel" DbName="DBSITE01.bodb02.wsv_nap" />
+			<Setting Key="NAP_Set_VS_TicketInfo_Sel_DBSITE02" SpName="NAP_Set_VS_TicketInfo_Sel" DbName="DBSITE02.bodb02.wsv_nap" />
+			<Setting Key="NAP_Set_VS_TicketInfo_Sel_DBSITE03" SpName="NAP_Set_VS_TicketInfo_Sel" DbName="DBSITE03.bodb02.wsv_nap" />
 		</Function>
 		<Function Name="VS 5">
 			<Function Name="NAP_Admin_Settlement_VS5">
@@ -181,16 +181,16 @@
 		</Function>
 		<Function Name="VS 6">
 			<Function Name="NAP_Admin_Settlement_VS6">
-				<Setting Key="NAP_Admin_Settlement_VS6_DBTXN" SpName="NAP_Admin_Settlement_VS6_UAT1" DbName="DBTXN.bodb02.wsv_nap" />
-				<Setting Key="NAP_Admin_Settlement_VS6_DBSITE01" SpName="NAP_Admin_Settlement_VS6_UAT1" DbName="DBSITE01.bodb02.wsv_nap" />
-				<Setting Key="NAP_Admin_Settlement_VS6_DBSITE02" SpName="NAP_Admin_Settlement_VS6_UAT1" DbName="DBSITE02.bodb02.wsv_nap" />
-				<Setting Key="NAP_Admin_Settlement_VS6_DBSITE03" SpName="NAP_Admin_Settlement_VS6_UAT1" DbName="DBSITE03.bodb02.wsv_nap" />
+				<Setting Key="NAP_Admin_Settlement_VS6_DBTXN" SpName="NAP_Admin_Settlement_VS6" DbName="DBTXN.bodb02.wsv_nap" />
+				<Setting Key="NAP_Admin_Settlement_VS6_DBSITE01" SpName="NAP_Admin_Settlement_VS6" DbName="DBSITE01.bodb02.wsv_nap" />
+				<Setting Key="NAP_Admin_Settlement_VS6_DBSITE02" SpName="NAP_Admin_Settlement_VS6" DbName="DBSITE02.bodb02.wsv_nap" />
+				<Setting Key="NAP_Admin_Settlement_VS6_DBSITE03" SpName="NAP_Admin_Settlement_VS6" DbName="DBSITE03.bodb02.wsv_nap" />
 			</Function>
 			<Function Name="NAP_Set_Match3rd_SendNotify">
-				<Setting Key="NAP_Set_Match3rd_SendNotify_DBTXN" SpName="NAP_Set_Match3rd_SendNotify_UAT1" DbName="DBTXN.bodb02.wsv_nap" />
-				<Setting Key="NAP_Set_Match3rd_SendNotify_DBSITE01" SpName="NAP_Set_Match3rd_SendNotify_UAT1" DbName="DBSITE01.bodb02.wsv_nap" />
-				<Setting Key="NAP_Set_Match3rd_SendNotify_DBSITE02" SpName="NAP_Set_Match3rd_SendNotify_UAT1" DbName="DBSITE02.bodb02.wsv_nap" />
-				<Setting Key="NAP_Set_Match3rd_SendNotify_DBSITE03" SpName="NAP_Set_Match3rd_SendNotify_UAT1" DbName="DBSITE03.bodb02.wsv_nap" />
+				<Setting Key="NAP_Set_Match3rd_SendNotify_DBTXN" SpName="NAP_Set_Match3rd_SendNotify" DbName="DBTXN.bodb02.wsv_nap" />
+				<Setting Key="NAP_Set_Match3rd_SendNotify_DBSITE01" SpName="NAP_Set_Match3rd_SendNotify" DbName="DBSITE01.bodb02.wsv_nap" />
+				<Setting Key="NAP_Set_Match3rd_SendNotify_DBSITE02" SpName="NAP_Set_Match3rd_SendNotify" DbName="DBSITE02.bodb02.wsv_nap" />
+				<Setting Key="NAP_Set_Match3rd_SendNotify_DBSITE03" SpName="NAP_Set_Match3rd_SendNotify" DbName="DBSITE03.bodb02.wsv_nap" />
 			</Function>
 		</Function>
 	</Function>
