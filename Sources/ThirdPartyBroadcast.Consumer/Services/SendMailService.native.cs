@@ -1,7 +1,7 @@
-﻿using Fanex.MailDelivery.Client;
+﻿using System.Collections.Concurrent;
+using Fanex.MailDelivery.Client;
 using Fanex.MailDelivery.Core.Models;
-using RazorEngine;
-using RazorEngine.Templating;
+using RazorEngineCore;
 
 namespace ThirdPartyBroadcast.Consumer.Services;
 
@@ -12,6 +12,8 @@ public interface SendMailService
 
 public class SendMailServiceImp : SendMailService
 {
+    private static readonly ConcurrentDictionary<int, IRazorEngineCompiledTemplate> CompiledTemplateCache = new();
+
     public async Task SendMailByFunctionId(NotificationModel item)
     {
         var mail = new Mail
@@ -27,16 +29,20 @@ public class SendMailServiceImp : SendMailService
 
     private static string MailBody(NotificationModel item)
     {
-        var templateKey = "deposit-key";
-        var template = $"{AppDomain.CurrentDomain.BaseDirectory}Templates{Path.DirectorySeparatorChar}deposit-template.cshtml";
+        var templateFileName = item.Type.Equals(EmailType.Credit)
+            ? "credit-template.cshtml"
+            : "deposit-template.cshtml";
 
-        if (item.Type.Equals(EmailType.Credit))
+        var templatePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Templates", templateFileName);
+        var hashCode = templatePath.GetHashCode();
+        var compiledTemplate = CompiledTemplateCache.GetOrAdd(hashCode, _ =>
         {
-            templateKey = "credit-key";
-            template = $"{AppDomain.CurrentDomain.BaseDirectory}Templates{Path.DirectorySeparatorChar}credit-template.cshtml";
-        }
+            var template = File.ReadAllText(templatePath);
+            var razorEngine = new RazorEngine();
+            return razorEngine.Compile(template);
+        });
 
-        return Engine.Razor.RunCompile(File.ReadAllText(template), templateKey, model: item);
+        return compiledTemplate.Run(item);
     }
 
     private static string Subject(NotificationModel item)
