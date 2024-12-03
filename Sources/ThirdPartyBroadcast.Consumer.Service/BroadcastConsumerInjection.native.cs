@@ -24,7 +24,6 @@ using ONEbook.UM.Helpers;
 using ONEbook.UM.Transport;
 using Settlement.Business.Services;
 using SharpRaven;
-using StackExchange.Redis;
 using ThirdPartyBroadcast.Consumer.Services;
 using ThirdPartyBroadcast.Consumer.Services.Consumer;
 using ThirdPartyBroadcast.Consumer.Services.Products;
@@ -36,64 +35,67 @@ using ThirdPartyBroadcast.Consumer.Services.Products.VirtualSportFive;
 
 namespace ThirdPartyBroadcast.Consumer.Service;
 
+using StackExchange.Redis;
+
 public static class BroadcastConsumerInjection
 {
-    public static void InitializeServices(this IServiceCollection service, IConfiguration configuration)
+    public static void InitializeServices(this IServiceCollection services, IConfiguration configuration)
     {
-        service.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-        service.AddSingleton<XmlConvertService, XmlConvertServiceImp>();
-        service.AddTransient<ScaleOutSettleThirdPartyService, ScaleOutSettleThirdPartyServiceImp>();
-        service.AddTransient<IDynamicRepository, DynamicRepository>();
-        service.AddTransient<CalculateService, CalculateServiceImp>();
-        service.AddTransient<LogDirectlyService, LogDirectlyServiceImp>();
-        service.AddTransient<GeneralService, GeneralServiceImp>();
-        service.AddTransient<ScaleOutSettleService, ScaleOutSettleServiceImp>();
-        service.AddSingleton<ICacheService, CacheService>();
-        service.AddSingleton<GenerateConsumerService, GenerateConsumerServiceImp>();
-        service.AddSingleton<BitCoinService, BitCoinServiceImp>();
-        service.AddSingleton<GroupOneService, GroupOneServiceImp>();
-        service.AddSingleton<GroupTwoService, GroupTwoServiceImp>();
-        service.AddSingleton<GroupThreeService, GroupThreeServiceImp>();
-        service.AddSingleton<VirtualRacingService, VirtualRacingServiceImp>();
-        service.AddSingleton<OutrightService, OutrightServiceImp>();
-        service.AddSingleton<NumberGameService, NumberGameServiceImp>();
-        service.AddSingleton<BetBuilderService, BetBuilderServiceImp>();
-        service.AddSingleton<BetBuilderGenerateService, BetBuilderGenerateServiceImp>();
-        service.AddSingleton<FastMarketService, FastMarketServiceImp>();
-        service.AddSingleton<VirtualBetRadarService, VirtualBetRadarServiceImp>();
-        service.AddSingleton<VirtualSportsService, VirtualSportsServiceImp>();
-        service.AddSingleton<LeapGamingService, LeapGamingServiceImp>();
-        service.AddSingleton<Product3rdService, Product3rdServiceImp>();
-        service.AddSingleton<SendMailService, SendMailServiceImp>();
-        service.AddSingleton<PinGoalService, PinGoalServiceImp>();
-        service.AddSingleton<VirtualBetbyService, VirtualBetbyServiceImp>();
-        service.AddSingleton<VirtualBetbyGenerateService, VirtualBetbyGenerateServiceImp>();
-        service.AddSingleton<GenerateMatchInfoService, GenerateMatchInfoServiceImp>();
-        service.AddSingleton<ScoreService, ScoreServiceImp>();
-        service.AddSingleton<ResultDetailService, ResultDetailServiceImp>();
+        services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+        services.AddSingleton<XmlConvertService, XmlConvertServiceImp>();
+        services.AddTransient<ScaleOutSettleThirdPartyService, ScaleOutSettleThirdPartyServiceImp>();
+        services.AddTransient<IDynamicRepository, DynamicRepository>();
+        services.AddTransient<CalculateService, CalculateServiceImp>();
+        services.AddTransient<LogDirectlyService, LogDirectlyServiceImp>();
+        services.AddTransient<GeneralService, GeneralServiceImp>();
+        services.AddTransient<ScaleOutSettleService, ScaleOutSettleServiceImp>();
+        services.AddSingleton<ICacheService, CacheService>();
+        services.AddSingleton<GenerateConsumerService, GenerateConsumerServiceImp>();
+        services.AddSingleton<BitCoinService, BitCoinServiceImp>();
+        services.AddSingleton<GroupOneService, GroupOneServiceImp>();
+        services.AddSingleton<GroupTwoService, GroupTwoServiceImp>();
+        services.AddSingleton<GroupThreeService, GroupThreeServiceImp>();
+        services.AddSingleton<VirtualRacingService, VirtualRacingServiceImp>();
+        services.AddSingleton<OutrightService, OutrightServiceImp>();
+        services.AddSingleton<NumberGameService, NumberGameServiceImp>();
+        services.AddSingleton<BetBuilderService, BetBuilderServiceImp>();
+        services.AddSingleton<BetBuilderGenerateService, BetBuilderGenerateServiceImp>();
+        services.AddSingleton<FastMarketService, FastMarketServiceImp>();
+        services.AddSingleton<VirtualBetRadarService, VirtualBetRadarServiceImp>();
+        services.AddSingleton<VirtualSportsService, VirtualSportsServiceImp>();
+        services.AddSingleton<LeapGamingService, LeapGamingServiceImp>();
+        services.AddSingleton<Product3rdService, Product3rdServiceImp>();
+        services.AddSingleton<SendMailService, SendMailServiceImp>();
+        services.AddSingleton<PinGoalService, PinGoalServiceImp>();
+        services.AddSingleton<VirtualBetbyService, VirtualBetbyServiceImp>();
+        services.AddSingleton<VirtualBetbyGenerateService, VirtualBetbyGenerateServiceImp>();
+        services.AddSingleton<GenerateMatchInfoService, GenerateMatchInfoServiceImp>();
+        services.AddSingleton<ScoreService, ScoreServiceImp>();
+        services.AddSingleton<ResultDetailService, ResultDetailServiceImp>();
 
-        service.AddTransient<AnnouncementService, AnnouncementServiceImp>();
-        service.AddTransient<MessageAnnouncementService, MessageAnnouncementServiceImp>();
-        service.AddTransient<RecipientMessageService, RecipientMessageServiceImp>();
-        service.AddTransient<TicketInfoService, TicketInfoServiceImp>();
-        service.AddTransient<Services.MatchService, Services.MatchServiceImp>();
+        services.AddTransient<AnnouncementService, AnnouncementServiceImp>();
+        services.AddTransient<MessageAnnouncementService, MessageAnnouncementServiceImp>();
+        services.AddTransient<RecipientMessageService, RecipientMessageServiceImp>();
+        services.AddTransient<TicketInfoService, TicketInfoServiceImp>();
+        services.AddTransient<Services.MatchService, Services.MatchServiceImp>();
 
-        service.AddSingleton<IMaintenanceService, MaintenanceServiceImp>();
-        service.AddSingleton(new UMClientConfiguration().Initialize(configuration));
-        service.AddSingleton<IUMCacheService, UMCacheService>();
-        service.AddSingleton<IUMRestClient, UMRestClient>();
-        service.AddSingleton<ONEbook.UM.Services.IMaintenanceService, ONEbook.UM.Services.MaintenanceService>();
-        service.AddConfigRedisCache(configuration);
+        services.AddSingleton<IMaintenanceService, MaintenanceServiceImp>();
+        services.AddSingleton(new UMClientConfiguration().Initialize(configuration));
+        services.AddSingleton<IUMCacheService, UMCacheService>();
+        services.AddSingleton<IUMRestClient, UMRestClient>();
+        services.AddSingleton<ONEbook.UM.Services.IMaintenanceService, ONEbook.UM.Services.MaintenanceService>();
+        services.AddFanexLogSentry(configuration);
+        services.AddRedisCacheConfig(configuration);
         StartUmSetting(configuration);
-        StartLogSetting(configuration);
-        service.ConfigureAutoMapper();
-        service.ConfigureMassTransit(configuration);
+        StartExceptionHandler();
+        services.ConfigureAutoMapper();
+        services.ConfigureMassTransit(configuration);
 
         RefDataTypeContainer
             .ConnectTo(new Uri(configuration.GetSection("Fanex.RemotingRef.Service.Url").Value))
             .FromApplication("Settlement");
-        service.AddSingleton<IRemotingRefService, RemotingRefService>();
-        service.AddTransient<RefDataService, RefDataServiceImp>();
+        services.AddSingleton<IRemotingRefService, RemotingRefService>();
+        services.AddTransient<RefDataService, RefDataServiceImp>();
 
         AppSettings.AppMailId = configuration.GetSection("MailServer:Id").Value;
         AppSettings.AppMailAddress = configuration.GetSection("MailServer:Address").Value;
@@ -153,17 +155,17 @@ public static class BroadcastConsumerInjection
         service.AddSingleton(mapper);
     }
 
-    private static void AddConfigRedisCache(this IServiceCollection service, IConfiguration configuration)
+    private static void AddRedisCacheConfig(this IServiceCollection services, IConfiguration configuration)
     {
-        var redisConfig = configuration.GetSection("AuthSettings:RedisConfig").Value;
-        var applicationName = configuration.GetSection("AuthSettings:ChannelPrefix").Value;
-        service.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect($"{redisConfig},ChannelPrefix={applicationName}"));
-        service.AddSingleton<ICache>(new RedisCache(new RedisCacheOptions
+        var redisConfig = configuration.GetSection("Fanex.Caching.Redis:RedisConfig").Value;
+        var applicationName = configuration.GetSection("Fanex.Caching.Redis:ChannelPrefix").Value;
+        services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect($"{redisConfig},ChannelPrefix={applicationName}"));
+        services.AddSingleton<ICache>(new RedisCache(new RedisCacheOptions
         {
             ConnectionString = redisConfig,
             ApplicationName = applicationName,
         }));
-        service.AddSingleton<ICacheService>(new CacheService());
+        services.AddSingleton<ICacheService>(new CacheService());
     }
 
     private static void StartUmSetting(IConfiguration configuration)
@@ -176,18 +178,8 @@ public static class BroadcastConsumerInjection
             .UseRestClient(new UMRestClient(umConfig));
     }
 
-    private static void StartLogSetting(IConfiguration configuration)
+    private static void StartExceptionHandler()
     {
-        var logEngine = new List<ILogEngine>();
-
-        var sentryEngineOptions = new SentryEngineOptions
-        {
-            Dsn = new Dsn(configuration.GetSection("SentryToken").Value)
-        };
-        logEngine.Add(new SentryLogging(sentryEngineOptions));
-
-        LogManager.SetDefaultLogCategory(configuration.GetSection("SiteCategory").Value).Use(logEngine);
-
         ExceptionHandler
             .UseConfig(new LoggingConfiguration())
             .UseGetDbExceptionInfo(DatabaseInfoGetters.GetDbExceptionInfo);
