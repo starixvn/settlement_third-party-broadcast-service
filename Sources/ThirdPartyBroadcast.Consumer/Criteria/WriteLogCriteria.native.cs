@@ -1,33 +1,21 @@
 ﻿namespace ThirdPartyBroadcast.Consumer.Criteria;
 
-public class WriteLogCriteria : NonQueryCommand
+public class WriteLogCriteria(int matchId, string errorMessage, int actionId, int userId, string ip)
+    : NonQueryCommand
 {
-    public WriteLogCriteria(int matchId, string errorMessage, int actionId, int userId, string ip)
+    public WriteLogCriteria(int matchId, int actionId, int userId, string ip) : this(matchId, null, actionId, userId, ip)
     {
-        MatchId = matchId;
-        Remark = errorMessage;
-        ActionId = actionId;
-        UserId = userId;
-        Ip = ip;
     }
 
-    public WriteLogCriteria(int matchId, int actionId, int userId, string ip)
-    {
-        MatchId = matchId;
-        ActionId = actionId;
-        UserId = userId;
-        Ip = ip;
-    }
+    public int UserId { get; } = userId;
 
-    public int UserId { get; }
+    public int MatchId { get; set; } = matchId;
 
-    public int MatchId { get; set; }
+    public string Remark { get; set; } = errorMessage;
 
-    public string Remark { get; set; }
+    public string Ip { get; set; } = ip;
 
-    public string Ip { get; set; }
-
-    public int ActionId { get; }
+    public int ActionId { get; } = actionId;
 
     public int? FinalHomeScore { get; set; }
 

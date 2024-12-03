@@ -18,7 +18,7 @@ public class Result
         ErrorMessage = message;
     }
 
-    public static Result ErrorRequest() => new Result
+    public static Result ErrorRequest() => new()
     {
         ErrorCode = Constants.ErrorCode.NotExistValue,
         ErrorMessage = Constants.ErrorMessage.NotExistValue

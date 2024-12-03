@@ -4,7 +4,7 @@ namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products.Products.Virt
 
 public class ScoreServiceTests
 {
-    private ScoreServiceImp service = new();
+    private readonly ScoreServiceImp service = new();
 
     [Fact]
     public void GetScoreMessage_ResourceFullTime_ReturnRightMessage()

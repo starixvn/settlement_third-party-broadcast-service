@@ -70,13 +70,13 @@ public class MatchInfo
         var home = RefDataService.GetTeamName(HomeId, languageCode, IsMatch3rd);
         var away = RefDataService.GetTeamName(AwayId, languageCode, IsMatch3rd);
 
-        return (string.IsNullOrEmpty(home) || string.IsNullOrEmpty(away)) ? TeamName : $"{home} -vs- {away}";
+        return string.IsNullOrEmpty(home) || string.IsNullOrEmpty(away) ? TeamName : $"{home} -vs- {away}";
     }
 
     private string GetLeagueName(string languageCode)
     {
         var value = RefDataService.GetLeagueName(LeagueId, languageCode, IsMatch3rd);
 
-        return (string.IsNullOrEmpty(value)) ? LeagueName : value;
+        return string.IsNullOrEmpty(value) ? LeagueName : value;
     }
 }

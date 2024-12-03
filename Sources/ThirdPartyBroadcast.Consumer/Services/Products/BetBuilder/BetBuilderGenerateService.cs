@@ -37,7 +37,7 @@ public class BetBuilderGenerateServiceImp(
         {
             MatchId = request.MatchId,
             IsAuto = request.IsAuto,
-            SelectedSelection = request.Resources,
+            SelectedSelection = request.Resources
         };
         return await repository.FetchMultipleAsync<Result, ReasonModel>(criteria);
     }

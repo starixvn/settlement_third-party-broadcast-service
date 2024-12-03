@@ -44,12 +44,12 @@ public class FullTimeScoreValidator(ScoreService scoreService) : IValidator
         var quarters = resources.Where(r => r.Id != ResourceId.FullTimeResourceId
                                             && r.Id != ResourceId.HalfTimeResourceId);
 
-        if (!scoreService.IsScoreEqualToQuarterScores(quarters, fullTime))
+        if (scoreService.IsScoreEqualToQuarterScores(quarters, fullTime))
         {
-            var message = scoreService.GetScoreMessage(resources, string.Empty);
-            return new Result(1, $"Inconsistent value {message}.");
+            return new Result();
         }
 
-        return new Result();
+        var scoreMessage = scoreService.GetScoreMessage(resources, string.Empty);
+        return new Result(1, $"Inconsistent value {scoreMessage}.");
     }
 }

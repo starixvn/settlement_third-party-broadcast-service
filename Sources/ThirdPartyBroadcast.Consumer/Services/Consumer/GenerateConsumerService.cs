@@ -20,7 +20,7 @@ public class GenerateConsumerServiceImp(
         ProductType.BitCoin,
         ProductType.NumberGame,
         ProductType.BetBuilder,
-        ProductType.FastMarket,
+        ProductType.FastMarket
     ];
 
     private static List<string> ProductsGroupTwo =>

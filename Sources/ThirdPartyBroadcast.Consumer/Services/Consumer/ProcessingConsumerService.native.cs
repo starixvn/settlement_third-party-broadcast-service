@@ -48,19 +48,21 @@ public class MyConsumerDefinition : ConsumerDefinition<ProcessingConsumerService
     protected override void ConfigureConsumer(IReceiveEndpointConfigurator endpointConfigurator, IConsumerConfigurator<ProcessingConsumerService> consumerConfigurator,
         IRegistrationContext context)
     {
-        if (endpointConfigurator is IRabbitMqReceiveEndpointConfigurator rmq)
+        if (endpointConfigurator is not IRabbitMqReceiveEndpointConfigurator rmq)
         {
-            rmq.PrefetchCount = FetchItemNumber;
-            rmq.DiscardSkippedMessages();
-            rmq.DiscardFaultedMessages();
-            rmq.Consumer<ProcessingFaultConsumerService>();
-            rmq.UseMessageRetry(retryConfig =>
-                {
-                    retryConfig.Ignore<ArgumentNullException>();
-                    retryConfig.Ignore<DataException>(x => x.Message.Contains(IgnoreMessage));
-                    retryConfig.Interval(RetryCount, TimeSpan.FromMilliseconds(RetryInterval));
-                }
-            );
+            return;
         }
+
+        rmq.PrefetchCount = FetchItemNumber;
+        rmq.DiscardSkippedMessages();
+        rmq.DiscardFaultedMessages();
+        rmq.Consumer<ProcessingFaultConsumerService>();
+        rmq.UseMessageRetry(retryConfig =>
+            {
+                retryConfig.Ignore<ArgumentNullException>();
+                retryConfig.Ignore<DataException>(x => x.Message.Contains(IgnoreMessage));
+                retryConfig.Interval(RetryCount, TimeSpan.FromMilliseconds(RetryInterval));
+            }
+        );
     }
 }

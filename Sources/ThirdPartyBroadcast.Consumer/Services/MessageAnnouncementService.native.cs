@@ -24,7 +24,7 @@ public class MessageAnnouncementServiceImp(RefDataService refDataService) : Mess
             MsgContentsType = ticketType == TicketType.Settled ? MsgContentType.Settled : MsgContentType.Running,
             MatchId = matchInfo.MatchId,
             Creator = adminId,
-            LeagueGroupId = matchInfo.LeagueGroupId,
+            LeagueGroupId = matchInfo.LeagueGroupId
         };
     }
 
@@ -47,7 +47,7 @@ public class MessageAnnouncementServiceImp(RefDataService refDataService) : Mess
             ContentLanguage.Mandarin => matchInfo.TeamNameCs,
             ContentLanguage.NewMandarin => matchInfo.TeamNameNewCs,
 
-            _ => matchInfo.TeamName,
+            _ => matchInfo.TeamName
         };
 
     private static string GetLeagueName(MatchInfo matchInfo, string languageCode) =>
@@ -57,7 +57,7 @@ public class MessageAnnouncementServiceImp(RefDataService refDataService) : Mess
             ContentLanguage.Mandarin => matchInfo.LeagueNameCs,
             ContentLanguage.NewMandarin => matchInfo.LeagueNameNewCs,
 
-            _ => matchInfo.LeagueName,
+            _ => matchInfo.LeagueName
         };
 
     private static string GetTemplate(TicketType ticketType, string languageCode) => (ticketType, languageCode) switch
@@ -70,7 +70,7 @@ public class MessageAnnouncementServiceImp(RefDataService refDataService) : Mess
         (TicketType.Settled, ContentLanguage.Cantonese) => MessageAnnounceTemplate.SettledMsgCantonese,
         (TicketType.Settled, ContentLanguage.Mandarin) => MessageAnnounceTemplate.SettledMsgMandarin,
         (TicketType.Settled, ContentLanguage.NewMandarin) => MessageAnnounceTemplate.SettledMsgMandarin,
-        _ => string.Empty,
+        _ => string.Empty
     };
 
     public List<MessageAnnounenceItem> CreateMessageItems(IEnumerable<TicketSettleInfo> settledTickets, int messageId)

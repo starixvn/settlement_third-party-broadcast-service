@@ -23,21 +23,21 @@ public class FastMarketServiceImp(
         var requestValidation = mapper.Map<FastMarketCriteria, EventTicketFastMarketRequest>(criteria);
         var validationResult = await scaleOutSettleService.ValidateEventAndTicketFastMarket(requestValidation);
 
-        if (validationResult.ErrorCode == 0)
+        if (validationResult.ErrorCode != 0)
         {
-            await UpdateMatchInfo(criteria);
-
-            var message = GenerateLogMessage(criteria);
-            await logDirectlyService.WriteLog(criteria.MatchId, message);
-
-            return await calculateService.Execute(criteria);
+            return new Result
+            {
+                ErrorCode = validationResult.ErrorCode,
+                ErrorMessage = validationResult.ErrorMessage
+            };
         }
 
-        return new Result
-        {
-            ErrorCode = validationResult.ErrorCode,
-            ErrorMessage = validationResult.ErrorMessage
-        };
+        await UpdateMatchInfo(criteria);
+
+        var message = GenerateLogMessage(criteria);
+        await logDirectlyService.WriteLog(criteria.MatchId, message);
+
+        return await calculateService.Execute(criteria);
     }
 
     private static string GenerateLogMessage(FastMarketCriteria criteria)

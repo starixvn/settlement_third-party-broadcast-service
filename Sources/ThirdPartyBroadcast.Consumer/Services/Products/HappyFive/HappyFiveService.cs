@@ -69,18 +69,19 @@ public class HappyFiveServiceImp(
 
     private async Task<Result> ValidateBeforeSettle(HappyFiveRequest request)
     {
-        if (IsCalculate(request.Action))
+        if (!IsCalculate(request.Action))
         {
-            var criteriaValidation = new ValidateHappyFive { MatchId = request.MatchId, Action = request.Action };
-            await repository.ExecuteAsync(criteriaValidation);
-            return new Result
-            {
-                ErrorCode = criteriaValidation.ErrCode,
-                ErrorMessage = criteriaValidation.ErrMsg
-            };
+            return new Result();
         }
 
-        return new Result();
+        var criteriaValidation = new ValidateHappyFive { MatchId = request.MatchId, Action = request.Action };
+        await repository.ExecuteAsync(criteriaValidation);
+        return new Result
+        {
+            ErrorCode = criteriaValidation.ErrCode,
+            ErrorMessage = criteriaValidation.ErrMsg
+        };
+
     }
 
     private async Task UpdateBalls(Result result, HappyFiveRequest request, IEnumerable<Ball> balls)

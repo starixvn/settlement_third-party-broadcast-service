@@ -68,8 +68,9 @@ public static class BroadcastConsumerInjection
         services.AddTransient<TicketInfoService, TicketInfoServiceImp>();
         services.AddTransient<Services.MatchService, Services.MatchServiceImp>();
 
+        var remotingRefUrl = configuration.GetValue("Fanex.RemotingRef.Service.Url", string.Empty) ?? string.Empty;
         RefDataTypeContainer
-            .ConnectTo(new Uri(configuration.GetSection("Fanex.RemotingRef.Service.Url").Value))
+            .ConnectTo(new Uri(remotingRefUrl))
             .FromApplication("Settlement");
         services.AddSingleton<IRemotingRefService, RemotingRefService>();
         services.AddTransient<RefDataService, RefDataServiceImp>();
@@ -140,16 +141,16 @@ public static class BroadcastConsumerInjection
         services.AddSingleton<ICache>(new RedisCache(new RedisCacheOptions
         {
             ConnectionString = redisConfig,
-            ApplicationName = applicationName,
+            ApplicationName = applicationName
         }));
     }
 
     public static void ConfigureMassTransit(this IServiceCollection service, IConfiguration configuration)
     {
-        var host = configuration.GetSection("RabbitMQ:Hosting").Value;
-        var virtualHost = configuration.GetSection("RabbitMQ:VirtualHost").Value;
-        var username = configuration.GetSection("RabbitMQ:Username").Value;
-        var password = configuration.GetSection("RabbitMQ:Password").Value;
+        var host = configuration.GetValue("RabbitMQ:Hosting", string.Empty);
+        var virtualHost = configuration.GetValue("RabbitMQ:VirtualHost", string.Empty);
+        var username = configuration.GetValue("RabbitMQ:Username", string.Empty);
+        var password = configuration.GetValue("RabbitMQ:Password", string.Empty);
         service.AddMassTransit(busConfigurator =>
         {
             busConfigurator.AddConsumer<ProcessingConsumerService, MyConsumerDefinition>();
@@ -157,8 +158,8 @@ public static class BroadcastConsumerInjection
             {
                 busFactoryConfigurator.Host(host, virtualHost, h =>
                 {
-                    h.Username(username);
-                    h.Password(password);
+                    h.Username(username ?? string.Empty);
+                    h.Password(password ?? string.Empty);
                 });
                 busFactoryConfigurator.ConfigureEndpoints(context);
             });

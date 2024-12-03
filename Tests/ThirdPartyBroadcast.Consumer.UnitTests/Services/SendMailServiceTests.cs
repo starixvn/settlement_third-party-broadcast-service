@@ -39,7 +39,7 @@ public class SendMailServiceTests
                 TicketType = "Single Ticket",
                 TransId = "100123456789",
                 Username = "Username 1",
-                TransDate = DateTime.Now,
+                TransDate = DateTime.Now
             },
             new()
             {
@@ -48,7 +48,7 @@ public class SendMailServiceTests
                 TicketType = "Selection of Mix Parlay",
                 TransId = "100123456790",
                 Username = "Username 2",
-                TransDate = DateTime.Now,
+                TransDate = DateTime.Now
             }
         };
 
@@ -90,7 +90,7 @@ public class SendMailServiceTests
                 TicketType = "Single Ticket",
                 TransId = "100123456789",
                 Username = "Username 1",
-                TransDate = DateTime.Now,
+                TransDate = DateTime.Now
             },
             new()
             {
@@ -99,7 +99,7 @@ public class SendMailServiceTests
                 TicketType = "Single Ticket",
                 TransId = "100123456790",
                 Username = "Username 2",
-                TransDate = DateTime.Now,
+                TransDate = DateTime.Now
             },
             new()
             {
@@ -108,7 +108,7 @@ public class SendMailServiceTests
                 TicketType = "Selection of Mix Parlay",
                 TransId = "100123456791",
                 Username = "Username 1",
-                TransDate = DateTime.Now,
+                TransDate = DateTime.Now
             },
             new()
             {
@@ -117,7 +117,7 @@ public class SendMailServiceTests
                 TicketType = "Single Ticket",
                 TransId = "100123456792",
                 Username = "Username 2",
-                TransDate = DateTime.Now,
+                TransDate = DateTime.Now
             },
             new()
             {
@@ -126,7 +126,7 @@ public class SendMailServiceTests
                 TicketType = "Selection of Mix Parlay",
                 TransId = "100123456793",
                 Username = "member test1238",
-                TransDate = DateTime.Now,
+                TransDate = DateTime.Now
             }
         };
 
@@ -151,7 +151,7 @@ public class SendMailServiceTests
             MailId = 103,
             MatchInfo = match,
             TicketsInfo = tickets,
-            TotalTickets = ticketsInfo.Count()
+            TotalTickets = ticketsInfo.Count
         };
 
         await service.SendMailByFunctionId(model);

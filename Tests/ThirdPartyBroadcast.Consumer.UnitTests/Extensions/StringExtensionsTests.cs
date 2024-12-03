@@ -8,7 +8,7 @@ public class StringExtensionsTests
     public void ToResources_ValidXml_ReturnsResourcesModel()
     {
         // Arrange
-        string xml = @"<Resources>
+        const string xml = @"<Resources>
                             <Resource Id=""01"" Home=""1"" Away=""3"" />
                       </Resources>";
 
@@ -25,7 +25,7 @@ public class StringExtensionsTests
     public void ToResources_InValidXml_ThrowsInvalidOperationException()
     {
         // Arrange
-        string xml = @"";
+        const string xml = "";
 
         // Assert
         Assert.Throws<InvalidOperationException>(() => xml.ToResources());

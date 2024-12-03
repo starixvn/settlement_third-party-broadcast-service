@@ -27,13 +27,13 @@ public class TicketInfoServiceImp(IOptions<AppSettingsKey> appSettingsKey, IDyna
 
     public async Task<List<TicketSettleInfo>> GetTicketsByAction(int matchId, short sportType, string action, List<ResourceItemModel> resources)
     {
-        if (string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase))
+        if (!string.Equals(action, ActionName.Refund, StringComparison.OrdinalIgnoreCase))
         {
-            var resourceIds = string.Join(',', resources.Select(r => r.Id));
-            return await GetTicketsAllSites(new TicketSettleCriteria { MatchId = matchId, SportType = sportType, ResourceIds = resourceIds });
+            return [];
         }
 
-        return [];
+        var resourceIds = string.Join(',', resources.Select(r => r.Id));
+        return await GetTicketsAllSites(new TicketSettleCriteria { MatchId = matchId, SportType = sportType, ResourceIds = resourceIds });
     }
 
     public async Task<List<TicketSettleInfo>> GetTicketsByTransIds(int matchId, short sportType, List<TicketSettleInfo> tickets)

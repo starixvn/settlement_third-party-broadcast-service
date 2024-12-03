@@ -37,13 +37,14 @@ public class MatchScoreValidator : IValidator
         var isHtCalculated = matchInfo.HtAwayScore != null || matchInfo.HtHomeScore != null;
         var inValid = matchInfo.HtHomeScore > int.Parse(ftResult.Home) || matchInfo.HtAwayScore > int.Parse(ftResult.Away);
 
-        if (isHtCalculated && inValid)
+        if (!isHtCalculated || !inValid)
         {
-            var message = string.Format(ErrorMessage.Inconsistent, $"{matchInfo.HtHomeScore}-{matchInfo.HtAwayScore}", $"{ftResult.Home}-{ftResult.Away}");
-            return new Result(3, message);
+            return new Result();
         }
 
-        return new Result();
+        var message = string.Format(ErrorMessage.Inconsistent, $"{matchInfo.HtHomeScore}-{matchInfo.HtAwayScore}", $"{ftResult.Home}-{ftResult.Away}");
+        return new Result(3, message);
+
     }
 
     private static Result ValidateOnlyHtConsistency(ResourceItemModel htResult, MatchInfo matchInfo)
@@ -51,13 +52,14 @@ public class MatchScoreValidator : IValidator
         var ísFtCalculated = matchInfo.FinalAwayScore != null || matchInfo.FinalHomeScore != null;
         var inValid = int.Parse(htResult.Home) > matchInfo.FinalHomeScore || int.Parse(htResult.Away) > matchInfo.FinalAwayScore;
 
-        if (ísFtCalculated && inValid)
+        if (!ísFtCalculated || !inValid)
         {
-            var message = string.Format(ErrorMessage.Inconsistent, $"{htResult.Home}-{htResult.Away}", $"{matchInfo.FinalHomeScore}-{matchInfo.FinalAwayScore}");
-            return new Result(3, message);
+            return new Result();
         }
 
-        return new Result();
+        var message = string.Format(ErrorMessage.Inconsistent, $"{htResult.Home}-{htResult.Away}", $"{matchInfo.FinalHomeScore}-{matchInfo.FinalAwayScore}");
+        return new Result(3, message);
+
     }
 
     private static Result ValidateHtFtConsistency(ResourceItemModel htResult, ResourceItemModel ftResult)
@@ -65,12 +67,13 @@ public class MatchScoreValidator : IValidator
         var inValidHome = int.Parse(htResult.Home) > int.Parse(ftResult.Home);
         var inValidAway = int.Parse(htResult.Away) > int.Parse(ftResult.Away);
 
-        if (inValidHome || inValidAway)
+        if (!inValidHome && !inValidAway)
         {
-            var message = string.Format(ErrorMessage.Inconsistent, $"{htResult.Home}-{htResult.Away}", $"{ftResult.Home}-{ftResult.Away}");
-            return new Result(3, message);
+            return new Result();
         }
 
-        return new Result();
+        var message = string.Format(ErrorMessage.Inconsistent, $"{htResult.Home}-{htResult.Away}", $"{ftResult.Home}-{ftResult.Away}");
+        return new Result(3, message);
+
     }
 }

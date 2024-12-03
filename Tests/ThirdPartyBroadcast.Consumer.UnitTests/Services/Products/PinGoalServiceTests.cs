@@ -26,9 +26,9 @@ public class PinGoalServiceTests
     [Fact]
     public async Task Settle_ValidateFailed_StopProcess()
     {
-        var resultFailed = new ResultMessage()
+        var resultFailed = new ResultMessage
         {
-            ErrorCode = 99,
+            ErrorCode = 99
         };
 
         scaleOutSettleService.ValidateEventAndTicket(Arg.Any<EventTicketRequest>()).Returns(resultFailed);
