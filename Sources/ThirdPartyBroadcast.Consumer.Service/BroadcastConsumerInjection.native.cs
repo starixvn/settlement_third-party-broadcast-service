@@ -2,7 +2,6 @@
 using Fanex.Caching;
 using Fanex.Caching.Redis;
 using Fanex.Data.Repository;
-using Fanex.Logging;
 using Fanex.Logging.Extensions;
 using Fanex.Logging.Extensions.AspNetCore;
 using Fanex.Logging.Extensions.Database;
@@ -14,16 +13,12 @@ using Fanex.Settlement.Converter.Services;
 using Fanex.Settlement.ScaleOut;
 using Fanex.Settlement.ScaleOut.Services;
 using MassTransit;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using ONEbook.UM;
 using ONEbook.UM.AspNetCore;
 using ONEbook.UM.Configurations;
 using ONEbook.UM.Helpers;
 using ONEbook.UM.Transport;
 using Settlement.Business.Services;
-using SharpRaven;
 using ThirdPartyBroadcast.Consumer.Services;
 using ThirdPartyBroadcast.Consumer.Services.Consumer;
 using ThirdPartyBroadcast.Consumer.Services.Products;
@@ -165,7 +160,6 @@ public static class BroadcastConsumerInjection
             ConnectionString = redisConfig,
             ApplicationName = applicationName,
         }));
-        services.AddSingleton<ICacheService>(new CacheService());
     }
 
     private static void StartUmSetting(IConfiguration configuration)
