@@ -1,4 +1,6 @@
-﻿using Fanex.MailDelivery.Client;
+﻿using Fanex.MailDeliver.MailClient;
+using Fanex.MailDelivery.Client;
+using Fanex.MailDelivery.Core.Models;
 using Fanex.RemotingRef;
 using Microsoft.Extensions.Configuration;
 using System.Globalization;
@@ -7,7 +9,7 @@ namespace ThirdPartyBroadcast.Consumer.UnitTests.Services;
 
 public class SendMailServiceTests
 {
-    private readonly SendMailService service;
+    private readonly SendMailServiceImp service;
 
     public SendMailServiceTests()
     {
@@ -23,7 +25,26 @@ public class SendMailServiceTests
                 .FromApplication("Settlement");
         }
 
+        AppSettings.AppMailId = configuration.GetSection("MailServer:Id").Value;
+        AppSettings.AppMailAddress = configuration.GetSection("MailServer:Address").Value;
+
         MailClientHandler.StartAsync("appsettings.json");
+
+        var mail = new Mail
+        {
+            Subject = "Subject(item)",
+            Title = "NAP - Settlement System",
+            Body = "MailBody(item)",
+            MailingListId = 103
+        };
+        try
+        {
+            MailClientHandler.SendFunctionMailAsync(mail);
+        }
+        catch (Exception ex)
+        {
+            var test = ex;
+        }
         service = new SendMailServiceImp();
     }
 

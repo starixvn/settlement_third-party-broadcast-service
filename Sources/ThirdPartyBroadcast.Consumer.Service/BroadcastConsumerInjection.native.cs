@@ -2,8 +2,6 @@
 using Fanex.Caching;
 using Fanex.Caching.Redis;
 using Fanex.Data.Repository;
-using Fanex.MailDeliver.MailClient;
-using Fanex.MailDelivery.Client;
 using Fanex.RemotingRef;
 using Fanex.Settlement.Converter.Services;
 using Fanex.Settlement.ScaleOut;
@@ -74,9 +72,6 @@ public static class BroadcastConsumerInjection
             .FromApplication("Settlement");
         services.AddSingleton<IRemotingRefService, RemotingRefService>();
         services.AddTransient<RefDataService, RefDataServiceImp>();
-
-        AppSettings.AppMailId = configuration.GetSection("MailServer:Id").Value;
-        AppSettings.AppMailAddress = configuration.GetSection("MailServer:Address").Value;
         MailClientHandler.StartAsync();
     }
 
