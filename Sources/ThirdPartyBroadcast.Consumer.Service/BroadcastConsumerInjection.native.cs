@@ -2,6 +2,7 @@
 using Fanex.Caching;
 using Fanex.Caching.Redis;
 using Fanex.Data.Repository;
+using Fanex.MailDelivery.Client;
 using Fanex.RemotingRef;
 using Fanex.Settlement.Converter.Services;
 using Fanex.Settlement.ScaleOut;
