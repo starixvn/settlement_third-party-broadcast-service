@@ -1,7 +1,7 @@
-﻿using System.Collections.Concurrent;
-using Fanex.MailDelivery.Client;
+﻿using Fanex.MailDelivery.Client;
 using Fanex.MailDelivery.Core.Models;
 using RazorEngineCore;
+using System.Collections.Concurrent;
 
 namespace ThirdPartyBroadcast.Consumer.Services;
 
@@ -33,7 +33,7 @@ public class SendMailServiceImp : SendMailService
             ? "credit-template.cshtml"
             : "deposit-template.cshtml";
 
-        var templatePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Templates", templateFileName);
+        var templatePath = Path.Combine("Templates", templateFileName);
         var hashCode = templatePath.GetHashCode();
         var compiledTemplate = CompiledTemplateCache.GetOrAdd(hashCode, _ =>
         {
