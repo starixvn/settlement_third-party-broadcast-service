@@ -1,14 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
-
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
-
   <ItemGroup>
     <Compile Remove="Services\BetBuilderServiceTests.cs" />
     <Compile Remove="Services\BitCoinServiceTests.cs" />
@@ -18,12 +15,10 @@
     <Compile Remove="Services\VirtualBetRadarServiceTests.cs" />
     <Compile Remove="Services\VirtualSoccerServiceTests.cs" />
   </ItemGroup>
-
   <ItemGroup>
     <None Remove="Templates\credit-template.cshtml" />
     <None Remove="Templates\deposit-template.cshtml" />
   </ItemGroup>
-
   <ItemGroup>
     <Content Include="..\..\Sources\ThirdPartyBroadcast.Consumer.Service\appsettings.Development.json" Link="appsettings.Development.json" />
     <Content Include="..\..\Sources\ThirdPartyBroadcast.Consumer.Service\appsettings.json" Link="appsettings.json">
@@ -40,16 +35,15 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-
   <ItemGroup>
-    <PackageReference Include="Fanex.Caching" Version="2.2.6" />
+    <PackageReference Include="Fanex.Caching" Version="2.2.7" />
     <PackageReference Include="Fanex.RemotingRef" Version="1.5.5.1" />
     <PackageReference Include="Fanex.Settlement.Business" Version="1.0.23" />
     <PackageReference Include="Fanex.Settlement.Converter" Version="1.0.0.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
     <PackageReference Include="NSubstitute" Version="5.3.0" />
     <PackageReference Include="xunit" Version="2.9.2" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2">
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.0.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
@@ -58,9 +52,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\..\Sources\ThirdPartyBroadcast.Consumer\ThirdPartyBroadcast.Consumer.csproj" />
   </ItemGroup>
-
 </Project>

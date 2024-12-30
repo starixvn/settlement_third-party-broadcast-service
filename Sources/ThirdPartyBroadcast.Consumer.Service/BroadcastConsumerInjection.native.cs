@@ -2,10 +2,6 @@
 using Fanex.Caching;
 using Fanex.Caching.Redis;
 using Fanex.Data.Repository;
-using Fanex.Logging.Extensions;
-using Fanex.Logging.Extensions.AspNetCore;
-using Fanex.Logging.Extensions.Database;
-using Fanex.Logging.Sentry.RavenClient;
 using Fanex.MailDeliver.MailClient;
 using Fanex.MailDelivery.Client;
 using Fanex.RemotingRef;
@@ -13,11 +9,6 @@ using Fanex.Settlement.Converter.Services;
 using Fanex.Settlement.ScaleOut;
 using Fanex.Settlement.ScaleOut.Services;
 using MassTransit;
-using ONEbook.UM;
-using ONEbook.UM.AspNetCore;
-using ONEbook.UM.Configurations;
-using ONEbook.UM.Helpers;
-using ONEbook.UM.Transport;
 using Settlement.Business.Services;
 using ThirdPartyBroadcast.Consumer.Services;
 using ThirdPartyBroadcast.Consumer.Services.Consumer;
@@ -74,18 +65,6 @@ public static class BroadcastConsumerInjection
         services.AddTransient<TicketInfoService, TicketInfoServiceImp>();
         services.AddTransient<Services.MatchService, Services.MatchServiceImp>();
 
-        services.AddSingleton<IMaintenanceService, MaintenanceServiceImp>();
-        services.AddSingleton(new UMClientConfiguration().Initialize(configuration));
-        services.AddSingleton<IUMCacheService, UMCacheService>();
-        services.AddSingleton<IUMRestClient, UMRestClient>();
-        services.AddSingleton<ONEbook.UM.Services.IMaintenanceService, ONEbook.UM.Services.MaintenanceService>();
-        services.AddFanexLogSentry(configuration);
-        services.AddRedisCacheConfig(configuration);
-        StartUmSetting(configuration);
-        StartExceptionHandler();
-        services.ConfigureAutoMapper();
-        services.ConfigureMassTransit(configuration);
-
         RefDataTypeContainer
             .ConnectTo(new Uri(configuration.GetSection("Fanex.RemotingRef.Service.Url").Value))
             .FromApplication("Settlement");
@@ -138,7 +117,7 @@ public static class BroadcastConsumerInjection
         });
     }
 
-    private static void ConfigureAutoMapper(this IServiceCollection service)
+    public static void ConfigureAutoMapper(this IServiceCollection service)
     {
         var mapperConfig = new MapperConfiguration(mc =>
         {
@@ -150,7 +129,7 @@ public static class BroadcastConsumerInjection
         service.AddSingleton(mapper);
     }
 
-    private static void AddRedisCacheConfig(this IServiceCollection services, IConfiguration configuration)
+    public static void AddRedisCacheConfig(this IServiceCollection services, IConfiguration configuration)
     {
         var redisConfig = configuration.GetSection("Fanex.Caching.Redis:RedisConfig").Value;
         var applicationName = configuration.GetSection("Fanex.Caching.Redis:ChannelPrefix").Value;
@@ -162,24 +141,7 @@ public static class BroadcastConsumerInjection
         }));
     }
 
-    private static void StartUmSetting(IConfiguration configuration)
-    {
-        var umConfig = new UMClientConfiguration().Initialize(configuration);
-
-        UMClientManager
-            .UseConfig(umConfig)
-            .UseCacheService(new UMCacheService(new CacheService()))
-            .UseRestClient(new UMRestClient(umConfig));
-    }
-
-    private static void StartExceptionHandler()
-    {
-        ExceptionHandler
-            .UseConfig(new LoggingConfiguration())
-            .UseGetDbExceptionInfo(DatabaseInfoGetters.GetDbExceptionInfo);
-    }
-
-    private static void ConfigureMassTransit(this IServiceCollection service, IConfiguration configuration)
+    public static void ConfigureMassTransit(this IServiceCollection service, IConfiguration configuration)
     {
         var host = configuration.GetSection("RabbitMQ:Hosting").Value;
         var virtualHost = configuration.GetSection("RabbitMQ:VirtualHost").Value;

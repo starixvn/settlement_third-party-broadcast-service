@@ -1,4 +1,5 @@
-﻿using StackExchange.Redis;
+﻿using ONEbook.UM.Services;
+using StackExchange.Redis;
 using System.Data;
 
 namespace ThirdPartyBroadcast.Consumer.Services.Consumer;
@@ -16,7 +17,8 @@ public class ProcessingConsumerService(
     public async Task Consume(ConsumeContext<IBroadcastApiProcessing> context)
     {
         var message = context.Message;
-        if (maintenanceService.IsMaintenance)
+        var isMaintenance = await maintenanceService.IsUnderMaintenanceAsync();
+        if (isMaintenance)
         {
             await RedisDatabase.ListRightPushAsync(CacheKeys.BroadcastServiceProductWaitingCacheKey,
                   $"{message.ProductType}{SpecifiedWord}{message.Data}");
