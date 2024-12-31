@@ -9,6 +9,8 @@ using Fanex.Settlement.Converter.Services;
 using Fanex.Settlement.ScaleOut;
 using Fanex.Settlement.ScaleOut.Services;
 using MassTransit;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Settlement.Business.Services;
 using ThirdPartyBroadcast.Consumer.Services;
 using ThirdPartyBroadcast.Consumer.Services.Consumer;
@@ -21,6 +23,7 @@ using ThirdPartyBroadcast.Consumer.Services.Products.VirtualSportFive;
 
 namespace ThirdPartyBroadcast.Consumer.Service;
 
+using Microsoft.Extensions.DependencyInjection;
 using StackExchange.Redis;
 
 public static class BroadcastConsumerInjection
