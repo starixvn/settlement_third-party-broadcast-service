@@ -27,7 +27,7 @@ using StackExchange.Redis;
 
 public static class BroadcastConsumerInjection
 {
-    public static void InitializeServices(this IServiceCollection services, IConfiguration configuration)
+    public static void AddInternalServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
         services.AddSingleton<XmlConvertService, XmlConvertServiceImp>();
@@ -73,10 +73,11 @@ public static class BroadcastConsumerInjection
             .FromApplication("Settlement");
         services.AddSingleton<IRemotingRefService, RemotingRefService>();
         services.AddTransient<RefDataService, RefDataServiceImp>();
+
         MailClientHandler.StartAsync();
     }
 
-    private static void InitializeBusinessByProductsServices(this IServiceCollection services)
+    private static void AddBusinessByProductsServices(this IServiceCollection services)
     {
         services.AddSingleton<HappyFiveService, HappyFiveServiceImp>();
         services.AddSingleton<Services.Products.HappyFive.ProcessService, Services.Products.HappyFive.ProcessServiceImp>();
@@ -88,7 +89,7 @@ public static class BroadcastConsumerInjection
         services.AddSingleton<Services.Products.VirtualRacing.SettleSitesService, Services.Products.VirtualRacing.SettleSitesServiceImp>();
     }
 
-    public static void InitializeBusinessServices(this IServiceCollection services)
+    public static void AddBusinessServices(this IServiceCollection services)
     {
         services.AddSingleton<Settlement.Business.Services.Products.HappyFiveProcessService, Settlement.Business.Services.Products.HappyFiveProcessServiceImp>();
         services.AddSingleton<Settlement.Business.Services.Products.RacingProcessService, Settlement.Business.Services.Products.RacingProcessServiceImp>();
@@ -109,15 +110,10 @@ public static class BroadcastConsumerInjection
         services.AddSingleton<WinLostByModdsService, WinLostByModdsServiceImp>();
         services.AddSingleton<CommissionService, CommissionServiceImp>();
 
-        services.InitializeBusinessByProductsServices();
-
-        services.AddControllers().AddJsonOptions(options =>
-        {
-            options.JsonSerializerOptions.WriteIndented = true;
-        });
+        services.AddBusinessByProductsServices();
     }
 
-    public static void ConfigureAutoMapper(this IServiceCollection service)
+    public static void AddAutoMapperProfile(this IServiceCollection service)
     {
         var mapperConfig = new MapperConfiguration(mc =>
         {
@@ -141,7 +137,7 @@ public static class BroadcastConsumerInjection
         }));
     }
 
-    public static void ConfigureMassTransit(this IServiceCollection service, IConfiguration configuration)
+    public static void AddMassTransit(this IServiceCollection service, IConfiguration configuration)
     {
         var host = configuration.GetValue("RabbitMQ:Hosting", string.Empty);
         var virtualHost = configuration.GetValue("RabbitMQ:VirtualHost", string.Empty);

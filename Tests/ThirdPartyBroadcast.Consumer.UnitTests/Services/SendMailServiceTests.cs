@@ -28,7 +28,7 @@ public class SendMailServiceTests
         AppSettings.AppMailId = configuration.GetSection("MailServer:Id").Value;
         AppSettings.AppMailAddress = configuration.GetSection("MailServer:Address").Value;
 
-        MailClientHandler.StartAsync("appsettings.json");
+        MailClientHandler.Start("appsettings.json");
 
         var mail = new Mail
         {

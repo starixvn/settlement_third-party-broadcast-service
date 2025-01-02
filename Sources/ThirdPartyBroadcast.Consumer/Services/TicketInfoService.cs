@@ -33,7 +33,6 @@ public class TicketInfoServiceImp(IOptions<AppSettingsKey> appSettingsKey, IDyna
         }
 
         var resourceIds = string.Join(',', resources.Select(r => r.Id));
-        Console.WriteLine($"GetTicketsByAction {resourceIds}");
         return await GetTicketsAllSites(new TicketSettleCriteria { MatchId = matchId, SportType = sportType, ResourceIds = resourceIds });
     }
 
@@ -45,7 +44,6 @@ public class TicketInfoServiceImp(IOptions<AppSettingsKey> appSettingsKey, IDyna
         }
 
         var transIds = string.Join(',', tickets.Select(x => x.TransId).ToArray());
-        Console.WriteLine($"GetTicketsByTransIds {transIds}");
         return await GetTicketsAllSites(new TicketSettleCriteria { MatchId = matchId, SportType = sportType, TransIDs = transIds });
     }
 

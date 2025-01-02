@@ -8,24 +8,23 @@ using ThirdPartyBroadcast.Consumer.Models;
 using ThirdPartyBroadcast.Consumer.Service;
 
 var builder = WebApplication.CreateBuilder(args);
+var services = builder.Services;
+var configuration = builder.Configuration;
 
-builder.Services.AddOneBookUm(builder.Configuration);
+services.AddOneBookUm(configuration);
+services.AddFanexSql(configuration);
+services.AddFanexLogSentry(configuration);
+services.AddRedisCacheConfig(configuration);
+services.AddAutoMapperProfile();
+services.AddMassTransit(configuration);
+services.AddInternalServices(configuration);
+services.AddBusinessServices();
+services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.WriteIndented = true;
+});
 
-builder.Services.AddFanexSql(builder.Configuration);
-
-builder.Services.AddFanexLogSentry(builder.Configuration);
-
-builder.Services.AddRedisCacheConfig(builder.Configuration);
-
-builder.Services.ConfigureAutoMapper();
-
-builder.Services.ConfigureMassTransit(builder.Configuration);
-
-builder.Services.InitializeServices(builder.Configuration);
-
-builder.Services.InitializeBusinessServices();
-
-builder.Services.Configure<AppSettingsKey>(builder.Configuration);
+services.Configure<AppSettingsKey>(configuration);
 
 var app = builder.Build();
 
