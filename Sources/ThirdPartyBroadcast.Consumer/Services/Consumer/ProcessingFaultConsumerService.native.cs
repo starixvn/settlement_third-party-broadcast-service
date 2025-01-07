@@ -33,7 +33,7 @@ public class ProcessingFaultConsumerService : IConsumer<Fault<IBroadcastApiProce
             {
                 { "Product Name", productType.ToProductName() },
                 { "Match Info", data },
-                { "Details", result.ErrorMessage },
+                { "Details", result.ErrorMessage }
             };
 
             var logMessage = new LogMessage(result.ErrorMessage)

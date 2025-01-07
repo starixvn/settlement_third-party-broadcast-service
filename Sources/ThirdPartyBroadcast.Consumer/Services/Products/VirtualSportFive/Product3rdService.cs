@@ -59,7 +59,7 @@ public class Product3rdServiceImp(
             SelectedResources = request.SelectedResources,
             IsReSettledTickets = request.IsReSettledTickets,
             AdminId = request.AdminId,
-            Ip = request.Ip,
+            Ip = request.Ip
         };
         var settleResult = await calculateService.Execute(criteria);
 
@@ -79,7 +79,7 @@ public class Product3rdServiceImp(
             MatchId = request.MatchId,
             SelectedResources = request.SelectedResources,
             BetStatus = GetBetStatus(request),
-            EventStatus = GetEventStatus(request, matchInfo),
+            EventStatus = GetEventStatus(request, matchInfo)
         };
 
         await repository.ExecuteAsync(criteria);
@@ -87,16 +87,17 @@ public class Product3rdServiceImp(
 
     private static string GetBetStatus(VirtualSportFiveRequest request)
     {
-        if (string.Equals(request.Action, ActionName.Refund, StringComparison.OrdinalIgnoreCase))
+        if (!string.Equals(request.Action, ActionName.Refund, StringComparison.OrdinalIgnoreCase))
         {
-            var ftResult = request.Resources.Find(resources => resources.Id == ResourceId.FullTimeResourceId);
-
-            var htResult = request.Resources.Find(resources => resources.Id == ResourceId.HalfTimeResourceId);
-
-            return ftResult is not null && htResult is null ? "Refund FT" : "Refund";
+            return null;
         }
 
-        return null;
+        var ftResult = request.Resources.Find(resources => resources.Id == ResourceId.FullTimeResourceId);
+
+        var htResult = request.Resources.Find(resources => resources.Id == ResourceId.HalfTimeResourceId);
+
+        return ftResult is not null && htResult is null ? "Refund FT" : "Refund";
+
     }
 
     private static string GetEventStatus(VirtualSportFiveRequest request, MatchInfo matchInfo)
@@ -130,18 +131,19 @@ public class Product3rdServiceImp(
             return Result.ErrorRequest();
         }
 
-        if (string.Equals(request.Action, ActionName.Calculate, StringComparison.OrdinalIgnoreCase))
+        if (!string.Equals(request.Action, ActionName.Calculate, StringComparison.OrdinalIgnoreCase))
         {
-            var validator = ValidatorFactory.CreateValidatorChain();
-            return validator.Validate(htResult, ftResult, matchInfo);
+            return new Result();
         }
 
-        return new Result();
+        var validator = ValidatorFactory.CreateValidatorChain();
+        return validator.Validate(htResult, ftResult, matchInfo);
+
     }
 
     private static bool ValidRefundResources(ResourceItemModel htResult, ResourceItemModel ftResult)
     {
-        if (ftResult == null || (!string.IsNullOrEmpty(ftResult.Away) || !string.IsNullOrEmpty(ftResult.Home)))
+        if (ftResult == null || !string.IsNullOrEmpty(ftResult.Away) || !string.IsNullOrEmpty(ftResult.Home))
         {
             return false;
         }

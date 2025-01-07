@@ -2,7 +2,6 @@
 using Fanex.Caching;
 using Fanex.Caching.Redis;
 using Fanex.Data.Repository;
-using Fanex.MailDeliver.MailClient;
 using Fanex.MailDelivery.Client;
 using Fanex.RemotingRef;
 using Fanex.Settlement.Converter.Services;
@@ -28,7 +27,7 @@ using StackExchange.Redis;
 
 public static class BroadcastConsumerInjection
 {
-    public static void InitializeServices(this IServiceCollection services, IConfiguration configuration)
+    public static void AddInternalServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
         services.AddSingleton<XmlConvertService, XmlConvertServiceImp>();
@@ -68,18 +67,17 @@ public static class BroadcastConsumerInjection
         services.AddTransient<TicketInfoService, TicketInfoServiceImp>();
         services.AddTransient<Services.MatchService, Services.MatchServiceImp>();
 
+        var remotingRefUrl = configuration.GetValue("Fanex.RemotingRef.Service.Url", string.Empty) ?? string.Empty;
         RefDataTypeContainer
-            .ConnectTo(new Uri(configuration.GetSection("Fanex.RemotingRef.Service.Url").Value))
+            .ConnectTo(new Uri(remotingRefUrl))
             .FromApplication("Settlement");
         services.AddSingleton<IRemotingRefService, RemotingRefService>();
         services.AddTransient<RefDataService, RefDataServiceImp>();
 
-        AppSettings.AppMailId = configuration.GetSection("MailServer:Id").Value;
-        AppSettings.AppMailAddress = configuration.GetSection("MailServer:Address").Value;
         MailClientHandler.StartAsync();
     }
 
-    private static void InitializeBusinessByProductsServices(this IServiceCollection services)
+    private static void AddBusinessByProductsServices(this IServiceCollection services)
     {
         services.AddSingleton<HappyFiveService, HappyFiveServiceImp>();
         services.AddSingleton<Services.Products.HappyFive.ProcessService, Services.Products.HappyFive.ProcessServiceImp>();
@@ -91,7 +89,7 @@ public static class BroadcastConsumerInjection
         services.AddSingleton<Services.Products.VirtualRacing.SettleSitesService, Services.Products.VirtualRacing.SettleSitesServiceImp>();
     }
 
-    public static void InitializeBusinessServices(this IServiceCollection services)
+    public static void AddBusinessServices(this IServiceCollection services)
     {
         services.AddSingleton<Settlement.Business.Services.Products.HappyFiveProcessService, Settlement.Business.Services.Products.HappyFiveProcessServiceImp>();
         services.AddSingleton<Settlement.Business.Services.Products.RacingProcessService, Settlement.Business.Services.Products.RacingProcessServiceImp>();
@@ -112,15 +110,10 @@ public static class BroadcastConsumerInjection
         services.AddSingleton<WinLostByModdsService, WinLostByModdsServiceImp>();
         services.AddSingleton<CommissionService, CommissionServiceImp>();
 
-        services.InitializeBusinessByProductsServices();
-
-        services.AddControllers().AddJsonOptions(options =>
-        {
-            options.JsonSerializerOptions.WriteIndented = true;
-        });
+        services.AddBusinessByProductsServices();
     }
 
-    public static void ConfigureAutoMapper(this IServiceCollection service)
+    public static void AddAutoMapperProfile(this IServiceCollection service)
     {
         var mapperConfig = new MapperConfiguration(mc =>
         {
@@ -140,16 +133,16 @@ public static class BroadcastConsumerInjection
         services.AddSingleton<ICache>(new RedisCache(new RedisCacheOptions
         {
             ConnectionString = redisConfig,
-            ApplicationName = applicationName,
+            ApplicationName = applicationName
         }));
     }
 
-    public static void ConfigureMassTransit(this IServiceCollection service, IConfiguration configuration)
+    public static void AddMassTransit(this IServiceCollection service, IConfiguration configuration)
     {
-        var host = configuration.GetSection("RabbitMQ:Hosting").Value;
-        var virtualHost = configuration.GetSection("RabbitMQ:VirtualHost").Value;
-        var username = configuration.GetSection("RabbitMQ:Username").Value;
-        var password = configuration.GetSection("RabbitMQ:Password").Value;
+        var host = configuration.GetValue("RabbitMQ:Hosting", string.Empty);
+        var virtualHost = configuration.GetValue("RabbitMQ:VirtualHost", string.Empty);
+        var username = configuration.GetValue("RabbitMQ:Username", string.Empty);
+        var password = configuration.GetValue("RabbitMQ:Password", string.Empty);
         service.AddMassTransit(busConfigurator =>
         {
             busConfigurator.AddConsumer<ProcessingConsumerService, MyConsumerDefinition>();
@@ -157,8 +150,8 @@ public static class BroadcastConsumerInjection
             {
                 busFactoryConfigurator.Host(host, virtualHost, h =>
                 {
-                    h.Username(username);
-                    h.Password(password);
+                    h.Username(username ?? string.Empty);
+                    h.Password(password ?? string.Empty);
                 });
                 busFactoryConfigurator.ConfigureEndpoints(context);
             });

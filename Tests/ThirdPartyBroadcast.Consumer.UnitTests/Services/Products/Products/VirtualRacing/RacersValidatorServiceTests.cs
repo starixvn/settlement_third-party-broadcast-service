@@ -55,7 +55,7 @@ public class RacersValidatorServiceTests
         var outright = CreateOutright(1, 2, 3, 4, 5, 6);
 
         var result = service.ValidateBeforeSettle(request, outright);
-        const string expected = $"Insufficient results.";
+        const string expected = "Insufficient results.";
         Assert.Equal(expected, result.ErrorMessage);
     }
 

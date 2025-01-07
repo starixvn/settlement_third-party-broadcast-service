@@ -32,7 +32,7 @@ public class FastMarketServiceTests
     {
         var resultFailed = new ResultMessage
         {
-            ErrorCode = 99,
+            ErrorCode = 99
         };
 
         scaleOutSettleService.ValidateEventAndTicketFastMarket(Arg.Any<EventTicketFastMarketRequest>()).Returns(resultFailed);

@@ -31,13 +31,13 @@ public class VirtualBetbyGenerateServiceImp(
 
         request.Resources = GetMarkedList(resources, currentResources);
 
-        if (string.Equals(request.Action, ActionName.Calculate, StringComparison.OrdinalIgnoreCase))
+        if (!string.Equals(request.Action, ActionName.Calculate, StringComparison.OrdinalIgnoreCase))
         {
-            var validator = ValidatorFactory.CreateValidatorChain();
-            return validator.Validate(request, currentResources);
+            return new Result();
         }
 
-        return new Result();
+        var validator = ValidatorFactory.CreateValidatorChain();
+        return validator.Validate(request, currentResources);
     }
 
     private static List<ResourceItemModel> GetMarkedList(IEnumerable<ResourceItemModel> newResources, IEnumerable<ResourceItemModel> currentResources)
@@ -98,7 +98,7 @@ public class VirtualBetbyGenerateServiceImp(
                 MatchId = request.MatchId,
                 SelectedResources = request.SelectedResources,
                 BetStatus = generateMatchInfoService.GetBetStatus(request, matchInfo.BetStatus),
-                EventStatus = generateMatchInfoService.GetEventStatus(request, matchInfo.EventStatus),
+                EventStatus = generateMatchInfoService.GetEventStatus(request, matchInfo.EventStatus)
             };
 
             await repository.ExecuteAsync(criteria);

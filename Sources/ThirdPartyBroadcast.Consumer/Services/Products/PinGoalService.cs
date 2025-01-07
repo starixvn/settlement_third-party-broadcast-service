@@ -21,17 +21,17 @@ public class PinGoalServiceImp(
         var criteria = mapper.Map<PinGoalRequest, PinGoalCriteria>(request);
         var validationResult = await ValidateBeforePush(request);
 
-        if (validationResult.IsSuccessful)
+        if (!validationResult.IsSuccessful)
         {
-            await UpdateMatchInfo(request);
-
-            var message = GenerateMessageLog(request);
-            await logDirectlyService.WriteLog(request.MatchId, message);
-
-            return await calculateService.Execute(criteria);
+            return validationResult;
         }
 
-        return validationResult;
+        await UpdateMatchInfo(request);
+
+        var message = GenerateMessageLog(request);
+        await logDirectlyService.WriteLog(request.MatchId, message);
+
+        return await calculateService.Execute(criteria);
     }
 
     private static string GenerateMessageLog(PinGoalRequest request)

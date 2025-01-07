@@ -17,13 +17,13 @@ public class OutrightServiceImp(
     {
         var validation = await ValidateBeforeSettle(request);
 
-        if (validation.IsSuccessful)
+        if (!validation.IsSuccessful)
         {
-            var criteria = mapper.Map<OutrightRequest, OutrightCriteria>(request);
-            return await calculateService.Execute(criteria);
+            return validation;
         }
 
-        return validation;
+        var criteria = mapper.Map<OutrightRequest, OutrightCriteria>(request);
+        return await calculateService.Execute(criteria);
     }
 
     private async Task<Result> ValidateBeforeSettle(OutrightRequest request)

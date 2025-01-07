@@ -1,4 +1,6 @@
-﻿using Fanex.MailDelivery.Client;
+﻿using Fanex.MailDeliver.MailClient;
+using Fanex.MailDelivery.Client;
+using Fanex.MailDelivery.Core.Models;
 using Fanex.RemotingRef;
 using Microsoft.Extensions.Configuration;
 using System.Globalization;
@@ -7,7 +9,7 @@ namespace ThirdPartyBroadcast.Consumer.UnitTests.Services;
 
 public class SendMailServiceTests
 {
-    private readonly SendMailService service;
+    private readonly SendMailServiceImp service;
 
     public SendMailServiceTests()
     {
@@ -23,7 +25,26 @@ public class SendMailServiceTests
                 .FromApplication("Settlement");
         }
 
-        MailClientHandler.StartAsync("appsettings.json");
+        AppSettings.AppMailId = configuration.GetSection("MailServer:Id").Value;
+        AppSettings.AppMailAddress = configuration.GetSection("MailServer:Address").Value;
+
+        MailClientHandler.Start("appsettings.json");
+
+        var mail = new Mail
+        {
+            Subject = "Subject(item)",
+            Title = "NAP - Settlement System",
+            Body = "MailBody(item)",
+            MailingListId = 103
+        };
+        try
+        {
+            MailClientHandler.SendFunctionMailAsync(mail);
+        }
+        catch (Exception ex)
+        {
+            var test = ex;
+        }
         service = new SendMailServiceImp();
     }
 
@@ -39,7 +60,7 @@ public class SendMailServiceTests
                 TicketType = "Single Ticket",
                 TransId = "100123456789",
                 Username = "Username 1",
-                TransDate = DateTime.Now,
+                TransDate = DateTime.Now
             },
             new()
             {
@@ -48,7 +69,7 @@ public class SendMailServiceTests
                 TicketType = "Selection of Mix Parlay",
                 TransId = "100123456790",
                 Username = "Username 2",
-                TransDate = DateTime.Now,
+                TransDate = DateTime.Now
             }
         };
 
@@ -90,7 +111,7 @@ public class SendMailServiceTests
                 TicketType = "Single Ticket",
                 TransId = "100123456789",
                 Username = "Username 1",
-                TransDate = DateTime.Now,
+                TransDate = DateTime.Now
             },
             new()
             {
@@ -99,7 +120,7 @@ public class SendMailServiceTests
                 TicketType = "Single Ticket",
                 TransId = "100123456790",
                 Username = "Username 2",
-                TransDate = DateTime.Now,
+                TransDate = DateTime.Now
             },
             new()
             {
@@ -108,7 +129,7 @@ public class SendMailServiceTests
                 TicketType = "Selection of Mix Parlay",
                 TransId = "100123456791",
                 Username = "Username 1",
-                TransDate = DateTime.Now,
+                TransDate = DateTime.Now
             },
             new()
             {
@@ -117,7 +138,7 @@ public class SendMailServiceTests
                 TicketType = "Single Ticket",
                 TransId = "100123456792",
                 Username = "Username 2",
-                TransDate = DateTime.Now,
+                TransDate = DateTime.Now
             },
             new()
             {
@@ -126,7 +147,7 @@ public class SendMailServiceTests
                 TicketType = "Selection of Mix Parlay",
                 TransId = "100123456793",
                 Username = "member test1238",
-                TransDate = DateTime.Now,
+                TransDate = DateTime.Now
             }
         };
 
@@ -151,7 +172,7 @@ public class SendMailServiceTests
             MailId = 103,
             MatchInfo = match,
             TicketsInfo = tickets,
-            TotalTickets = ticketsInfo.Count()
+            TotalTickets = ticketsInfo.Count
         };
 
         await service.SendMailByFunctionId(model);

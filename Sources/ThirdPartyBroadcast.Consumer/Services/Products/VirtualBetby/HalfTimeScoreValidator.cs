@@ -35,13 +35,13 @@ public class HalfTimeScoreValidator(ScoreService scoreService) : IValidator
 
         var halftimeScore = htResources.Find(r => r.Id == ResourceId.HalfTimeResourceId);
         var quarters = htResources.Where(i => i.Id is ResourceId.Quarter1 or ResourceId.Quarter2).ToList();
-        if (!scoreService.IsScoreEqualToQuarterScores(quarters, halftimeScore))
+        if (scoreService.IsScoreEqualToQuarterScores(quarters, halftimeScore))
         {
-            quarters.Add(halftimeScore);
-            var message = scoreService.GetScoreMessage(quarters, string.Empty);
-            return new Result(1, $"Inconsistent value {message}.");
+            return new Result();
         }
 
-        return new Result();
+        quarters.Add(halftimeScore);
+        var message = scoreService.GetScoreMessage(quarters, string.Empty);
+        return new Result(1, $"Inconsistent value {message}.");
     }
 }

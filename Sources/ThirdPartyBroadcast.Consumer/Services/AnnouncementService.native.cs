@@ -43,7 +43,7 @@ public class AnnouncementServiceImp(
                 MasterUserName = st.MasterUserName,
                 SuperId = st.SuperId,
                 SuperUserName = st.SuperUserName,
-                StatusId = pst.StatusId,
+                StatusId = pst.StatusId
             });
 
         var groupStatus = result.GroupBy(x => x.Status);
@@ -75,7 +75,7 @@ public class AnnouncementServiceImp(
     {
         var message = new MessageAnnounence
         {
-            Items = items,
+            Items = items
         };
 
         var xmlMessage = xmlConvertService.Serialize(message);

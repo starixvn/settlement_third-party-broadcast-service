@@ -60,7 +60,7 @@ public class NumberGameServiceImp(
             "CAL-HT" => ActionId.NgCalHt,
             "REFUND" => ActionId.NgRefund,
             "REFUND-FT" => ActionId.NgRefundFt,
-            _ => 0,
+            _ => 0
         };
     }
 

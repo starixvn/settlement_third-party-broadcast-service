@@ -5,10 +5,16 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
+    <Content Remove="C:\Users\kaden.trinh\.nuget\packages\fanex.mailstation\2.1.2\contentFiles\any\net9.0\app.config.transform" />
+    <Content Remove="C:\Users\kaden.trinh\.nuget\packages\fanex.mailstation\2.1.2\contentFiles\any\net9.0\appsettings.json" />
+    <Content Remove="C:\Users\kaden.trinh\.nuget\packages\fanex.mailstation\2.1.2\contentFiles\any\net9.0\web.config.transform" />
+  </ItemGroup>
+  <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="13.0.1" />
+    <PackageReference Include="Fanex.Caching" Version="2.2.7" />
     <PackageReference Include="Fanex.Caching.Redis" Version="2.2.7" />
     <PackageReference Include="Fanex.Data.Repository" Version="4.3.2" />
     <PackageReference Include="Fanex.Data.SqlServer" Version="4.3.2" />
