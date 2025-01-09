@@ -36,8 +36,8 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Fanex.Caching" Version="2.2.7" />
-    <PackageReference Include="Fanex.Caching.Redis" Version="2.2.7" />
+    <PackageReference Include="Fanex.Caching" Version="2.2.8" />
+    <PackageReference Include="Fanex.Caching.Redis" Version="2.2.8" />
     <PackageReference Include="Fanex.RemotingRef" Version="1.5.5.1" />
     <PackageReference Include="Fanex.Settlement.Business" Version="1.0.23" />
     <PackageReference Include="Fanex.Settlement.Converter" Version="1.0.0.1" />

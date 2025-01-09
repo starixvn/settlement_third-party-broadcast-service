@@ -1,5 +1,6 @@
 using Fanex.Data.SqlServer;
 using Fanex.Logging.Sentry.RavenClient;
+using Fanex.SimpleMailDelivery;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,6 +16,7 @@ services.AddOneBookUm(configuration);
 services.AddFanexSql(configuration);
 services.AddFanexLogSentry(configuration);
 services.AddRedisCacheConfig(configuration);
+services.AddMailDelivery(configuration);
 services.AddAutoMapperProfile();
 services.AddMassTransit(configuration);
 services.AddInternalServices(configuration);

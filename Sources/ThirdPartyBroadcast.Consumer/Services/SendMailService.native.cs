@@ -1,5 +1,5 @@
-﻿using Fanex.MailDelivery.Client;
-using Fanex.MailDelivery.Core.Models;
+﻿using Fanex.SimpleMailDelivery;
+using Fanex.SimpleMailDelivery.Models;
 using RazorEngineCore;
 using System.Collections.Concurrent;
 
@@ -10,7 +10,7 @@ public interface SendMailService
     Task SendMailByFunctionId(NotificationModel item);
 }
 
-public class SendMailServiceImp : SendMailService
+public class SendMailServiceImp(MailClient mailClient) : SendMailService
 {
     private static readonly ConcurrentDictionary<int, IRazorEngineCompiledTemplate> CompiledTemplateCache = new();
 
@@ -24,7 +24,7 @@ public class SendMailServiceImp : SendMailService
             MailingListId = item.MailId
         };
 
-        await MailClientHandler.SendFunctionMailAsync(mail);
+        await mailClient.SendFunctionMailAsync(mail);
     }
 
     private static string MailBody(NotificationModel item)
