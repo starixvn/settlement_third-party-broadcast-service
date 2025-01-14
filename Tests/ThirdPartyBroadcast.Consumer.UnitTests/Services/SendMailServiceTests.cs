@@ -1,7 +1,6 @@
-﻿using Fanex.MailDeliver.MailClient;
-using Fanex.MailDelivery.Client;
-using Fanex.MailDelivery.Core.Models;
-using Fanex.RemotingRef;
+﻿using Fanex.RemotingRef;
+using Fanex.SimpleMailDelivery;
+using Fanex.SimpleMailDelivery.Models;
 using Microsoft.Extensions.Configuration;
 using System.Globalization;
 
@@ -9,6 +8,7 @@ namespace ThirdPartyBroadcast.Consumer.UnitTests.Services;
 
 public class SendMailServiceTests
 {
+    private readonly MailClient mailClient;
     private readonly SendMailServiceImp service;
 
     public SendMailServiceTests()
@@ -24,32 +24,12 @@ public class SendMailServiceTests
                 .ConnectTo(new Uri(remotingRefUrl))
                 .FromApplication("Settlement");
         }
-
-        AppSettings.AppMailId = configuration.GetSection("MailServer:Id").Value;
-        AppSettings.AppMailAddress = configuration.GetSection("MailServer:Address").Value;
-
-        MailClientHandler.Start("appsettings.json");
-
-        var mail = new Mail
-        {
-            Subject = "Subject(item)",
-            Title = "NAP - Settlement System",
-            Body = "MailBody(item)",
-            MailingListId = 103
-        };
-        try
-        {
-            MailClientHandler.SendFunctionMailAsync(mail);
-        }
-        catch (Exception ex)
-        {
-            var test = ex;
-        }
-        service = new SendMailServiceImp();
+        mailClient = Substitute.For<MailClient>();
+        service = new SendMailServiceImp(mailClient);
     }
 
     [Fact]
-    public async Task CreditTickets_SendMailByFunctionId_ReturnEmail()
+    public async Task CreditTickets_SendMailByFunctionId_CallSendFunctionMailAsyncMethod()
     {
         var tickets = new List<TicketInfo>
         {
@@ -97,10 +77,11 @@ public class SendMailServiceTests
         };
 
         await service.SendMailByFunctionId(model);
+        await mailClient.Received().SendFunctionMailAsync(Arg.Any<Mail>());
     }
 
     [Fact]
-    public async Task DepositTickets_SendMailByFunctionId_ReturnEmail()
+    public async Task DepositTickets_SendMailByFunctionId_CallSendFunctionMailAsyncMethod()
     {
         var ticketsInfo = new List<TicketInfo>
         {
@@ -176,6 +157,7 @@ public class SendMailServiceTests
         };
 
         await service.SendMailByFunctionId(model);
+        await mailClient.Received().SendFunctionMailAsync(Arg.Any<Mail>());
     }
 
     private static IEnumerable<TicketInfo> SplitTicketByLicensee(IReadOnlyCollection<TicketInfo> ticketInfos)

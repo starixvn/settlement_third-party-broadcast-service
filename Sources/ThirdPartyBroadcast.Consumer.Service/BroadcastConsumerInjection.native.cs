@@ -2,7 +2,6 @@
 using Fanex.Caching;
 using Fanex.Caching.Redis;
 using Fanex.Data.Repository;
-using Fanex.MailDelivery.Client;
 using Fanex.RemotingRef;
 using Fanex.Settlement.Converter.Services;
 using Fanex.Settlement.ScaleOut;
@@ -38,28 +37,28 @@ public static class BroadcastConsumerInjection
         services.AddTransient<GeneralService, GeneralServiceImp>();
         services.AddTransient<ScaleOutSettleService, ScaleOutSettleServiceImp>();
         services.AddSingleton<ICacheService, CacheService>();
-        services.AddSingleton<GenerateConsumerService, GenerateConsumerServiceImp>();
-        services.AddSingleton<BitCoinService, BitCoinServiceImp>();
-        services.AddSingleton<GroupOneService, GroupOneServiceImp>();
-        services.AddSingleton<GroupTwoService, GroupTwoServiceImp>();
-        services.AddSingleton<GroupThreeService, GroupThreeServiceImp>();
-        services.AddSingleton<VirtualRacingService, VirtualRacingServiceImp>();
-        services.AddSingleton<OutrightService, OutrightServiceImp>();
-        services.AddSingleton<NumberGameService, NumberGameServiceImp>();
-        services.AddSingleton<BetBuilderService, BetBuilderServiceImp>();
-        services.AddSingleton<BetBuilderGenerateService, BetBuilderGenerateServiceImp>();
-        services.AddSingleton<FastMarketService, FastMarketServiceImp>();
-        services.AddSingleton<VirtualBetRadarService, VirtualBetRadarServiceImp>();
-        services.AddSingleton<VirtualSportsService, VirtualSportsServiceImp>();
-        services.AddSingleton<LeapGamingService, LeapGamingServiceImp>();
-        services.AddSingleton<Product3rdService, Product3rdServiceImp>();
-        services.AddSingleton<SendMailService, SendMailServiceImp>();
-        services.AddSingleton<PinGoalService, PinGoalServiceImp>();
-        services.AddSingleton<VirtualBetbyService, VirtualBetbyServiceImp>();
-        services.AddSingleton<VirtualBetbyGenerateService, VirtualBetbyGenerateServiceImp>();
-        services.AddSingleton<GenerateMatchInfoService, GenerateMatchInfoServiceImp>();
-        services.AddSingleton<ScoreService, ScoreServiceImp>();
-        services.AddSingleton<ResultDetailService, ResultDetailServiceImp>();
+        services.AddTransient<GenerateConsumerService, GenerateConsumerServiceImp>();
+        services.AddTransient<BitCoinService, BitCoinServiceImp>();
+        services.AddTransient<GroupOneService, GroupOneServiceImp>();
+        services.AddTransient<GroupTwoService, GroupTwoServiceImp>();
+        services.AddTransient<GroupThreeService, GroupThreeServiceImp>();
+        services.AddTransient<VirtualRacingService, VirtualRacingServiceImp>();
+        services.AddTransient<OutrightService, OutrightServiceImp>();
+        services.AddTransient<NumberGameService, NumberGameServiceImp>();
+        services.AddTransient<BetBuilderService, BetBuilderServiceImp>();
+        services.AddTransient<BetBuilderGenerateService, BetBuilderGenerateServiceImp>();
+        services.AddTransient<FastMarketService, FastMarketServiceImp>();
+        services.AddTransient<VirtualBetRadarService, VirtualBetRadarServiceImp>();
+        services.AddTransient<VirtualSportsService, VirtualSportsServiceImp>();
+        services.AddTransient<LeapGamingService, LeapGamingServiceImp>();
+        services.AddTransient<Product3rdService, Product3rdServiceImp>();
+        services.AddTransient<SendMailService, SendMailServiceImp>();
+        services.AddTransient<PinGoalService, PinGoalServiceImp>();
+        services.AddTransient<VirtualBetbyService, VirtualBetbyServiceImp>();
+        services.AddTransient<VirtualBetbyGenerateService, VirtualBetbyGenerateServiceImp>();
+        services.AddTransient<GenerateMatchInfoService, GenerateMatchInfoServiceImp>();
+        services.AddTransient<ScoreService, ScoreServiceImp>();
+        services.AddTransient<ResultDetailService, ResultDetailServiceImp>();
 
         services.AddTransient<AnnouncementService, AnnouncementServiceImp>();
         services.AddTransient<MessageAnnouncementService, MessageAnnouncementServiceImp>();
@@ -67,48 +66,46 @@ public static class BroadcastConsumerInjection
         services.AddTransient<TicketInfoService, TicketInfoServiceImp>();
         services.AddTransient<Services.MatchService, Services.MatchServiceImp>();
 
-        var remotingRefUrl = configuration.GetValue("Fanex.RemotingRef.Service.Url", string.Empty) ?? string.Empty;
+        var remotingRefUrl = configuration.GetValue("Fanex.RemotingRef.Service.Url", string.Empty);
         RefDataTypeContainer
             .ConnectTo(new Uri(remotingRefUrl))
             .FromApplication("Settlement");
         services.AddSingleton<IRemotingRefService, RemotingRefService>();
         services.AddTransient<RefDataService, RefDataServiceImp>();
-
-        MailClientHandler.StartAsync();
     }
 
     private static void AddBusinessByProductsServices(this IServiceCollection services)
     {
-        services.AddSingleton<HappyFiveService, HappyFiveServiceImp>();
-        services.AddSingleton<Services.Products.HappyFive.ProcessService, Services.Products.HappyFive.ProcessServiceImp>();
-        services.AddSingleton<Services.Products.HappyFive.SettleSitesService, Services.Products.HappyFive.SettleSitesServiceImp>();
+        services.AddTransient<HappyFiveService, HappyFiveServiceImp>();
+        services.AddTransient<Services.Products.HappyFive.ProcessService, Services.Products.HappyFive.ProcessServiceImp>();
+        services.AddTransient<Services.Products.HappyFive.SettleSitesService, Services.Products.HappyFive.SettleSitesServiceImp>();
 
-        services.AddSingleton<VirtualRacingService, VirtualRacingServiceImp>();
-        services.AddSingleton<RacersValidatorService, RacersValidatorServiceImp>();
-        services.AddSingleton<Services.Products.VirtualRacing.ProcessService, Services.Products.VirtualRacing.ProcessServiceImp>();
-        services.AddSingleton<Services.Products.VirtualRacing.SettleSitesService, Services.Products.VirtualRacing.SettleSitesServiceImp>();
+        services.AddTransient<VirtualRacingService, VirtualRacingServiceImp>();
+        services.AddTransient<RacersValidatorService, RacersValidatorServiceImp>();
+        services.AddTransient<Services.Products.VirtualRacing.ProcessService, Services.Products.VirtualRacing.ProcessServiceImp>();
+        services.AddTransient<Services.Products.VirtualRacing.SettleSitesService, Services.Products.VirtualRacing.SettleSitesServiceImp>();
     }
 
     public static void AddBusinessServices(this IServiceCollection services)
     {
-        services.AddSingleton<Settlement.Business.Services.Products.HappyFiveProcessService, Settlement.Business.Services.Products.HappyFiveProcessServiceImp>();
-        services.AddSingleton<Settlement.Business.Services.Products.RacingProcessService, Settlement.Business.Services.Products.RacingProcessServiceImp>();
-        services.AddSingleton<Settlement.Business.Services.MatchService, Settlement.Business.Services.MatchServiceImp>();
+        services.AddTransient<Settlement.Business.Services.Products.HappyFiveProcessService, Settlement.Business.Services.Products.HappyFiveProcessServiceImp>();
+        services.AddTransient<Settlement.Business.Services.Products.RacingProcessService, Settlement.Business.Services.Products.RacingProcessServiceImp>();
+        services.AddTransient<Settlement.Business.Services.MatchService, Settlement.Business.Services.MatchServiceImp>();
 
-        services.AddSingleton<SettleService, SettleServiceImp>();
-        services.AddSingleton<TicketValueService, TicketValueServiceImp>();
-        services.AddSingleton<GenerateSettleTicketService, GenerateSettleTicketServiceImp>();
+        services.AddTransient<SettleService, SettleServiceImp>();
+        services.AddTransient<TicketValueService, TicketValueServiceImp>();
+        services.AddTransient<GenerateSettleTicketService, GenerateSettleTicketServiceImp>();
 
-        services.AddSingleton<CustomerService, CustomerServiceImp>();
-        services.AddSingleton<ModdsService, ModdsServiceImp>();
-        services.AddSingleton<ModdsValueService, ModdsValueServiceImp>();
-        services.AddSingleton<PrepareTicketService, PrepareTicketServiceImp>();
-        services.AddSingleton<HistoryData, HistoryDataImp>();
-        services.AddSingleton<TicketService, TicketServiceImp>();
-        services.AddSingleton<WinLimitService, WinLimitServiceImp>();
-        services.AddSingleton<WinLostService, WinLostServiceImp>();
-        services.AddSingleton<WinLostByModdsService, WinLostByModdsServiceImp>();
-        services.AddSingleton<CommissionService, CommissionServiceImp>();
+        services.AddTransient<CustomerService, CustomerServiceImp>();
+        services.AddTransient<ModdsService, ModdsServiceImp>();
+        services.AddTransient<ModdsValueService, ModdsValueServiceImp>();
+        services.AddTransient<PrepareTicketService, PrepareTicketServiceImp>();
+        services.AddTransient<HistoryData, HistoryDataImp>();
+        services.AddTransient<TicketService, TicketServiceImp>();
+        services.AddTransient<WinLimitService, WinLimitServiceImp>();
+        services.AddTransient<WinLostService, WinLostServiceImp>();
+        services.AddTransient<WinLostByModdsService, WinLostByModdsServiceImp>();
+        services.AddTransient<CommissionService, CommissionServiceImp>();
 
         services.AddBusinessByProductsServices();
     }
@@ -150,8 +147,8 @@ public static class BroadcastConsumerInjection
             {
                 busFactoryConfigurator.Host(host, virtualHost, h =>
                 {
-                    h.Username(username ?? string.Empty);
-                    h.Password(password ?? string.Empty);
+                    h.Username(username);
+                    h.Password(password);
                 });
                 busFactoryConfigurator.ConfigureEndpoints(context);
             });
