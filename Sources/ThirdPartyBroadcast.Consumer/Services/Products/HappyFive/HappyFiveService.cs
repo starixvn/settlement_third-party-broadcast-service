@@ -18,7 +18,7 @@ public class HappyFiveServiceImp(
     SettleSitesService settleSitesService,
     IDynamicRepository repository,
     MatchService broadcastMatchService,
-    Settlement.Business.Services.MatchService matchService,
+    Settlement.Business.Data.Services.MatchService matchService,
     XmlConvertService xmlConvertService)
     : HappyFiveService
 {
@@ -81,7 +81,6 @@ public class HappyFiveServiceImp(
             ErrorCode = criteriaValidation.ErrCode,
             ErrorMessage = criteriaValidation.ErrMsg
         };
-
     }
 
     private async Task UpdateBalls(Result result, HappyFiveRequest request, IEnumerable<Ball> balls)

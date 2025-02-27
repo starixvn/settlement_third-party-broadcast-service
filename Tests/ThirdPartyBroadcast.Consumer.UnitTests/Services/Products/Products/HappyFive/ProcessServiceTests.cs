@@ -1,11 +1,11 @@
 ﻿using Microsoft.Extensions.Configuration;
-using Settlement.Business.Requests;
+using Settlement.Business.Core.Requests;
 using ThirdPartyBroadcast.Consumer.Services.Products.HappyFive;
 
 namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products.Products.HappyFive;
 
 using BusinessModels = Settlement.Business.Core.Models;
-using BusinessServices = Settlement.Business.Services;
+using BusinessServices = Settlement.Business.Data.Services;
 
 public class ProcessServiceTests
 {

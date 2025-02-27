@@ -9,7 +9,6 @@ using Fanex.Settlement.ScaleOut.Services;
 using MassTransit;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
-using Settlement.Business.Services;
 using ThirdPartyBroadcast.Consumer.Services;
 using ThirdPartyBroadcast.Consumer.Services.Consumer;
 using ThirdPartyBroadcast.Consumer.Services.Products;
@@ -74,7 +73,7 @@ public static class BroadcastConsumerInjection
         services.AddTransient<RefDataService, RefDataServiceImp>();
     }
 
-    private static void AddBusinessByProductsServices(this IServiceCollection services)
+    public static void AddBusinessByProductsServices(this IServiceCollection services)
     {
         services.AddTransient<HappyFiveService, HappyFiveServiceImp>();
         services.AddTransient<Services.Products.HappyFive.ProcessService, Services.Products.HappyFive.ProcessServiceImp>();
@@ -84,30 +83,6 @@ public static class BroadcastConsumerInjection
         services.AddTransient<RacersValidatorService, RacersValidatorServiceImp>();
         services.AddTransient<Services.Products.VirtualRacing.ProcessService, Services.Products.VirtualRacing.ProcessServiceImp>();
         services.AddTransient<Services.Products.VirtualRacing.SettleSitesService, Services.Products.VirtualRacing.SettleSitesServiceImp>();
-    }
-
-    public static void AddBusinessServices(this IServiceCollection services)
-    {
-        services.AddTransient<Settlement.Business.Services.Products.HappyFiveProcessService, Settlement.Business.Services.Products.HappyFiveProcessServiceImp>();
-        services.AddTransient<Settlement.Business.Services.Products.RacingProcessService, Settlement.Business.Services.Products.RacingProcessServiceImp>();
-        services.AddTransient<Settlement.Business.Services.MatchService, Settlement.Business.Services.MatchServiceImp>();
-
-        services.AddTransient<SettleService, SettleServiceImp>();
-        services.AddTransient<TicketValueService, TicketValueServiceImp>();
-        services.AddTransient<GenerateSettleTicketService, GenerateSettleTicketServiceImp>();
-
-        services.AddTransient<CustomerService, CustomerServiceImp>();
-        services.AddTransient<ModdsService, ModdsServiceImp>();
-        services.AddTransient<ModdsValueService, ModdsValueServiceImp>();
-        services.AddTransient<PrepareTicketService, PrepareTicketServiceImp>();
-        services.AddTransient<HistoryData, HistoryDataImp>();
-        services.AddTransient<TicketService, TicketServiceImp>();
-        services.AddTransient<WinLimitService, WinLimitServiceImp>();
-        services.AddTransient<WinLostService, WinLostServiceImp>();
-        services.AddTransient<WinLostByModdsService, WinLostByModdsServiceImp>();
-        services.AddTransient<CommissionService, CommissionServiceImp>();
-
-        services.AddBusinessByProductsServices();
     }
 
     public static void AddAutoMapperProfile(this IServiceCollection service)

@@ -12,7 +12,7 @@ public class HappyFiveServiceTests
 
     private readonly SettleSitesService settleSitesService;
 
-    private readonly Settlement.Business.Services.MatchService matchService;
+    private readonly Settlement.Business.Data.Services.MatchService matchService;
 
     private readonly HappyFiveServiceImp service;
 
@@ -25,7 +25,7 @@ public class HappyFiveServiceTests
         repository = Substitute.For<IDynamicRepository>();
         settleSitesService = Substitute.For<SettleSitesService>();
         xmlConvertService = Substitute.For<XmlConvertService>();
-        matchService = Substitute.For<Settlement.Business.Services.MatchService>();
+        matchService = Substitute.For<Settlement.Business.Data.Services.MatchService>();
         broadcastMatchService = Substitute.For<MatchService>();
         service = new HappyFiveServiceImp(settleSitesService, repository, broadcastMatchService, matchService, xmlConvertService);
     }

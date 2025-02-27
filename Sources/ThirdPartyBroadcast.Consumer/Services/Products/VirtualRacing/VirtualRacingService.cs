@@ -17,7 +17,7 @@ public class VirtualRacingServiceImp(
     SettleSitesService settleSitesService,
     IDynamicRepository repository,
     MatchService broadcastMatchService,
-    Settlement.Business.Services.MatchService matchService,
+    Settlement.Business.Data.Services.MatchService matchService,
     AnnouncementService announcementService,
     RecipientMessageService recipientMessageService,
     TicketInfoService ticketService) : VirtualRacingService

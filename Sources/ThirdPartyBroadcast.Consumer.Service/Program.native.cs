@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using ONEbook.UM.DependencyInjection;
+using Settlement.Business;
+using Settlement.Business.Data;
 using ThirdPartyBroadcast.Consumer.Models;
 using ThirdPartyBroadcast.Consumer.Service;
 
@@ -20,7 +22,9 @@ services.AddMailDelivery(configuration);
 services.AddAutoMapperProfile();
 services.AddMassTransit(configuration);
 services.AddInternalServices(configuration);
-services.AddBusinessServices();
+services.AddSettlementBusinessServices();
+services.AddSettlementBusinessDataServices();
+services.AddBusinessByProductsServices();
 services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.WriteIndented = true;
