@@ -22,16 +22,16 @@
     <PackageReference Include="Fanex.Logging.Extensions" Version="1.1.0" />
     <PackageReference Include="Fanex.MailDeliver.MailClient" Version="2.1.0" />
     <PackageReference Include="Fanex.RemotingRef" Version="1.5.5.1" />
-    <PackageReference Include="Fanex.Settlement.Business" Version="1.0.25" />
+    <PackageReference Include="Fanex.Settlement.Business" Version="1.0.26-alpha02" />
     <PackageReference Include="Fanex.Settlement.Converter" Version="1.0.0.1" />
-    <PackageReference Include="Fanex.Settlement.ScaleOut" Version="1.4.6.3" />
+    <PackageReference Include="Fanex.Settlement.ScaleOut" Version="1.4.6.4" />
     <PackageReference Include="Fanex.SimpleMailDelivery" Version="1.0.0" />
-    <PackageReference Include="MassTransit.RabbitMQ" Version="8.3.6" />
+    <PackageReference Include="MassTransit.RabbitMQ" Version="8.3.7" />
     <PackageReference Include="MediatR" Version="12.4.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="ONEbook.UM" Version="3.2.4" />
     <PackageReference Include="Polly" Version="8.5.2" />
     <PackageReference Include="RazorEngineCore" Version="2024.4.1" />
-    <PackageReference Include="System.Text.Json" Version="9.0.2" />
+    <PackageReference Include="System.Text.Json" Version="9.0.3" />
   </ItemGroup>
 </Project>

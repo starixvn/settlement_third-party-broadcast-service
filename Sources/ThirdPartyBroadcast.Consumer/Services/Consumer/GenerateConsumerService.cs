@@ -117,6 +117,7 @@ public class GenerateConsumerServiceImp(
         switch (productType)
         {
             case ProductType.VirtualRacing:
+            case ProductType.VirtualKiron:
                 await groupThreeService.SettleVirtualRacing(productType, data);
                 break;
 

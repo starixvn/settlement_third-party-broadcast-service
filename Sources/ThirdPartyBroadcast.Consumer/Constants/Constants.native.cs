@@ -127,10 +127,6 @@ public static class SportType
 {
     public const short VirtualCockFighting = 188;
 
-    public const int VirtualDogs = 177;
-
-    public const int VirtualHorses = 198;
-
     public const int VirtualBetbyBasketball = 134;
 
     public const int HappyFive = 164;
