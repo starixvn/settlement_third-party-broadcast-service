@@ -86,7 +86,7 @@ public class LeapGamingServiceImp(
         {
             return string.Equals(request.Action, ActionName.Calculate, StringComparison.OrdinalIgnoreCase) ? ActionId.CockFightingCalc : ActionId.CockFightingRefund;
         }
-        return string.Equals(request.Action, ActionName.Calculate, StringComparison.OrdinalIgnoreCase) ? ActionId.LeapGamingCalc : ActionId.LeapGamingRefund;
+        return string.Equals(request.Action, ActionName.Calculate, StringComparison.OrdinalIgnoreCase) ? ActionId.CalculateAll : ActionId.RefundAll;
     }
 
     private static Result ValidateMatchScore(LeapGamingRequest request, MatchInfo matchInfo)

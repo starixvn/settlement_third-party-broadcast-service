@@ -63,7 +63,7 @@ public static class BroadcastConsumerInjection
         services.AddTransient<MessageAnnouncementService, MessageAnnouncementServiceImp>();
         services.AddTransient<RecipientMessageService, RecipientMessageServiceImp>();
         services.AddTransient<TicketInfoService, TicketInfoServiceImp>();
-        services.AddTransient<Services.MatchService, Services.MatchServiceImp>();
+        services.AddTransient<MatchService, MatchServiceImp>();
 
         var remotingRefUrl = configuration.GetValue("Fanex.RemotingRef.Service.Url", string.Empty);
         RefDataTypeContainer

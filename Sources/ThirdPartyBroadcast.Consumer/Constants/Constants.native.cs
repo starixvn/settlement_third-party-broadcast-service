@@ -52,15 +52,13 @@ public static class ActionId
 
     public const int BetBuilderCalc = 81012;
 
-    public const int BetBuilderRefund = 81010;
-
     public const int VirtualBetRadarCalc = 187;
 
     public const int VirtualBetRadarRefund = 188;
 
-    public const int LeapGamingCalc = 81043;
+    public const int CalculateAll = 81043;
 
-    public const int LeapGamingRefund = 81044;
+    public const int RefundAll = 81044;
 
     public const int CockFightingCalc = 81050;
 

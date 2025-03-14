@@ -7,8 +7,6 @@ namespace ThirdPartyBroadcast.Consumer.Services.Products.VirtualRacing;
 public interface RacersValidatorService
 {
     Result ValidateBeforeSettle(VirtualRacingRequest request, IEnumerable<Outright> outright);
-
-    IEnumerable<Outright> PlacingResult(int sportType, byte racers, IEnumerable<Outright> outright);
 }
 
 public class RacersValidatorServiceImp : RacersValidatorService
@@ -63,15 +61,6 @@ public class RacersValidatorServiceImp : RacersValidatorService
         var topThreeRacer = IsTopThreeRacer(sportType) && racers is 8 or 10 or 12 or 14;
 
         return topTwoRacer || topThreeRacer;
-    }
-
-    public IEnumerable<Outright> PlacingResult(int sportType, byte racers, IEnumerable<Outright> outright)
-    {
-        int[] validPlacings = IsTopTwoRacer(sportType) && racers == 6
-            ? [1, 2]
-            : [1, 2, 3];
-
-        return outright.Where(x => validPlacings.Contains(x.Placing));
     }
 
     private static bool IsTopThreeRacer(int sportType)
