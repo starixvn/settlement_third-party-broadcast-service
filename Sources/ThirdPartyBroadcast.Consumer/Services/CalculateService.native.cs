@@ -1,4 +1,7 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Fanex.SiteDbConnectionManager.Models;
+using Fanex.SiteDbConnectionManager.Services;
+using MassTransit.Initializers;
+using Microsoft.Extensions.Options;
 using ThirdPartyBroadcast.Consumer.Criteria;
 
 namespace ThirdPartyBroadcast.Consumer.Services;
@@ -12,15 +15,22 @@ public interface CalculateService
 
 public class CalculateServiceImp(
     IDynamicRepository repository,
-    IOptions<AppSettingsKey> appSettingsKey)
+    IOptions<AppSettingsKey> appSettingsKey,
+    SiteDbService siteDbService)
     : CalculateService
 {
     public async Task<Result> Execute(CalculateCriteria criteria)
     {
-        var tasks = appSettingsKey.Value
-            .SiteDbServer
-            .Select(s => CalculateByServer(s, criteria))
+        var siteDbServer = await siteDbService.GetAllSiteDbAsync();
+
+        var tasks = siteDbServer
+            .Select(site => CalculateByServer(site, criteria))
             .ToList();
+
+        //var tasks = appSettingsKey.Value
+        //    .SiteDbServer
+        //    .Select(s => CalculateByServer(s, criteria))
+        //    .ToList();
         var results = await Task.WhenAll(tasks.ToArray());
         var resultFailed = results.Where(r => r.ErrorCode > 0).ToList();
         return new Result
@@ -30,15 +40,25 @@ public class CalculateServiceImp(
         };
     }
 
-    private async Task<Result> CalculateByServer(string server, CalculateCriteria criteria)
+    private async Task<Result> CalculateByServer(SiteDb site, CalculateCriteria criteria)
     {
-        criteria.DbServer = server;
+        var isActive = await siteDbService.IsSiteDbActiveAsync(site.SiteDbGroupId);
+        if (!isActive)
+        {
+            return new Result
+            {
+                ErrorCode = 1,
+                ErrorMessage = $"{site.SiteDbGroupId} is not active"
+            };
+        }
+
+        criteria.DbServer = site.SiteName;
         await repository.ExecuteAsync(criteria);
 
         return new Result
         {
             ErrorCode = criteria.ErrCode,
-            ErrorMessage = $"{server}: {criteria.ErrCode} - {criteria.ErrMsg}"
+            ErrorMessage = $"{site.SiteName}: {criteria.ErrCode} - {criteria.ErrMsg}"
         };
     }
 
