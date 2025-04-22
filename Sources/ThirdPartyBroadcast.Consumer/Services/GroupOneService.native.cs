@@ -1,4 +1,6 @@
-﻿namespace ThirdPartyBroadcast.Consumer.Services;
+﻿using Newtonsoft.Json;
+
+namespace ThirdPartyBroadcast.Consumer.Services;
 
 using Products;
 using Products.BetBuilder;

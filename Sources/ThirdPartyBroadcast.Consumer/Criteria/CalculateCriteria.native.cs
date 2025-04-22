@@ -1,4 +1,6 @@
 ﻿using Fanex.Data;
+using System.Text.Json;
+using ThirdPartyBroadcast.Consumer.Helper;
 
 namespace ThirdPartyBroadcast.Consumer.Criteria;
 
@@ -23,4 +25,6 @@ public class CalculateCriteria : NonQueryCommand
     }
 
     public override bool IsValid() => MatchId > 0;
+
+    public string ToJson() => JsonSerializer.Serialize(this, GetType(), JsonSettings.Options);
 }

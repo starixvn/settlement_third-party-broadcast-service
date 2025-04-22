@@ -1,8 +1,9 @@
 ﻿using Fanex.SiteDbConnectionManager.Models;
 using Fanex.SiteDbConnectionManager.Services;
-using MassTransit.Initializers;
 using Microsoft.Extensions.Options;
+using System.Text.Json;
 using ThirdPartyBroadcast.Consumer.Criteria;
+using ThirdPartyBroadcast.Consumer.Helper;
 
 namespace ThirdPartyBroadcast.Consumer.Services;
 
@@ -27,10 +28,6 @@ public class CalculateServiceImp(
             .Select(site => CalculateByServer(site, criteria))
             .ToList();
 
-        //var tasks = appSettingsKey.Value
-        //    .SiteDbServer
-        //    .Select(s => CalculateByServer(s, criteria))
-        //    .ToList();
         var results = await Task.WhenAll(tasks.ToArray());
         var resultFailed = results.Where(r => r.ErrorCode > 0).ToList();
         return new Result
@@ -45,6 +42,9 @@ public class CalculateServiceImp(
         var isActive = await siteDbService.IsSiteDbActiveAsync(site.SiteDbGroupId);
         if (!isActive)
         {
+            var criteriaJson = criteria.ToJson();
+            var person = JsonSerializer.Deserialize<NumberGameCriteria>(criteriaJson, JsonSettings.Options);
+
             return new Result
             {
                 ErrorCode = 1,

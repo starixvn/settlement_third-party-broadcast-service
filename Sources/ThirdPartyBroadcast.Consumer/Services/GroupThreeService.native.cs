@@ -1,4 +1,5 @@
-﻿using ThirdPartyBroadcast.Consumer.Services.Products.HappyFive;
+﻿using Newtonsoft.Json;
+using ThirdPartyBroadcast.Consumer.Services.Products.HappyFive;
 using ThirdPartyBroadcast.Consumer.Services.Products.VirtualBetby;
 using ThirdPartyBroadcast.Consumer.Services.Products.VirtualRacing;
 
