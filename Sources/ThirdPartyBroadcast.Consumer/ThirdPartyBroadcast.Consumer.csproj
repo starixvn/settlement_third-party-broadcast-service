@@ -5,11 +5,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
-    <Content Remove="C:\Users\kaden.trinh\.nuget\packages\fanex.mailstation\2.1.2\contentFiles\any\net9.0\app.config.transform" />
-    <Content Remove="C:\Users\kaden.trinh\.nuget\packages\fanex.mailstation\2.1.2\contentFiles\any\net9.0\appsettings.json" />
-    <Content Remove="C:\Users\kaden.trinh\.nuget\packages\fanex.mailstation\2.1.2\contentFiles\any\net9.0\web.config.transform" />
-  </ItemGroup>
-  <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
   <ItemGroup>
@@ -27,7 +22,7 @@
     <PackageReference Include="Fanex.Settlement.ScaleOut" Version="1.4.6.4" />
     <PackageReference Include="Fanex.SimpleMailDelivery" Version="1.0.1" />
     <PackageReference Include="MassTransit.RabbitMQ" Version="8.4.0" />
-    <PackageReference Include="Fanex.SiteDbConnectionManager" Version="1.0.1-alpha05" />
+    <PackageReference Include="Fanex.SiteDbConnectionManager.Services" Version="1.0.1-alpha12" />
     <PackageReference Include="MediatR" Version="12.5.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="ONEbook.UM" Version="3.2.4" />

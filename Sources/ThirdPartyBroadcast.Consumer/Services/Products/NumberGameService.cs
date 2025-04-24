@@ -1,4 +1,7 @@
-﻿namespace ThirdPartyBroadcast.Consumer.Services.Products;
+﻿using Fanex.SiteDbConnectionManager.Client.Constants;
+using Fanex.SiteDbConnectionManager.Client.Models;
+
+namespace ThirdPartyBroadcast.Consumer.Services.Products;
 
 using Criteria;
 
@@ -26,12 +29,29 @@ public class NumberGameServiceImp(
         var criteria = mapper.Map<NumberGameRequest, NumberGameCriteria>(request);
 
         var startSettle = DateTimeOffset.Now;
-        var settledResult = await calculateService.Execute(criteria);
+        var pendingCommand = CreateSiteDbPendingCommand(criteria);
+        var settledResult = await calculateService.Execute(criteria, pendingCommand);
         var endSettle = DateTimeOffset.Now;
 
         await WriteLogSettled(criteria, settledResult, startSettle, endSettle);
 
         return settledResult;
+    }
+
+    private static SiteDbPendingCommand CreateSiteDbPendingCommand(NumberGameCriteria criteria)
+    {
+        return new SiteDbPendingCommand
+        {
+            MatchId = criteria.MatchId,
+            SportType = SportType.NumberGame,
+            Action = criteria.Action,
+            SpName = criteria.SpName,
+            Parameter = criteria.ToJson(),
+            AdminId = criteria.AdminId,
+            IP = criteria.Ip,
+            SystemName = SystemName.Broadcast,
+            StatusId = CommandStatus.Pending
+        };
     }
 
     private async Task WriteLogSettled(NumberGameCriteria criteria, Result resultSettle, DateTimeOffset start, DateTimeOffset end)

@@ -1,4 +1,6 @@
-﻿using ThirdPartyBroadcast.Consumer.Criteria;
+﻿using Fanex.SiteDbConnectionManager.Client.Constants;
+using Fanex.SiteDbConnectionManager.Client.Models;
+using ThirdPartyBroadcast.Consumer.Criteria;
 
 namespace ThirdPartyBroadcast.Consumer.Services.Products;
 
@@ -45,7 +47,8 @@ public class VirtualBetRadarServiceImp(
     private async Task<Result> HandleSettle(List<TicketSettleInfo> currentTickets, MatchInfo matchInfo, VirtualBetRadarRequest request)
     {
         var criteria = mapper.Map<VirtualBetRadarRequest, VirtualBetRadarCriteria>(request);
-        var settleResult = await calculateService.Execute(criteria);
+        var pendingCommand = CreateSiteDbPendingCommand(criteria, matchInfo.SportType);
+        var settleResult = await calculateService.Execute(criteria, pendingCommand);
 
         await WriteLogSettled(request, settleResult);
 
@@ -54,6 +57,22 @@ public class VirtualBetRadarServiceImp(
         await announcementService.SendAnnounceRefund(currentTickets, matchInfo, request.AdminId);
 
         return settleResult;
+    }
+
+    private static SiteDbPendingCommand CreateSiteDbPendingCommand(VirtualBetRadarCriteria criteria, short sportType)
+    {
+        return new SiteDbPendingCommand
+        {
+            MatchId = criteria.MatchId,
+            SportType = sportType,
+            Action = criteria.Action,
+            SpName = criteria.SpName,
+            Parameter = criteria.ToJson(),
+            AdminId = criteria.AdminId,
+            IP = criteria.Ip,
+            SystemName = SystemName.Broadcast,
+            StatusId = CommandStatus.Pending
+        };
     }
 
     private async Task WriteLogSettled(VirtualBetRadarRequest request, Result resultSettle)

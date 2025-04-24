@@ -1,7 +1,7 @@
 using Fanex.Data.SqlServer;
 using Fanex.Logging.Sentry.RavenClient;
 using Fanex.SimpleMailDelivery;
-using Fanex.SiteDbConnectionManager;
+using Fanex.SiteDbConnectionManager.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,7 +26,7 @@ services.AddInternalServices(configuration);
 services.AddSettlementBusinessServices();
 services.AddSettlementBusinessDataServices();
 services.AddBusinessByProductsServices();
-services.AddSiteDbServices();
+services.AddSiteDbConnectionManagerServices();
 services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.WriteIndented = true;

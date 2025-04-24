@@ -15,7 +15,7 @@ public class CalculateServiceTests
         var appSettingsKey = new AppSettingsKey { SiteDbServer = ["01", "02"] };
         var options = Options.Create(appSettingsKey);
 
-        service = new CalculateServiceImp(repository, options);
+        service = new CalculateServiceImp(repository, options, null, null);
     }
 
     [Fact]

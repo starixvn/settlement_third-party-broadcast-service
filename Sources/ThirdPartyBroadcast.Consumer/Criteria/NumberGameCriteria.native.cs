@@ -1,4 +1,7 @@
-﻿namespace ThirdPartyBroadcast.Consumer.Criteria;
+﻿using Fanex.Data;
+using System.Text.Json.Serialization;
+
+namespace ThirdPartyBroadcast.Consumer.Criteria;
 
 public class NumberGameCriteria : CalculateCriteria
 {
@@ -10,5 +13,8 @@ public class NumberGameCriteria : CalculateCriteria
 
     public bool IsLoopTempTable { get; set; }
 
-    public override string GetSettingKey() => $"NAP_Admin_Settlement_s161_{DbServer}";
+    [JsonIgnore, SpParam(Ignored = true)]
+    public string SpName { get; set; } = "NAP_Admin_Settlement_s161";
+
+    public override string GetSettingKey() => $"{SpName}_{DbServer}";
 }
