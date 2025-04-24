@@ -17,6 +17,6 @@ public class VirtualRacingRequest
     public string Ip { get; set; } = string.Empty;
 
     private static int ActionIdValue(string actionName) => string.Equals(actionName, ActionName.Calculate, StringComparison.OrdinalIgnoreCase)
-        ? Constants.ActionId.VirtualBetRadarCalc
-        : Constants.ActionId.VirtualBetRadarRefund;
+        ? Constants.ActionId.CalculateAll
+        : Constants.ActionId.RefundAll;
 }

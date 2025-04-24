@@ -1,13 +1,12 @@
 ﻿using Settlement.Business.Core.Models;
 using Result = ThirdPartyBroadcast.Consumer.Models.Result;
+using SportTypes = Settlement.Business.Core.Constants.SportType;
 
 namespace ThirdPartyBroadcast.Consumer.Services.Products.VirtualRacing;
 
 public interface RacersValidatorService
 {
     Result ValidateBeforeSettle(VirtualRacingRequest request, IEnumerable<Outright> outright);
-
-    IEnumerable<Outright> PlacingResult(int sportType, byte racers, IEnumerable<Outright> outright);
 }
 
 public class RacersValidatorServiceImp : RacersValidatorService
@@ -58,18 +57,19 @@ public class RacersValidatorServiceImp : RacersValidatorService
 
     private static bool IsValidRacers(int sportType, byte racers)
     {
-        var dogRaces = sportType == SportType.VirtualDogs && racers is 6 or 8;
-        var horsesRaces = sportType == SportType.VirtualHorses && racers is 8 or 10 or 12 or 14;
+        var topTwoRacer = IsTopTwoRacer(sportType) && racers is 6 or 8;
+        var topThreeRacer = IsTopThreeRacer(sportType) && racers is 8 or 10 or 12 or 14;
 
-        return dogRaces || horsesRaces;
+        return topTwoRacer || topThreeRacer;
     }
 
-    public IEnumerable<Outright> PlacingResult(int sportType, byte racers, IEnumerable<Outright> outright)
+    private static bool IsTopThreeRacer(int sportType)
     {
-        int[] validPlacings = sportType == SportType.VirtualDogs && racers == 6
-            ? [1, 2]
-            : [1, 2, 3];
+        return sportType is SportTypes.VirtualHorses or SportTypes.VirtualSteepleChase or SportTypes.VirtualHarnessRacing or SportTypes.VirtualMotorRacing;
+    }
 
-        return outright.Where(x => validPlacings.Contains(x.Placing));
+    private static bool IsTopTwoRacer(int sportType)
+    {
+        return sportType is SportTypes.VirtualDogs or SportTypes.VirtualSteepleChase or SportTypes.VirtualHarnessRacing or SportTypes.VirtualMotorRacing;
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Settlement.Business.Core.Models;
 using ThirdPartyBroadcast.Consumer.Services.Products.VirtualRacing;
+using SportTypes = Settlement.Business.Core.Constants.SportType;
 
 namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products.Products.VirtualRacing;
 
@@ -26,8 +27,11 @@ public class RacersValidatorServiceTests
     }
 
     [Theory]
-    [InlineData(SportType.VirtualDogs, 7)]
-    [InlineData(SportType.VirtualHorses, 9)]
+    [InlineData(SportTypes.VirtualDogs, 7)]
+    [InlineData(SportTypes.VirtualHorses, 9)]
+    [InlineData(SportTypes.VirtualHarnessRacing, 9)]
+    [InlineData(SportTypes.VirtualMotorRacing, 9)]
+    [InlineData(SportTypes.VirtualSteepleChase, 9)]
     public void ValidateBeforeSettle_IsCalcAndWrongNumberRacers_ReturnRightErrorMessage(short sportType, byte racers)
     {
         var request = new VirtualRacingRequest
@@ -42,13 +46,17 @@ public class RacersValidatorServiceTests
         Assert.Equal(expected, result.ErrorMessage);
     }
 
-    [Fact]
-    public void ValidateBeforeSettle_IsCalcAndVirtualDogsAllPlacingZero_ReturnRightErrorMessage()
+    [Theory]
+    [InlineData(SportTypes.VirtualDogs)]
+    [InlineData(SportTypes.VirtualHarnessRacing)]
+    [InlineData(SportTypes.VirtualMotorRacing)]
+    [InlineData(SportTypes.VirtualSteepleChase)]
+    public void ValidateBeforeSettle_IsCalcAndVirtualDogsAllPlacingZero_ReturnRightErrorMessage(short sportType)
     {
         var request = new VirtualRacingRequest
         {
             Action = ActionName.Calculate,
-            SportType = SportType.VirtualDogs,
+            SportType = sportType,
             Racers = 6
         };
 
@@ -59,13 +67,17 @@ public class RacersValidatorServiceTests
         Assert.Equal(expected, result.ErrorMessage);
     }
 
-    [Fact]
-    public void ValidateBeforeSettle_IsCalcAndVirtualDogs_ReturnRightErrorMessage()
+    [Theory]
+    [InlineData(SportTypes.VirtualDogs)]
+    [InlineData(SportTypes.VirtualHarnessRacing)]
+    [InlineData(SportTypes.VirtualMotorRacing)]
+    [InlineData(SportTypes.VirtualSteepleChase)]
+    public void ValidateBeforeSettle_IsCalcAndVirtualDogs_ReturnRightErrorMessage(short sportType)
     {
         var request = new VirtualRacingRequest
         {
             Action = ActionName.Calculate,
-            SportType = SportType.VirtualDogs,
+            SportType = sportType,
             Racers = 8
         };
 
@@ -77,13 +89,17 @@ public class RacersValidatorServiceTests
         Assert.Equal(expected, result.ErrorMessage);
     }
 
-    [Fact]
-    public void ValidateBeforeSettle_IsCalcAndVirtualHorsesAllPlacingZero_ReturnRightErrorMessage()
+    [Theory]
+    [InlineData(SportTypes.VirtualHorses)]
+    [InlineData(SportTypes.VirtualHarnessRacing)]
+    [InlineData(SportTypes.VirtualMotorRacing)]
+    [InlineData(SportTypes.VirtualSteepleChase)]
+    public void ValidateBeforeSettle_IsCalcAndVirtualHorsesAllPlacingZero_ReturnRightErrorMessage(short sportType)
     {
         var request = new VirtualRacingRequest
         {
             Action = ActionName.Calculate,
-            SportType = SportType.VirtualHorses,
+            SportType = sportType,
             Racers = 8
         };
 
@@ -94,13 +110,17 @@ public class RacersValidatorServiceTests
         Assert.Equal(expected, result.ErrorMessage);
     }
 
-    [Fact]
-    public void ValidateBeforeSettle_IsCalcAndVirtualHorses_ReturnRightErrorMessage()
+    [Theory]
+    [InlineData(SportTypes.VirtualHorses)]
+    [InlineData(SportTypes.VirtualHarnessRacing)]
+    [InlineData(SportTypes.VirtualMotorRacing)]
+    [InlineData(SportTypes.VirtualSteepleChase)]
+    public void ValidateBeforeSettle_IsCalcAndVirtualHorses_ReturnRightErrorMessage(short sportType)
     {
         var request = new VirtualRacingRequest
         {
             Action = ActionName.Calculate,
-            SportType = SportType.VirtualHorses,
+            SportType = sportType,
             Racers = 10
         };
 
@@ -113,13 +133,17 @@ public class RacersValidatorServiceTests
         Assert.Equal(expected, result.ErrorMessage);
     }
 
-    [Fact]
-    public void ValidateBeforeSettle_IsCalcAndPassedAllValidate_ReturnTrue()
+    [Theory]
+    [InlineData(SportTypes.VirtualHorses)]
+    [InlineData(SportTypes.VirtualHarnessRacing)]
+    [InlineData(SportTypes.VirtualMotorRacing)]
+    [InlineData(SportTypes.VirtualSteepleChase)]
+    public void ValidateBeforeSettle_IsCalcAndPassedAllValidate_ReturnTrue(short sportType)
     {
         var request = new VirtualRacingRequest
         {
             Action = ActionName.Calculate,
-            SportType = SportType.VirtualHorses,
+            SportType = sportType,
             Racers = 8
         };
 
@@ -128,64 +152,5 @@ public class RacersValidatorServiceTests
 
         var result = service.ValidateBeforeSettle(request, outright);
         Assert.True(result.IsSuccessful);
-    }
-
-    [Fact]
-    public void PlacingResult_VirtualDogsAndRacersSix_ReturnRightPlacings()
-    {
-        var outright = CreateOutright(1, 2, 3, 4, 5, 6).ToList();
-        outright[0].Placing = 1;
-        outright[5].Placing = 1;
-
-        var result = service.PlacingResult(SportType.VirtualDogs, 6, outright);
-        var expected = new List<Outright>
-        {
-            new()
-            {
-                Orid = 1,
-                Placing = 1,
-                RacerId = 0
-            },
-            new()
-            {
-                Orid = 6,
-                Placing = 1,
-                RacerId = 0
-            }
-        };
-        AssertExtension.AreEqual(expected, result);
-    }
-
-    [Fact]
-    public void PlacingResult_VirtualHorses_ReturnRightPlacings()
-    {
-        var outright = CreateOutright(1, 2, 3, 4, 5, 6, 7, 8).ToList();
-        outright[1].Placing = 1;
-        outright[4].Placing = 1;
-        outright[7].Placing = 1;
-
-        var result = service.PlacingResult(SportType.VirtualHorses, 8, outright);
-        var expected = new List<Outright>
-        {
-            new()
-            {
-                Orid = 2,
-                Placing = 1,
-                RacerId = 0
-            },
-            new()
-            {
-                Orid = 5,
-                Placing = 1,
-                RacerId = 0
-            },
-            new()
-            {
-                Orid = 8,
-                Placing = 1,
-                RacerId = 0
-            }
-        };
-        AssertExtension.AreEqual(expected, result);
     }
 }

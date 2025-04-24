@@ -1,4 +1,5 @@
 ﻿using ThirdPartyBroadcast.Consumer.Services;
+using SportTypes = Settlement.Business.Core.Constants.SportType;
 
 namespace ThirdPartyBroadcast.Consumer.Models;
 
@@ -62,7 +63,7 @@ public class MatchInfo
 
     private string GetTeamName(string languageCode)
     {
-        if (SportType is Constants.SportType.VirtualDogs or Constants.SportType.VirtualHorses)
+        if (IsRacing(SportType))
         {
             return $"{RefDataService.GetEvent(languageCode)} {VendorId} - ID {Distance}";
         }
@@ -72,6 +73,8 @@ public class MatchInfo
 
         return string.IsNullOrEmpty(home) || string.IsNullOrEmpty(away) ? TeamName : $"{home} -vs- {away}";
     }
+
+    private static bool IsRacing(int sportType) => sportType is SportTypes.VirtualDogs or SportTypes.VirtualHorses or SportTypes.VirtualSteepleChase or SportTypes.VirtualHarnessRacing or SportTypes.VirtualMotorRacing;
 
     private string GetLeagueName(string languageCode)
     {
