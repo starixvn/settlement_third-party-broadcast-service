@@ -12,7 +12,7 @@ using Tickets = (IEnumerable<TicketInfo> creditTickets, IEnumerable<TicketInfo> 
 
 public interface MatchService
 {
-    Task<MatchInfo> GetMatchInfo(int matchId);
+    Task<MatchInfo> GetMatchInfo(int matchId, bool isPinGoal = false);
 
     Task<MatchInfo> GetMatch3rdInfo(int matchId);
 
@@ -52,9 +52,9 @@ public class MatchServiceImp(
     IOptions<AppSettingsKey> appSettingsKey)
     : MatchService
 {
-    public async Task<MatchInfo> GetMatchInfo(int matchId)
+    public async Task<MatchInfo> GetMatchInfo(int matchId, bool isPinGoal = false)
     {
-        var criteria = new GetMatchCriteria { MatchId = matchId };
+        var criteria = new GetMatchCriteria { MatchId = matchId, IsPinGoal = isPinGoal };
         var match = await repository.GetAsync<MatchInfo>(criteria);
         match.RefDataService = refDataService;
         return match;
