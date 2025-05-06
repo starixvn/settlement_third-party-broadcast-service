@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Fanex.SiteDbConnectionManager.Client.Services;
 using Settlement.Business.Core.Models;
 using ThirdPartyBroadcast.Consumer.Criteria;
 using ThirdPartyBroadcast.Consumer.Criteria.VirtualBetRadar;
@@ -49,7 +49,7 @@ public class MatchServiceImp(
     ScaleOutSettleThirdPartyService scaleOutSettleThirdPartyService,
     LogDirectlyService logDirectlyService,
     RefDataService refDataService,
-    IOptions<AppSettingsKey> appSettingsKey)
+    SiteDbClientService siteDbClientService)
     : MatchService
 {
     public async Task<MatchInfo> GetMatchInfo(int matchId)
@@ -185,7 +185,8 @@ public class MatchServiceImp(
     public async Task<Tickets> GetAllTicketsVirtualSports(int matchId)
     {
         var criteria = new VirtualSportsTicketCriteria { MatchId = matchId };
-        var tasks = appSettingsKey.Value.SiteDbServer.Select(s => GetTicketsVirtualSportsOnSite(s, criteria));
+        var siteDbList = await siteDbClientService.GetActiveSiteDbAsync();
+        var tasks = siteDbList.Select(s => GetTicketsVirtualSportsOnSite(s.SiteName, criteria));
 
         var result = await Task.WhenAll(tasks);
 
@@ -206,8 +207,8 @@ public class MatchServiceImp(
     public async Task<Tickets> GetTickets3rd(int matchId, short sportType, string resources)
     {
         var criteria = new VirtualSportsFiveTicketCriteria { MatchId = matchId, SportType = sportType, ResourceIds = resources };
-
-        var tasks = appSettingsKey.Value.SiteDbServer.Select(s => GetTickets3rdOnSite(s, criteria));
+        var siteDbList = await siteDbClientService.GetActiveSiteDbAsync();
+        var tasks = siteDbList.Select(s => GetTickets3rdOnSite(s.SiteName, criteria));
 
         var result = await Task.WhenAll(tasks);
 

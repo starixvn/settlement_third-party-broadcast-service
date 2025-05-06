@@ -105,20 +105,22 @@ public class CalculateServiceImp(
 
     public async Task<Result> ExecuteValidationMultiServer(BaseCriteria criteria)
     {
-        foreach (var server in appSettingsKey.Value.SiteDbServer)
-        {
-            criteria.DbServer = server;
-            await repository.ExecuteAsync(criteria);
-            if (criteria.ErrCode > 0)
-            {
-                return new Result
-                {
-                    ErrorCode = criteria.ErrCode,
-                    ErrorMessage = criteria.ErrMsg
-                };
-            }
-        }
+        var siteDbList = await siteDbClientService.GetActiveSiteDbAsync();
 
-        return new Result();
+        var tasks = siteDbList.Select(async site =>
+        {
+            criteria.DbServer = site.SiteName;
+            await repository.ExecuteAsync(criteria);
+            return new Result
+            {
+                ErrorCode = criteria.ErrCode,
+                ErrorMessage = criteria.ErrMsg
+            };
+        });
+
+        var results = await Task.WhenAll(tasks);
+        var failedResult = results.ToList().Find(r => r.ErrorCode > 0);
+
+        return failedResult ?? new Result();
     }
 }
