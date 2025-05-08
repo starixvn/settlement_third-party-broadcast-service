@@ -47,7 +47,7 @@ public class VirtualBetRadarServiceImp(
     private async Task<Result> HandleSettle(List<TicketSettleInfo> currentTickets, MatchInfo matchInfo, VirtualBetRadarRequest request)
     {
         var criteria = mapper.Map<VirtualBetRadarRequest, VirtualBetRadarCriteria>(request);
-        var pendingCommand = CreateSiteDbPendingCommand(criteria, matchInfo.SportType);
+        var pendingCommand = CreateSiteDbPendingCommand(criteria, matchInfo);
         var settleResult = await calculateService.Execute(criteria, pendingCommand);
 
         await WriteLogSettled(request, settleResult);
@@ -59,13 +59,19 @@ public class VirtualBetRadarServiceImp(
         return settleResult;
     }
 
-    private static SiteDbPendingCommand CreateSiteDbPendingCommand(VirtualBetRadarCriteria criteria, short sportType)
+    private static SiteDbPendingCommand CreateSiteDbPendingCommand(VirtualBetRadarCriteria criteria, MatchInfo matchInfo)
     {
+        var action = criteria.Action;
+        if (!string.IsNullOrWhiteSpace(matchInfo.EventStatus) && string.Equals(matchInfo.EventStatus.ToLowerInvariant(), EventStatus.Completed))
+        {
+            action = ActionName.ReSettle;
+        }
+
         return new SiteDbPendingCommand
         {
             MatchId = criteria.MatchId,
-            SportType = sportType,
-            Action = criteria.Action,
+            SportType = matchInfo.SportType,
+            Action = action,
             SpName = criteria.SpName,
             Parameter = criteria.ToJson(),
             AdminId = criteria.AdminId,
