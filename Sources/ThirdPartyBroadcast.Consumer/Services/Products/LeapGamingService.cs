@@ -5,6 +5,8 @@ namespace ThirdPartyBroadcast.Consumer.Services.Products;
 using Criteria;
 using Criteria.LeapGaming;
 using Fanex.Data.Repository;
+using Fanex.SiteDbConnectionManager.Client.Constants;
+using Fanex.SiteDbConnectionManager.Client.Models;
 using Models;
 
 public interface LeapGamingService
@@ -45,7 +47,8 @@ public class LeapGamingServiceImp(
     private async Task<Result> HandleSettle(List<TicketSettleInfo> currentTickets, MatchInfo matchInfo, LeapGamingRequest request)
     {
         var criteria = mapper.Map<LeapGamingRequest, LeapGamingCriteria>(request);
-        var settleResult = await calculateService.Execute(criteria);
+        var pendingCommand = CreateSiteDbPendingCommand(criteria, matchInfo);
+        var settleResult = await calculateService.Execute(criteria, pendingCommand);
 
         await WriteLogSettled(request, settleResult, matchInfo);
 
@@ -54,6 +57,28 @@ public class LeapGamingServiceImp(
         await announcementService.SendAnnounceRefund(currentTickets, matchInfo, request.AdminId);
 
         return settleResult;
+    }
+
+    private static SiteDbPendingCommand CreateSiteDbPendingCommand(LeapGamingCriteria criteria, MatchInfo matchInfo)
+    {
+        var action = criteria.Action;
+        if (!string.IsNullOrWhiteSpace(matchInfo.EventStatus) && string.Equals(matchInfo.EventStatus.ToLowerInvariant(), EventStatus.Completed))
+        {
+            action = ActionName.ReSettle;
+        }
+
+        return new SiteDbPendingCommand
+        {
+            MatchId = criteria.MatchId,
+            SportType = matchInfo.SportType,
+            Action = action,
+            SpName = criteria.SpName,
+            Parameter = criteria.ToJson(),
+            AdminId = criteria.AdminId,
+            IP = criteria.Ip,
+            SystemName = SystemName.Broadcast,
+            StatusId = CommandStatus.Pending
+        };
     }
 
     private async Task WriteLogSettled(LeapGamingRequest request, Result resultSettle, MatchInfo matchInfo)

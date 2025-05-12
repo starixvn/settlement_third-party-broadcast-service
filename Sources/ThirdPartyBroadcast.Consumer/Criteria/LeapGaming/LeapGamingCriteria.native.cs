@@ -1,4 +1,7 @@
-﻿namespace ThirdPartyBroadcast.Consumer.Criteria.LeapGaming;
+﻿using Fanex.Data;
+using System.Text.Json.Serialization;
+
+namespace ThirdPartyBroadcast.Consumer.Criteria.LeapGaming;
 
 public class LeapGamingCriteria : CalculateCriteria
 {
@@ -6,5 +9,8 @@ public class LeapGamingCriteria : CalculateCriteria
 
     public string SelectedResources { get; set; }
 
-    public override string GetSettingKey() => $"NAP_Admin_Settlement_s178_{DbServer}";
+    [JsonIgnore, SpParam(Ignored = true)]
+    public string SpName { get; set; } = "NAP_Admin_Settlement_s178";
+
+    public override string GetSettingKey() => $"{SpName}_{DbServer}";
 }
