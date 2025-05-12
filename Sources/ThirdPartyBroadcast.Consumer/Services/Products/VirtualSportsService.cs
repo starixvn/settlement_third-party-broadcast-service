@@ -1,6 +1,8 @@
 ﻿namespace ThirdPartyBroadcast.Consumer.Services.Products;
 
 using Criteria.VirtualSports;
+using Fanex.SiteDbConnectionManager.Client.Constants;
+using Fanex.SiteDbConnectionManager.Client.Models;
 using Models;
 using System.Collections.Generic;
 
@@ -35,12 +37,35 @@ public class VirtualSportsServiceImp(
     private async Task<Result> HandleSettle(List<TicketSettleInfo> currentTickets, MatchInfo matchInfo, VirtualSoccerRequest request)
     {
         var criteria = mapper.Map<VirtualSoccerRequest, VirtualSportsCriteria>(request);
-        var settleResult = await calculateService.Execute(criteria);
+        var pendingCommand = CreateSiteDbPendingCommand(criteria, matchInfo);
+        var settleResult = await calculateService.Execute(criteria, pendingCommand);
 
         await recipientMessageService.Message(request.Action, matchInfo);
 
         await announcementService.SendAnnounceRefund(currentTickets, matchInfo, criteria.AdminId);
 
         return settleResult;
+    }
+
+    private static SiteDbPendingCommand CreateSiteDbPendingCommand(VirtualSportsCriteria criteria, MatchInfo matchInfo)
+    {
+        var action = criteria.Action;
+        if (!string.IsNullOrWhiteSpace(matchInfo.EventStatus) && string.Equals(matchInfo.EventStatus.ToLowerInvariant(), EventStatus.Completed))
+        {
+            action = ActionName.ReSettle;
+        }
+
+        return new SiteDbPendingCommand
+        {
+            MatchId = criteria.MatchId,
+            SportType = matchInfo.SportType,
+            Action = action,
+            SpName = criteria.SpName,
+            Parameter = criteria.ToJson(),
+            AdminId = criteria.AdminId,
+            IP = criteria.Ip,
+            SystemName = SystemName.Broadcast,
+            StatusId = CommandStatus.Pending
+        };
     }
 }
