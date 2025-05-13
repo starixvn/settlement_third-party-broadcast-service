@@ -1,7 +1,11 @@
-﻿namespace ThirdPartyBroadcast.Consumer.Services.Products;
+﻿using Fanex.SiteDbConnectionManager.Client.Constants;
+using Fanex.SiteDbConnectionManager.Client.Models;
+
+namespace ThirdPartyBroadcast.Consumer.Services.Products;
 
 using Criteria;
 using Criteria.BitCoin;
+using Models;
 using System;
 
 public interface BitCoinService
@@ -18,15 +22,17 @@ public class BitCoinServiceImp(
 {
     public async Task<Result> Settle(BitCoinRequest request)
     {
-        var eventStatus = await GetEventStatus(request.MatchId);
+        var matchInfo = await GetMatchInfo(request.MatchId);
 
         await UpdateMatchInfo(request);
 
         await WriteLog(request.MatchId);
 
         var criteria = mapper.Map<BitCoinRequest, BitCoinCriteria>(request);
-        var result = await calculateService.Execute(criteria);
+        var pendingCommand = CreateSiteDbPendingCommand(criteria, matchInfo);
+        var result = await calculateService.Execute(criteria, pendingCommand);
 
+        var eventStatus = matchInfo.EventStatus;
         if (result.IsSuccessful && !string.IsNullOrWhiteSpace(eventStatus))
         {
             await Notification(request, eventStatus);
@@ -35,18 +41,39 @@ public class BitCoinServiceImp(
         return result;
     }
 
+    private static SiteDbPendingCommand CreateSiteDbPendingCommand(BitCoinCriteria criteria, MatchInfo matchInfo)
+    {
+        var action = criteria.Action;
+        if (!string.IsNullOrWhiteSpace(matchInfo.EventStatus) && string.Equals(matchInfo.EventStatus.ToLowerInvariant(), EventStatus.Completed))
+        {
+            action = ActionName.ReSettle;
+        }
+
+        return new SiteDbPendingCommand
+        {
+            MatchId = criteria.MatchId,
+            SportType = matchInfo.SportType,
+            Action = action,
+            SpName = criteria.SpName,
+            Parameter = criteria.ToJson(),
+            AdminId = criteria.AdminId,
+            IP = criteria.Ip,
+            SystemName = SystemName.Broadcast,
+            StatusId = CommandStatus.Pending
+        };
+    }
+
     private async Task WriteLog(int matchId)
     {
         var logMessage = logDirectlyService.Message(matchId);
         await logDirectlyService.WriteLog(matchId, logMessage);
     }
 
-    private async Task<string> GetEventStatus(int matchId)
+    private async Task<MatchInfo> GetMatchInfo(int matchId)
     {
         var criteria = new Match3rdSelCriteria { MatchId = matchId };
 
-        var match = await repository.GetAsync<MatchInfo>(criteria);
-        return match.EventStatus;
+        return await repository.GetAsync<MatchInfo>(criteria);
     }
 
     private async Task Notification(BitCoinRequest request, string eventStatus)
