@@ -1,7 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Functions>
 	<Function Name="ThirdParty Broadcast">
-		<Setting Key="NAP_Set_MatchSelInfo" SpName="NAP_Set_MatchSelInfo" DbName="DBPRO.bodb02.wsv_nap" />
 		<Setting Key="NAP_Admin_Match_Update" SpName="NAP_Admin_Match_Update" DbName="DBPRO.bodb02.wsv_nap" />
 		<Setting Key="NAP_Admin_Settlement_Validation_Event" SpName="NAP_Admin_Settlement_Validation_Event" DbName="DBPRO.bodb02.wsv_nap" />
 		<Setting Key="NAP_Admin_MatchInfoUpd" SpName="NAP_Admin_MatchInfoUpd" DbName="DBPRO.bodb02.wsv_nap" />

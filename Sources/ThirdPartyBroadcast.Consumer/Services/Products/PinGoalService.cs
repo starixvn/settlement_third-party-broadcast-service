@@ -3,6 +3,7 @@
 namespace ThirdPartyBroadcast.Consumer.Services.Products;
 
 using Criteria;
+using ThirdPartyBroadcast.Consumer.Models;
 
 public interface PinGoalService
 {
@@ -22,7 +23,7 @@ public class PinGoalServiceImp(
     public async Task<Result> Settle(PinGoalRequest request)
     {
         var criteria = mapper.Map<PinGoalRequest, PinGoalCriteria>(request);
-        var matchInfo = await matchService.GetMatchInfo(request.MatchId, true);
+        var matchInfo = await matchService.GetMatchInfo(request.MatchId);
         var validateResult = ValidateResult(matchInfo, request.SelectedResources, request.Action);
         var validateBeforePush = await ValidateBeforePush(request);
 
@@ -65,33 +66,37 @@ public class PinGoalServiceImp(
 
     private Result ValidateResult(MatchInfo matchInfo, string selectedResources, string action)
     {
-        if (action != Constants.ActionName.Calculate || matchInfo.LeagueGroupId != LeagueGroupPingoal)
+        if (!string.Equals(action, Constants.ActionName.Calculate, StringComparison.CurrentCultureIgnoreCase) || matchInfo.LeagueGroupId != LeagueGroupPingoal)
         {
             return new Result();
         }
 
         var resources = xmlConvertService.Deserialize<ResourcesModel>(selectedResources);
         var finalResult = resources.Items.FirstOrDefault(item => item.Id == ResourceId.FullTimeResourceId);
+        var halfTimeResult = resources.Items.FirstOrDefault(item => item.Id == ResourceId.HalfTimeResourceId);
 
-        if (finalResult == null)
-        {
-            return new Result();
-        }
+        var IsHtNotSettled = finalResult != null && halfTimeResult == null && (matchInfo.HtHomeScore is null || matchInfo.HtAwayScore is null);
 
-        if (matchInfo.isHalftimeCal)
+        if (IsHtNotSettled)
         {
             return new Result(1, "Failed: HT has not been settled");
         }
 
-        var homeScore = int.Parse(finalResult.Home);
-        var awayScore = int.Parse(finalResult.Away);
+        var IsFtNotSettled = halfTimeResult != null && finalResult == null && (matchInfo.FinalHomeScore is null || matchInfo.FinalAwayScore is null);
 
-        if (matchInfo.HtHomeScore > homeScore || matchInfo.HtAwayScore > awayScore)
-        {
-            return new Result(1, "Cannot calculate due to FT scores are less than HT Score. Please recheck entered values.");
-        }
+        return IsFtNotSettled ? new Result() : VerifyHtFTScore(matchInfo, halfTimeResult, finalResult);
+    }
 
-        return new Result();
+    private Result VerifyHtFTScore(MatchInfo matchInfo, ResourceItemModel halfTimeResult, ResourceItemModel finalResult)
+    {
+        var ftHomeScore = finalResult != null ? int.Parse(finalResult.Home) : matchInfo.FinalHomeScore ?? 0;
+        var ftAwayScore = finalResult != null ? int.Parse(finalResult.Away) : matchInfo.FinalAwayScore ?? 0;
+        var htHomeScore = halfTimeResult != null ? int.Parse(halfTimeResult.Home) : matchInfo.HtHomeScore ?? 0;
+        var htAwayScore = halfTimeResult != null ? int.Parse(halfTimeResult.Away) : matchInfo.HtAwayScore ?? 0;
+
+        var IsHtScoreGreaterThanFt = htHomeScore > ftHomeScore || htAwayScore > ftAwayScore;
+
+        return IsHtScoreGreaterThanFt ? new Result(1, "Cannot calculate due to FT scores are less than HT Score. Please recheck entered values.") : new Result();
     }
 
     private async Task UpdateMatchInfo(PinGoalRequest request)
