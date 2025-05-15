@@ -1,6 +1,7 @@
 ﻿namespace ThirdPartyBroadcast.Consumer.Services.Products;
 
 using Criteria.VirtualSports;
+using Fanex.Settlement.ThirdPartyBroadcast.Shared;
 using Fanex.SiteDbConnectionManager.Client.Constants;
 using Fanex.SiteDbConnectionManager.Client.Models;
 using Models;
@@ -58,7 +59,7 @@ public class VirtualSportsServiceImp(
         return new SiteDbPendingCommand
         {
             MatchId = criteria.MatchId,
-            SportType = matchInfo.SportType,
+            ProductType = ProductType.VirtualSports,
             Action = action,
             SpName = criteria.SpName,
             Parameter = criteria.ToJson(),

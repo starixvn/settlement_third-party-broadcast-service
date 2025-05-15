@@ -1,4 +1,5 @@
 ﻿using Fanex.RemotingRef;
+using Fanex.Settlement.ThirdPartyBroadcast.Shared;
 using ThirdPartyBroadcast.Consumer.Criteria.LeapGaming;
 
 namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products;
@@ -34,7 +35,7 @@ public class LeapGamingServiceTests
     [Fact]
     public async Task Settle_ScoreIncorrectFormat_StopProcessAndReturn()
     {
-        var result = await service.Settle(new LeapGamingRequest { SelectedResources = "<Resources> <score Id=\"00\" Home=\"1\" Away=\"1\"/> <score Id=\"01\" Home=\"1\" Away=\"1\"/></Resources>" });
+        var result = await service.Settle(new LeapGamingRequest { SelectedResources = "<Resources> <score Id=\"00\" Home=\"1\" Away=\"1\"/> <score Id=\"01\" Home=\"1\" Away=\"1\"/></Resources>" }, ProductType.LeapGaming);
 
         Assert.True(result.ErrorCode > 0);
         await calculateService.DidNotReceive().Execute(Arg.Any<LeapGamingCriteria>());
@@ -56,7 +57,7 @@ public class LeapGamingServiceTests
             Action = "CAL",
             MatchId = 1,
             SelectedResources = "<Resources><Resource Id=\"00\" Home=\"1\" Away=\"1\"/><Resource Id=\"01\" Home=\"1\" Away=\"1\"/></Resources>"
-        });
+        }, ProductType.LeapGaming);
 
         Received.InOrder(() =>
         {

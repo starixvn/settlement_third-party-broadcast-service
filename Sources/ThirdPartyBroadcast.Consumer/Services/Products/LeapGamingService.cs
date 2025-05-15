@@ -11,7 +11,7 @@ using Models;
 
 public interface LeapGamingService
 {
-    Task<Result> Settle(LeapGamingRequest request);
+    Task<Result> Settle(LeapGamingRequest request, string productType);
 }
 
 public class LeapGamingServiceImp(
@@ -24,7 +24,7 @@ public class LeapGamingServiceImp(
     AnnouncementService announcementService)
     : LeapGamingService
 {
-    public async Task<Result> Settle(LeapGamingRequest request)
+    public async Task<Result> Settle(LeapGamingRequest request, string productType)
     {
         var currentMatchInfo = await matchService.GetMatchInfo(request.MatchId);
         var validationResult = ValidateMatchScore(request, currentMatchInfo);
@@ -39,15 +39,14 @@ public class LeapGamingServiceImp(
 
         await matchService.WriteLog(request.MatchId);
 
-        var result = await HandleSettle(currentTickets, currentMatchInfo, request);
-
+        var result = await HandleSettle(currentTickets, currentMatchInfo, request, productType);
         return result;
     }
 
-    private async Task<Result> HandleSettle(List<TicketSettleInfo> currentTickets, MatchInfo matchInfo, LeapGamingRequest request)
+    private async Task<Result> HandleSettle(List<TicketSettleInfo> currentTickets, MatchInfo matchInfo, LeapGamingRequest request, string productType)
     {
         var criteria = mapper.Map<LeapGamingRequest, LeapGamingCriteria>(request);
-        var pendingCommand = CreateSiteDbPendingCommand(criteria, matchInfo);
+        var pendingCommand = CreateSiteDbPendingCommand(criteria, matchInfo, productType);
         var settleResult = await calculateService.Execute(criteria, pendingCommand);
 
         await WriteLogSettled(request, settleResult, matchInfo);
@@ -59,7 +58,7 @@ public class LeapGamingServiceImp(
         return settleResult;
     }
 
-    private static SiteDbPendingCommand CreateSiteDbPendingCommand(LeapGamingCriteria criteria, MatchInfo matchInfo)
+    private static SiteDbPendingCommand CreateSiteDbPendingCommand(LeapGamingCriteria criteria, MatchInfo matchInfo, string productType)
     {
         var action = criteria.Action;
         if (!string.IsNullOrWhiteSpace(matchInfo.EventStatus) && string.Equals(matchInfo.EventStatus.ToLowerInvariant(), EventStatus.Completed))
@@ -70,7 +69,7 @@ public class LeapGamingServiceImp(
         return new SiteDbPendingCommand
         {
             MatchId = criteria.MatchId,
-            SportType = matchInfo.SportType,
+            ProductType = productType,
             Action = action,
             SpName = criteria.SpName,
             Parameter = criteria.ToJson(),
