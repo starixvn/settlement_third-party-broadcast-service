@@ -43,7 +43,7 @@ public class NumberGameServiceImp(
         return new SiteDbPendingCommand
         {
             MatchId = criteria.MatchId,
-            SportType = SportType.NumberGame,
+            ProductType = ProductType.NumberGame,
             Action = criteria.Action,
             SpName = criteria.SpName,
             Parameter = criteria.ToJson(),

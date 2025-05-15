@@ -43,7 +43,6 @@
     <PackageReference Include="Fanex.RemotingRef" Version="1.5.5.1" />
     <PackageReference Include="Fanex.Settlement.Business" Version="1.0.26" />
     <PackageReference Include="Fanex.Settlement.Converter" Version="1.0.0.1" />
-    <PackageReference Include="Fanex.SiteDbConnectionManager.Services" Version="1.0.1-alpha12" />
     <PackageReference Include="MassTransit.RabbitMQ" Version="8.4.0" />
     <PackageReference Include="MediatR" Version="12.5.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />

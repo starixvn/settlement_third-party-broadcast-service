@@ -41,7 +41,6 @@
     <PackageReference Include="Fanex.RemotingRef" Version="1.5.5.1" />
     <PackageReference Include="Fanex.Settlement.Business" Version="1.0.26" />
     <PackageReference Include="Fanex.Settlement.Converter" Version="1.0.0.1" />
-    <PackageReference Include="Fanex.SiteDbConnectionManager.Services" Version="1.0.1-alpha12" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
     <PackageReference Include="NSubstitute" Version="5.3.0" />
     <PackageReference Include="System.Text.Json" Version="9.0.4" />

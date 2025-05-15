@@ -70,7 +70,7 @@ public class VirtualBetRadarServiceImp(
         return new SiteDbPendingCommand
         {
             MatchId = criteria.MatchId,
-            SportType = matchInfo.SportType,
+            ProductType = ProductType.VirtualBetRadar,
             Action = action,
             SpName = criteria.SpName,
             Parameter = criteria.ToJson(),
