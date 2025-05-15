@@ -4,6 +4,7 @@ using Criteria;
 using Fanex.Settlement.ThirdPartyBroadcast.Shared;
 using Fanex.SiteDbConnectionManager.Client.Constants;
 using Fanex.SiteDbConnectionManager.Client.Models;
+using ThirdPartyBroadcast.Consumer.Models;
 
 public interface OutrightService
 {
@@ -26,7 +27,8 @@ public class OutrightServiceImp(
         }
 
         var criteria = mapper.Map<OutrightRequest, OutrightCriteria>(request);
-        return await calculateService.Execute(criteria);
+        var pendingCommand = CreateSiteDbPendingCommand(criteria);
+        return await calculateService.Execute(criteria, pendingCommand);
     }
 
     private async Task<Result> ValidateBeforeSettle(OutrightRequest request)

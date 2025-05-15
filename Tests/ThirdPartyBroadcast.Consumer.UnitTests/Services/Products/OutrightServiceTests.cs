@@ -1,6 +1,8 @@
 ﻿namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products;
 
 using Criteria;
+using Fanex.SiteDbConnectionManager.Client.Models;
+using ScaleOutModels = Fanex.Settlement.ScaleOut.Models;
 
 public class OutrightServiceTests
 {
@@ -24,7 +26,7 @@ public class OutrightServiceTests
     [Fact]
     public async Task Settle_ValidateMoveBetDayIsFailed_ReturnResultError()
     {
-        var resultMessage = new ResultMessage { ErrorCode = 1, ErrorMessage = "Error Message" };
+        var resultMessage = new ScaleOutModels.ResultMessage { ErrorCode = 1, ErrorMessage = "Error Message" };
         scaleOutSettleThirdPartyService.ValidateMoveBetDay(Arg.Any<string>(), Arg.Any<string>()).Returns(resultMessage);
 
         var result = await service.Settle(new OutrightRequest());
@@ -35,11 +37,11 @@ public class OutrightServiceTests
     [Fact]
     public async Task Settle_ValidateMoveBetDayIsPassed_DoSettle()
     {
-        scaleOutSettleThirdPartyService.ValidateMoveBetDay(Arg.Any<string>(), Arg.Any<string>()).Returns(new ResultMessage());
-        calculateService.Execute(Arg.Any<OutrightCriteria>()).Returns(new Result());
+        scaleOutSettleThirdPartyService.ValidateMoveBetDay(Arg.Any<string>(), Arg.Any<string>()).Returns(new ScaleOutModels.ResultMessage());
+        calculateService.Execute(Arg.Any<OutrightCriteria>(), Arg.Any<SiteDbPendingCommand>()).Returns(new Result());
         var result = await service.Settle(new OutrightRequest());
 
         Assert.True(result.IsSuccessful);
-        await calculateService.Received().Execute(Arg.Any<OutrightCriteria>());
+        await calculateService.Received().Execute(Arg.Any<OutrightCriteria>(), Arg.Any<SiteDbPendingCommand>());
     }
 }

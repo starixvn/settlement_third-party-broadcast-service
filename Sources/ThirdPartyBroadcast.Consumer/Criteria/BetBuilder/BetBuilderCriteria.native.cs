@@ -1,4 +1,6 @@
-﻿namespace ThirdPartyBroadcast.Consumer.Criteria.BetBuilder;
+﻿using Fanex.Data;
+
+namespace ThirdPartyBroadcast.Consumer.Criteria.BetBuilder;
 
 public class BetBuilderCriteria : CalculateCriteria
 {
@@ -14,5 +16,8 @@ public class BetBuilderCriteria : CalculateCriteria
 
     public string BroadcastSessionId { get; } = Guid.NewGuid().ToString();
 
-    public override string GetSettingKey() => $"NAP_Admin_Settlement_BetBuilder_Push_{DbServer}";
+    [System.Text.Json.Serialization.JsonIgnore, SpParam(Ignored = true)]
+    public string SpName { get; set; } = "NAP_Admin_Settlement_BetBuilder_Push";
+
+    public override string GetSettingKey() => $"{SpName}_{DbServer}";
 }

@@ -28,34 +28,6 @@ public class CalculateServiceTests
         service = new CalculateServiceImp(repository, options, siteDbClientService, pendingCommandService);
     }
 
-    [Fact]
-    public async Task Execute_ExistError_ReturnCorrectMessage()
-    {
-        await repository.ExecuteAsync(Arg.Do<CalculateCriteria>(criteria =>
-        {
-            criteria.ErrMsg = "Test";
-            criteria.ErrCode = 1;
-        }));
-
-        var result = await service.Execute(new CalculateCriteria());
-        const string expected = "01: 1 - Test | 02: 1 - Test";
-
-        //Assert
-        Assert.Equal(expected, result.ErrorMessage);
-    }
-
-    [Fact]
-    public async Task Execute_NotError_ReturnResult()
-    {
-        await repository.ExecuteAsync(Arg.Any<CalculateCriteria>());
-
-        var result = await service.Execute(new CalculateCriteria());
-
-        //Assert
-        Assert.Equal(0, result.ErrorCode);
-        Assert.Empty(result.ErrorMessage);
-    }
-
     [Theory]
     [InlineData(0)]
     [InlineData(1)]

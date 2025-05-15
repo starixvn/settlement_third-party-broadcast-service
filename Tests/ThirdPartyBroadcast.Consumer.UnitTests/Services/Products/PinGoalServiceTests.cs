@@ -1,5 +1,7 @@
 ﻿using Fanex.Settlement.ScaleOut.Request;
+using Fanex.SiteDbConnectionManager.Client.Models;
 using ThirdPartyBroadcast.Consumer.Criteria;
+using ResultMessage = Fanex.Settlement.ScaleOut.Models.ResultMessage;
 
 namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products;
 
@@ -152,6 +154,6 @@ public class PinGoalServiceTests
         // Assert
         Assert.Equal(0, result.ErrorCode);
         await scaleOutSettleService.Received().UpdateMatchInfo(Arg.Any<UpdateMatchInfoRequest>());
-        await calculateService.Received().Execute(Arg.Any<PinGoalCriteria>());
+        await calculateService.Received().Execute(Arg.Any<PinGoalCriteria>(), Arg.Any<SiteDbPendingCommand>());
     }
 }

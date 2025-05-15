@@ -1,5 +1,6 @@
 ﻿using Fanex.RemotingRef;
 using Fanex.Settlement.ThirdPartyBroadcast.Shared;
+using Fanex.SiteDbConnectionManager.Client.Models;
 using ThirdPartyBroadcast.Consumer.Criteria.LeapGaming;
 
 namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products;
@@ -38,7 +39,7 @@ public class LeapGamingServiceTests
         var result = await service.Settle(new LeapGamingRequest { SelectedResources = "<Resources> <score Id=\"00\" Home=\"1\" Away=\"1\"/> <score Id=\"01\" Home=\"1\" Away=\"1\"/></Resources>" }, ProductType.LeapGaming);
 
         Assert.True(result.ErrorCode > 0);
-        await calculateService.DidNotReceive().Execute(Arg.Any<LeapGamingCriteria>());
+        await calculateService.DidNotReceive().Execute(Arg.Any<LeapGamingCriteria>(), Arg.Any<SiteDbPendingCommand>());
     }
 
     [Fact]
@@ -50,7 +51,7 @@ public class LeapGamingServiceTests
             RefDataService = new RefDataServiceImp(new RemotingRefService())
         };
         matchService.GetMatchInfo(Arg.Any<int>()).Returns(matchInfo);
-        calculateService.Execute(Arg.Any<LeapGamingCriteria>()).Returns(new Result());
+        calculateService.Execute(Arg.Any<LeapGamingCriteria>(), Arg.Any<SiteDbPendingCommand>()).Returns(new Result());
 
         await service.Settle(new LeapGamingRequest
         {
@@ -65,7 +66,7 @@ public class LeapGamingServiceTests
             ticketInfoService.GetTicketsByAction(Arg.Any<int>(), Arg.Any<short>(), Arg.Any<string>());
             matchService.UpdateMatchInfoLeapGaming(Arg.Any<LeapGamingRequest>());
             matchService.WriteLog(Arg.Any<int>());
-            calculateService.Execute(Arg.Any<LeapGamingCriteria>());
+            calculateService.Execute(Arg.Any<LeapGamingCriteria>(), Arg.Any<SiteDbPendingCommand>());
             announcementService.SendAnnounceRefund(Arg.Any<List<TicketSettleInfo>>(), Arg.Any<MatchInfo>(), Arg.Any<int>());
         });
     }

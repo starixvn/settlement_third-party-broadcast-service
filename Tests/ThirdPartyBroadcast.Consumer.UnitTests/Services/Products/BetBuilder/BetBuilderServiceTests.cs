@@ -1,4 +1,5 @@
-﻿using ThirdPartyBroadcast.Consumer.Criteria.BetBuilder;
+﻿using Fanex.SiteDbConnectionManager.Client.Models;
+using ThirdPartyBroadcast.Consumer.Criteria.BetBuilder;
 using ThirdPartyBroadcast.Consumer.Services.Products.BetBuilder;
 
 namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products.BetBuilder;
@@ -40,7 +41,7 @@ public class BetBuilderServiceTests
 
         Assert.True(result.ErrorCode > 0);
 
-        await calculateService.DidNotReceive().Execute(Arg.Any<BetBuilderCriteria>());
+        await calculateService.DidNotReceive().Execute(Arg.Any<BetBuilderCriteria>(), Arg.Any<SiteDbPendingCommand>());
     }
 
     [Fact]
@@ -60,7 +61,7 @@ public class BetBuilderServiceTests
         });
 
         Assert.Equal(0, result.ErrorCode);
-        await calculateService.DidNotReceive().Execute(Arg.Any<BetBuilderCriteria>());
+        await calculateService.DidNotReceive().Execute(Arg.Any<BetBuilderCriteria>(), Arg.Any<SiteDbPendingCommand>());
         betBuilderGenerateService.DidNotReceive().RemoveSelectionWarning(Arg.Any<string>(), Arg.Any<List<ReasonModel>>());
         await betBuilderGenerateService.DidNotReceive().WriteLogReason(Arg.Any<BetBuilderRequest>(), Arg.Any<List<ReasonModel>>());
     }
@@ -89,7 +90,7 @@ public class BetBuilderServiceTests
         });
 
         Assert.Equal(0, result.ErrorCode);
-        await calculateService.DidNotReceive().Execute(Arg.Any<BetBuilderCriteria>());
+        await calculateService.DidNotReceive().Execute(Arg.Any<BetBuilderCriteria>(), Arg.Any<SiteDbPendingCommand>());
     }
 
     [Fact]
@@ -106,7 +107,7 @@ public class BetBuilderServiceTests
 
         betBuilderGenerateService.ValidationBeforeSettle(Arg.Any<BetBuilderRequest>()).Returns((results, reason));
         betBuilderGenerateService.GetInfoMarket(Arg.Any<BetBuilderRequest>()).Returns("MarketId");
-        calculateService.Execute(Arg.Any<BetBuilderCriteria>()).Returns(new Result());
+        calculateService.Execute(Arg.Any<BetBuilderCriteria>(), Arg.Any<SiteDbPendingCommand>()).Returns(new Result());
         var result = await service.Settle(new BetBuilderRequest());
 
         Received.InOrder(() =>
@@ -115,7 +116,7 @@ public class BetBuilderServiceTests
             betBuilderGenerateService.WriteLogReason(Arg.Any<BetBuilderRequest>(), Arg.Any<List<ReasonModel>>());
             betBuilderGenerateService.UpdateMatchInfo(Arg.Any<BetBuilderRequest>(), Arg.Any<string>());
             betBuilderGenerateService.WriteLog(Arg.Any<BetBuilderRequest>());
-            calculateService.Execute(Arg.Any<BetBuilderCriteria>());
+            calculateService.Execute(Arg.Any<BetBuilderCriteria>(), Arg.Any<SiteDbPendingCommand>());
         });
 
         Assert.Equal(0, result.ErrorCode);
