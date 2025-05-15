@@ -43,7 +43,7 @@ public class GroupTwoServiceImp(
     public async Task SettleLeapGaming(string productType, string data)
     {
         var request = JsonConvert.DeserializeObject<LeapGamingRequest>(data);
-        var result = await leapGamingService.Settle(request);
+        var result = await leapGamingService.Settle(request, productType);
         await logDirectlyService.HandleLog(result, productType, data);
     }
 

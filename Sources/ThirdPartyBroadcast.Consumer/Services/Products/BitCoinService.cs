@@ -52,7 +52,7 @@ public class BitCoinServiceImp(
         return new SiteDbPendingCommand
         {
             MatchId = criteria.MatchId,
-            SportType = matchInfo.SportType,
+            ProductType = ProductType.BitCoin,
             Action = action,
             SpName = criteria.SpName,
             Parameter = criteria.ToJson(),
