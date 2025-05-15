@@ -3,6 +3,8 @@
 namespace ThirdPartyBroadcast.Consumer.Services.Products;
 
 using Criteria;
+using Fanex.SiteDbConnectionManager.Client.Constants;
+using Fanex.SiteDbConnectionManager.Client.Models;
 using Requests;
 
 public interface FastMarketService
@@ -37,7 +39,8 @@ public class FastMarketServiceImp(
         var message = GenerateLogMessage(criteria);
         await logDirectlyService.WriteLog(criteria.MatchId, message);
 
-        return await calculateService.Execute(criteria);
+        var pendingCommand = CreateSiteDbPendingCommand(criteria);
+        return await calculateService.Execute(criteria, pendingCommand);
     }
 
     private static string GenerateLogMessage(FastMarketCriteria criteria)
@@ -57,5 +60,21 @@ public class FastMarketServiceImp(
         };
 
         await scaleOutSettleService.UpdateMatchInfo(requestUpdateInfo);
+    }
+
+    private static SiteDbPendingCommand CreateSiteDbPendingCommand(FastMarketCriteria criteria)
+    {
+        return new SiteDbPendingCommand
+        {
+            MatchId = criteria.MatchId,
+            ProductType = ProductType.FastMarket,
+            Action = criteria.Action,
+            SpName = criteria.SpName,
+            Parameter = criteria.ToJson(),
+            AdminId = criteria.AdminId,
+            IP = criteria.Ip,
+            SystemName = SystemName.Broadcast,
+            StatusId = CommandStatus.Pending
+        };
     }
 }

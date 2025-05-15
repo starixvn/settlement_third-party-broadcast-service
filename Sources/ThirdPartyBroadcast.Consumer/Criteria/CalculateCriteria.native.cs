@@ -1,6 +1,4 @@
 ﻿using Fanex.Data;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using ThirdPartyBroadcast.Consumer.Helper;
 
 namespace ThirdPartyBroadcast.Consumer.Criteria;
@@ -17,7 +15,7 @@ public class CalculateCriteria : NonQueryCommand
 
     public string ErrMsg { get; set; }
 
-    [JsonIgnore, SpParam(Ignored = true)]
+    [System.Text.Json.Serialization.JsonIgnore, SpParam(Ignored = true)]
     public string DbServer { get; set; }
 
     public override string GetSettingKey()
@@ -27,5 +25,5 @@ public class CalculateCriteria : NonQueryCommand
 
     public override bool IsValid() => MatchId > 0;
 
-    public string ToJson() => JsonSerializer.Serialize(this, GetType(), JsonSettings.Options);
+    public string ToJson() => System.Text.Json.JsonSerializer.Serialize(this, GetType(), JsonSettings.Options);
 }

@@ -1,5 +1,7 @@
 ﻿namespace ThirdPartyBroadcast.Consumer.Services.Products.BetBuilder;
 
+using Fanex.SiteDbConnectionManager.Client.Constants;
+using Fanex.SiteDbConnectionManager.Client.Models;
 using Models;
 using Requests;
 using ThirdPartyBroadcast.Consumer.Criteria.BetBuilder;
@@ -43,7 +45,25 @@ public class BetBuilderServiceImp(
         criteria.SelectedMarket = selectedMarket;
         criteria.SelectedSelection = request.Resources;
 
-        return await calculateService.Execute(criteria);
+        var pendingCommand = CreateSiteDbPendingCommand(criteria);
+
+        return await calculateService.Execute(criteria, pendingCommand);
+    }
+
+    private static SiteDbPendingCommand CreateSiteDbPendingCommand(BetBuilderCriteria criteria)
+    {
+        return new SiteDbPendingCommand
+        {
+            MatchId = criteria.MatchId,
+            ProductType = ProductType.BetBuilder,
+            Action = criteria.Action,
+            SpName = criteria.SpName,
+            Parameter = criteria.ToJson(),
+            AdminId = criteria.AdminId,
+            IP = criteria.Ip,
+            SystemName = SystemName.Broadcast,
+            StatusId = CommandStatus.Pending
+        };
     }
 
     private async Task FilterSelectionAndLogReason(BetBuilderRequest request, IEnumerable<ReasonModel> reasonErrors)

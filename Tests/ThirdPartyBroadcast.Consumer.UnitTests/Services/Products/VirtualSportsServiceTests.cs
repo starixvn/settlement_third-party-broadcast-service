@@ -1,4 +1,6 @@
-﻿namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products;
+﻿using Fanex.SiteDbConnectionManager.Client.Models;
+
+namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products;
 
 using Criteria.VirtualSports;
 using ThirdPartyBroadcast.Consumer.Services;
@@ -44,7 +46,7 @@ public class VirtualSportsServiceTests
             ticketInfoService.GetTicketsByAction(Arg.Any<int>(), Arg.Any<short>(), Arg.Any<string>());
             matchService.UpdateMatchInfoVirtualSports(Arg.Any<VirtualSoccerRequest>());
             matchService.WriteLogVirtualSports(Arg.Any<VirtualSoccerRequest>());
-            calculateService.Execute(Arg.Any<VirtualSportsCriteria>());
+            calculateService.Execute(Arg.Any<VirtualSportsCriteria>(), Arg.Any<SiteDbPendingCommand>());
             announcementService.SendAnnounceRefund(Arg.Any<List<TicketSettleInfo>>(), Arg.Any<MatchInfo>(), Arg.Any<int>());
         });
     }

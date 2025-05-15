@@ -3,6 +3,8 @@
 namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products;
 
 using Criteria;
+using Fanex.SiteDbConnectionManager.Client.Models;
+using ScaleOutModels = Fanex.Settlement.ScaleOut.Models;
 
 public class FastMarketServiceTests
 {
@@ -10,7 +12,7 @@ public class FastMarketServiceTests
 
     private readonly CalculateService calculateService;
 
-    private readonly FastMarketService service;
+    private readonly FastMarketServiceImp service;
 
     private readonly LogDirectlyService logDirectlyService;
 
@@ -30,7 +32,7 @@ public class FastMarketServiceTests
     [Fact]
     public async Task Settle_ValidateFailed_StopProcess()
     {
-        var resultFailed = new ResultMessage
+        var resultFailed = new ScaleOutModels.ResultMessage
         {
             ErrorCode = 99
         };
@@ -46,12 +48,12 @@ public class FastMarketServiceTests
     [Fact]
     public async Task Settle_ValidatePassed_DoSettle()
     {
-        scaleOutSettleService.ValidateEventAndTicketFastMarket(Arg.Any<EventTicketFastMarketRequest>()).Returns(new ResultMessage());
+        scaleOutSettleService.ValidateEventAndTicketFastMarket(Arg.Any<EventTicketFastMarketRequest>()).Returns(new ScaleOutModels.ResultMessage());
 
         await service.Settle(new FastMarketRequest());
 
         await scaleOutSettleService.Received().UpdateMatchInfo(Arg.Any<UpdateMatchInfoRequest>());
-        await calculateService.Received().Execute(Arg.Any<FastMarketCriteria>());
+        await calculateService.Received().Execute(Arg.Any<FastMarketCriteria>(), Arg.Any<SiteDbPendingCommand>());
         await logDirectlyService.WriteLog(Arg.Any<int>(), Arg.Any<string>());
     }
 }
