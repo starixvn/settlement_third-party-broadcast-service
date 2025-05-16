@@ -1,4 +1,6 @@
-﻿using ThirdPartyBroadcast.Consumer.Criteria;
+﻿using Fanex.SiteDbConnectionManager.Client.Constants;
+using Fanex.SiteDbConnectionManager.Client.Models;
+using ThirdPartyBroadcast.Consumer.Criteria;
 using ThirdPartyBroadcast.Consumer.Criteria.VirtualSportFive;
 using ThirdPartyBroadcast.Consumer.Extensions;
 
@@ -61,7 +63,8 @@ public class Product3rdServiceImp(
             AdminId = request.AdminId,
             Ip = request.Ip
         };
-        var settleResult = await calculateService.Execute(criteria);
+        var pendingCommand = CreateSiteDbPendingCommand(criteria, matchInfo);
+        var settleResult = await calculateService.Execute(criteria, pendingCommand);
 
         await WriteLogSettled(request, settleResult);
 
@@ -70,6 +73,28 @@ public class Product3rdServiceImp(
         await announcementService.SendAnnounceRefund(currentTickets, matchInfo, request.AdminId);
 
         return settleResult;
+    }
+
+    private static SiteDbPendingCommand CreateSiteDbPendingCommand(VirtualSportFiveSettleCriteria criteria, MatchInfo matchInfo)
+    {
+        var action = criteria.Action;
+        if (!string.IsNullOrWhiteSpace(matchInfo.EventStatus) && string.Equals(matchInfo.EventStatus.ToLowerInvariant(), EventStatus.Completed))
+        {
+            action = ActionName.ReSettle;
+        }
+
+        return new SiteDbPendingCommand
+        {
+            MatchId = criteria.MatchId,
+            ProductType = ProductType.VirtualSports5,
+            Action = action,
+            SpName = criteria.SpName,
+            Parameter = criteria.ToJson(),
+            AdminId = criteria.AdminId,
+            IP = criteria.Ip,
+            SystemName = SystemName.Broadcast,
+            StatusId = CommandStatus.Pending
+        };
     }
 
     private async Task UpdateMatchInfo(VirtualSportFiveRequest request, MatchInfo matchInfo)
@@ -97,7 +122,6 @@ public class Product3rdServiceImp(
         var htResult = request.Resources.Find(resources => resources.Id == ResourceId.HalfTimeResourceId);
 
         return ftResult is not null && htResult is null ? "Refund FT" : "Refund";
-
     }
 
     private static string GetEventStatus(VirtualSportFiveRequest request, MatchInfo matchInfo)
@@ -138,7 +162,6 @@ public class Product3rdServiceImp(
 
         var validator = ValidatorFactory.CreateValidatorChain();
         return validator.Validate(htResult, ftResult, matchInfo);
-
     }
 
     private static bool ValidRefundResources(ResourceItemModel htResult, ResourceItemModel ftResult)
