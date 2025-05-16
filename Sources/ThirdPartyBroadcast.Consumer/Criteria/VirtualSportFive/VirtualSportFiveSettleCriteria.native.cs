@@ -1,4 +1,6 @@
-﻿namespace ThirdPartyBroadcast.Consumer.Criteria.VirtualSportFive;
+﻿using Fanex.Data;
+
+namespace ThirdPartyBroadcast.Consumer.Criteria.VirtualSportFive;
 
 public class VirtualSportFiveSettleCriteria : CalculateCriteria
 {
@@ -14,5 +16,8 @@ public class VirtualSportFiveSettleCriteria : CalculateCriteria
 
     public bool IsReSettledTickets { get; set; }
 
-    public override string GetSettingKey() => $"NAP_Admin_Settlement_VS5_{DbServer}";
+    [System.Text.Json.Serialization.JsonIgnore, SpParam(Ignored = true)]
+    public string SpName { get; set; } = "NAP_Admin_Settlement_VS5";
+
+    public override string GetSettingKey() => $"{SpName}_{DbServer}";
 }
