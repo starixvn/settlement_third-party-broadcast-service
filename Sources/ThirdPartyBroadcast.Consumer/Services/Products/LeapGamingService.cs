@@ -61,7 +61,7 @@ public class LeapGamingServiceImp(
     private static SiteDbPendingCommand CreateSiteDbPendingCommand(LeapGamingCriteria criteria, MatchInfo matchInfo, string productType)
     {
         var action = criteria.Action;
-        if (!string.IsNullOrWhiteSpace(matchInfo.EventStatus) && string.Equals(matchInfo.EventStatus.ToLowerInvariant(), EventStatus.Completed))
+        if (IsReSettle(matchInfo.EventStatus, action))
         {
             action = ActionName.ReSettle;
         }
@@ -78,6 +78,13 @@ public class LeapGamingServiceImp(
             SystemName = SystemName.Broadcast,
             StatusId = CommandStatus.Pending
         };
+    }
+
+    private static bool IsReSettle(string eventStatus, string action)
+    {
+        return !string.IsNullOrWhiteSpace(eventStatus)
+               && string.Equals(action, ActionName.Calculate, StringComparison.OrdinalIgnoreCase)
+               && string.Equals(eventStatus.ToLowerInvariant(), EventStatus.Completed);
     }
 
     private async Task WriteLogSettled(LeapGamingRequest request, Result resultSettle, MatchInfo matchInfo)

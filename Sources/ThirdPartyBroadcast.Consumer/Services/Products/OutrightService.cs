@@ -4,7 +4,7 @@ using Criteria;
 using Fanex.Settlement.ThirdPartyBroadcast.Shared;
 using Fanex.SiteDbConnectionManager.Client.Constants;
 using Fanex.SiteDbConnectionManager.Client.Models;
-using ThirdPartyBroadcast.Consumer.Models;
+using Models;
 
 public interface OutrightService
 {
