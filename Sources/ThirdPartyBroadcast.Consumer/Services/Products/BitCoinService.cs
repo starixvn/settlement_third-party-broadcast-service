@@ -44,7 +44,7 @@ public class BitCoinServiceImp(
     private static SiteDbPendingCommand CreateSiteDbPendingCommand(BitCoinCriteria criteria, MatchInfo matchInfo)
     {
         var action = criteria.Action;
-        if (!string.IsNullOrWhiteSpace(matchInfo.EventStatus) && string.Equals(matchInfo.EventStatus.ToLowerInvariant(), EventStatus.Completed))
+        if (IsReSettle(matchInfo.EventStatus, action))
         {
             action = ActionName.ReSettle;
         }
@@ -61,6 +61,13 @@ public class BitCoinServiceImp(
             SystemName = SystemName.Broadcast,
             StatusId = CommandStatus.Pending
         };
+    }
+
+    private static bool IsReSettle(string eventStatus, string action)
+    {
+        return !string.IsNullOrWhiteSpace(eventStatus)
+               && string.Equals(action, ActionName.Calculate, StringComparison.OrdinalIgnoreCase)
+               && string.Equals(eventStatus.ToLowerInvariant(), EventStatus.Completed);
     }
 
     private async Task WriteLog(int matchId)
