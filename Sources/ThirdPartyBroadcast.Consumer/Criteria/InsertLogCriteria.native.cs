@@ -13,6 +13,8 @@ public class InsertLogCriteria : NonQueryCommand
 
     public string SelectedResources { get; set; }
 
+    public string Mode { get; set; }
+
     public override string GetSettingKey() => "NAP_SettlementLog_Ins";
 
     public override bool IsValid() => MatchId > 0;

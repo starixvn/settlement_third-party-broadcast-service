@@ -56,10 +56,12 @@ public class FastMarketServiceImp(
         }
 
         return result;
+
     }
 
     private async Task PushResultAmendment(FastMarketRequest request, FastMarketCriteria criteria)
     {
+
         var resources = await GetSelectedResource(request);
 
         var resourcesXml = new Resources
@@ -73,22 +75,22 @@ public class FastMarketServiceImp(
             Action = criteria.Action,
             AdminId = criteria.AdminId,
             MatchId = criteria.MatchId,
-            SelectedResources = resourcesXmlString
+            SelectedResources = resourcesXmlString,
+            Mode = Mode.FastMarket
         });
 
-        var resultChanged = await matchService.GetResultChanged(request.MatchId, request.Action, resourcesXmlString);
+        var resultchanged = await matchService.GetResultChanged(request.MatchId, request.Action, resourcesXmlString);
         await publishEndpoint.Publish(new ResultAmended(
                 request.MatchId,
                 criteria.BroadcastSessionId,
                 1,
                 request.Action,
                 resources.ToList(),
-                resultChanged.ToList(),
+                resultchanged.ToList(),
                 ResultAmendmentType.FastMarket
             ),
             new CancellationTokenSource(TimeSpan.FromSeconds(3)).Token);
     }
-
     private static string GenerateLogMessage(FastMarketCriteria criteria)
         => $"NAP: Fast Market {criteria.Action} for matchId: {criteria.MatchId}";
 
@@ -137,6 +139,7 @@ public class FastMarketServiceImp(
                     AwayValue = b.Id == TimeMachineHdp
                         ? (Convert.ToInt32(value.Result) % TimeMachineHandicapScoreRange).ToString()
                         : string.Empty
+
                 };
             });
         });
