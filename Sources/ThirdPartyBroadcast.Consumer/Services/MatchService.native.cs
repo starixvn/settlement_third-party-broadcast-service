@@ -1,10 +1,12 @@
 ﻿using Fanex.SiteDbConnectionManager.Client.Services;
+using Fanex.Settlement.MessageBridge.ResultAmendment;
 using Settlement.Business.Core.Models;
 using ThirdPartyBroadcast.Consumer.Criteria;
 using ThirdPartyBroadcast.Consumer.Criteria.VirtualBetRadar;
 using ThirdPartyBroadcast.Consumer.Criteria.VirtualRacing;
 using ThirdPartyBroadcast.Consumer.Criteria.VirtualSportFive;
 using ThirdPartyBroadcast.Consumer.Criteria.VirtualSports;
+using ThirdPartyBroadcast.Consumer.Models.FM;
 
 namespace ThirdPartyBroadcast.Consumer.Services;
 
@@ -41,6 +43,10 @@ public interface MatchService
     bool IsReSettleOrRefund(string action, string eventStatus);
 
     IEnumerable<TicketInfo> SplitTicketByLicensee(IReadOnlyCollection<TicketInfo> ticketInfos);
+
+    Task<IEnumerable<ResultChanged>> GetResultChanged(int matchId, string action, string seletedResource);
+
+    Task<IEnumerable<FastMarketResult>> GetFastMarketResult(int matchId);
 }
 
 public class MatchServiceImp(
@@ -217,6 +223,27 @@ public class MatchServiceImp(
         var depositTickets = tickets.Where(x => x.IsDeposit);
 
         return (creditTickets, depositTickets);
+    }
+
+    public async Task<IEnumerable<ResultChanged>> GetResultChanged(int matchId, string action, string selectedResource)
+    {
+        var criteria = new CheckReSettleCriteria
+        {
+            MatchId = matchId,
+            Action = action,
+            SelectedResources = selectedResource
+        };
+
+        return await repository.FetchAsync<ResultChanged>(criteria);
+    }
+
+    public async Task<IEnumerable<FastMarketResult>> GetFastMarketResult(int matchId)
+    {
+        var criteria = new GetFastMarketMatchDetailCriteria { MatchId = matchId };
+
+        var result = await repository.FetchMultipleAsync<object, string, FastMarketResult, object>(criteria);
+
+        return result.ThirdResultSet;
     }
 
     private Task<IEnumerable<TicketInfo>> GetTickets3rdOnSite(string server, VirtualSportsFiveTicketCriteria criteria)

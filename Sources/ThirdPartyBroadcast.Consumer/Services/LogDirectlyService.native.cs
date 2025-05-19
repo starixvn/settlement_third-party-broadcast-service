@@ -15,6 +15,8 @@ public interface LogDirectlyService
     Task WriteLog(int matchId, string message);
 
     Task HandleLog(Result result, string productType, string data);
+
+    Task WriteLog(InsertLogCriteria criteria);
 }
 
 public class LogDirectlyServiceImp(
@@ -68,6 +70,18 @@ public class LogDirectlyServiceImp(
                 .ToString();
 
             await LogService.ErrorAsync(logMessage);
+        }
+    }
+
+    public async Task WriteLog(InsertLogCriteria criteria)
+    {
+        try
+        {
+            await dynamicRepository.ExecuteAsync(criteria);
+        }
+        catch (Exception e)
+        {
+            await LogService.ErrorAsync("Broadcast service(Write resettle Log): ", e);
         }
     }
 }

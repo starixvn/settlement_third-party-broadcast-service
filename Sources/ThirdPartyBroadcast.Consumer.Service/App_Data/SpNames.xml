@@ -2,6 +2,8 @@
 <Functions>
 	<Function Name="ThirdParty Broadcast">
 		<Setting Key="NAP_Admin_Match_Update" SpName="NAP_Admin_Match_Update" DbName="DBPRO.bodb02.wsv_nap" />
+    <Setting Key="NAP_SettlementLog_Ins" SpName="NAP_SettlementLog_Ins" DbName="DBLOG.bodb_CustomerLog.wsv_nap" />
+    <Setting Key="NAP_SettlementLog_CheckReSettle" SpName="NAP_SettlementLog_CheckReSettle" DbName="DBLOG.bodb_CustomerLog.wsv_nap" />
 		<Setting Key="NAP_Admin_Settlement_Validation_Event" SpName="NAP_Admin_Settlement_Validation_Event" DbName="DBPRO.bodb02.wsv_nap" />
 		<Setting Key="NAP_Admin_MatchInfoUpd" SpName="NAP_Admin_MatchInfoUpd" DbName="DBPRO.bodb02.wsv_nap" />
 		<Setting Key="NAP_Admin_Settlement_ValidationFM_Event" SpName="NAP_Admin_Settlement_ValidationFM_Event" DbName="DBPRO.bodb02.wsv_nap" />
@@ -75,6 +77,7 @@
 			</Function>
 		</Function>
 		<Function Name="Fast Market">
+      <Setting Key="NAP_Set_FastMarket_MatchSelDetail" SpName="NAP_Set_FastMarket_MatchSelDetail" DbName="DBPRO.bodb02.wsv_nap" />
 			<Function Name="NAP_Admin_Settlement_Fast_Market_Auto_1s_Push">
 				<Setting Key="NAP_Admin_Settlement_Fast_Market_Auto_1s_Push_DBTXN" SpName="NAP_Admin_Settlement_Fast_Market_Auto_1s_Push" DbName="DBTXN.bodb02.wsv_nap" />
 				<Setting Key="NAP_Admin_Settlement_Fast_Market_Auto_1s_Push_DBSITE01" SpName="NAP_Admin_Settlement_Fast_Market_Auto_1s_Push" DbName="DBSITE01.bodb02.wsv_nap" />
