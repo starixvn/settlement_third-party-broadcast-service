@@ -1,4 +1,6 @@
-﻿namespace ThirdPartyBroadcast.Consumer.Criteria.VirtualBetby;
+﻿using Fanex.Data;
+
+namespace ThirdPartyBroadcast.Consumer.Criteria.VirtualBetby;
 
 public class SettleVirtualBetbyCriteria : CalculateCriteria
 {
@@ -12,5 +14,8 @@ public class SettleVirtualBetbyCriteria : CalculateCriteria
 
     public bool IsReSettledTickets { get; set; }
 
-    public override string GetSettingKey() => $"NAP_Admin_Settlement_VS6_{DbServer}";
+    [System.Text.Json.Serialization.JsonIgnore, SpParam(Ignored = true)]
+    public string SpName { get; set; } = "NAP_Admin_Settlement_VS6";
+
+    public override string GetSettingKey() => $"{SpName}_{DbServer}";
 }
