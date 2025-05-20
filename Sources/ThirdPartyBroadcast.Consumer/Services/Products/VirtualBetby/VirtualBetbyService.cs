@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using Fanex.SiteDbConnectionManager.Client.Constants;
+using Fanex.SiteDbConnectionManager.Client.Models;
+using System.Diagnostics;
 using ThirdPartyBroadcast.Consumer.Criteria.VirtualBetby;
 using ThirdPartyBroadcast.Consumer.Extensions;
 
@@ -57,7 +59,8 @@ public class VirtualBetbyServiceImp(
             Ip = request.Ip
         };
         var watch = Stopwatch.StartNew();
-        var settleResult = await calculateService.Execute(criteria);
+        var pendingCommand = CreateSiteDbPendingCommand(criteria, request.Resources);
+        var settleResult = await calculateService.Execute(criteria, pendingCommand);
         watch.Stop();
 
         await virtualBetbyGenerateService.WriteLogSettled(request, settleResult, watch.ElapsedMilliseconds);
@@ -67,5 +70,33 @@ public class VirtualBetbyServiceImp(
         await announcementService.SendAnnounceRefund(currentTickets, matchInfo, request.AdminId);
 
         return settleResult;
+    }
+
+    private static SiteDbPendingCommand CreateSiteDbPendingCommand(SettleVirtualBetbyCriteria criteria, List<ResourceItemModel> resources)
+    {
+        var action = criteria.Action;
+        if (IsReSettle(resources))
+        {
+            action = ActionName.ReSettle;
+        }
+
+        return new SiteDbPendingCommand
+        {
+            MatchId = criteria.MatchId,
+            ProductType = ProductType.VirtualSports6,
+            Action = action,
+            SpName = criteria.SpName,
+            Parameter = criteria.ToJson(),
+            AdminId = criteria.AdminId,
+            IP = criteria.Ip,
+            SystemName = SystemName.Broadcast,
+            StatusId = CommandStatus.Pending
+        };
+    }
+
+    private static bool IsReSettle(List<ResourceItemModel> resources)
+    {
+        var resettleResource = resources.Where(r => r.IsDuplicated).ToList();
+        return resettleResource.Count > 0;
     }
 }
