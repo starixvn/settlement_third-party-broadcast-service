@@ -13,6 +13,7 @@ using ThirdPartyBroadcast.Consumer.Services;
 using ThirdPartyBroadcast.Consumer.Services.Consumer;
 using ThirdPartyBroadcast.Consumer.Services.Products;
 using ThirdPartyBroadcast.Consumer.Services.Products.BetBuilder;
+using ThirdPartyBroadcast.Consumer.Services.Products.FastMarket;
 using ThirdPartyBroadcast.Consumer.Services.Products.HappyFive;
 using ThirdPartyBroadcast.Consumer.Services.Products.VirtualBetby;
 using ThirdPartyBroadcast.Consumer.Services.Products.VirtualRacing;
@@ -58,6 +59,7 @@ public static class BroadcastConsumerInjection
         services.AddTransient<GenerateMatchInfoService, GenerateMatchInfoServiceImp>();
         services.AddTransient<ScoreService, ScoreServiceImp>();
         services.AddTransient<ResultDetailService, ResultDetailServiceImp>();
+        services.AddTransient<FMResultAmendmentService, FMResultAmendmentServiceImp>();
 
         services.AddTransient<AnnouncementService, AnnouncementServiceImp>();
         services.AddTransient<MessageAnnouncementService, MessageAnnouncementServiceImp>();
