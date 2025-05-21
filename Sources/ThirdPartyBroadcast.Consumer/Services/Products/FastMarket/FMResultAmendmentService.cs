@@ -45,6 +45,11 @@ public class FMResultAmendmentServiceImp(
         });
 
         var resultchanged = await matchService.GetResultChanged(request.MatchId, request.Action, resourcesXmlString);
+        if (!resultchanged.Any())
+        {
+            return;
+        }
+
         await publishEndpoint.Publish(new ResultAmended(
                 request.MatchId,
                 criteria.BroadcastSessionId,
@@ -54,6 +59,10 @@ public class FMResultAmendmentServiceImp(
                 resultchanged.ToList(),
                 ResultAmendmentType.FastMarket
             ),
+            new CancellationTokenSource(TimeSpan.FromSeconds(3)).Token);
+
+        await publishEndpoint.Publish(
+            new ResultAmendSettled(request.MatchId, criteria.BroadcastSessionId, criteria.IsOrg),
             new CancellationTokenSource(TimeSpan.FromSeconds(3)).Token);
     }
 
