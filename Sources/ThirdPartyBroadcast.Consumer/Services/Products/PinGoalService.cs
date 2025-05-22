@@ -1,9 +1,13 @@
 ﻿using Fanex.Settlement.Converter.Services;
 using Fanex.Settlement.ScaleOut.Constants;
+using ActionName = ThirdPartyBroadcast.Consumer.Constants.ActionName;
 
 namespace ThirdPartyBroadcast.Consumer.Services.Products;
 
 using Criteria;
+using Fanex.Settlement.ThirdPartyBroadcast.Shared;
+using Fanex.SiteDbConnectionManager.Client.Constants;
+using Fanex.SiteDbConnectionManager.Client.Models;
 using Models;
 
 public interface PinGoalService
@@ -24,7 +28,6 @@ public class PinGoalServiceImp(
 
     public async Task<Result> Settle(PinGoalRequest request)
     {
-        var criteria = mapper.Map<PinGoalRequest, PinGoalCriteria>(request);
         var matchInfo = await matchService.GetMatchInfo(request.MatchId);
         var validateResult = ValidateResult(matchInfo, request.SelectedResources, request.Action);
         var validateBeforePush = await ValidateBeforePush(request);
@@ -39,7 +42,26 @@ public class PinGoalServiceImp(
         var message = GenerateMessageLog(request);
         await logDirectlyService.WriteLog(request.MatchId, message);
 
-        return await calculateService.Execute(criteria);
+        var criteria = mapper.Map<PinGoalRequest, PinGoalCriteria>(request);
+        var pendingCommand = CreateSiteDbPendingCommand(criteria);
+
+        return await calculateService.Execute(criteria, pendingCommand);
+    }
+
+    private static SiteDbPendingCommand CreateSiteDbPendingCommand(PinGoalCriteria criteria)
+    {
+        return new SiteDbPendingCommand
+        {
+            MatchId = criteria.MatchId,
+            ProductType = ProductType.PinGoal,
+            Action = criteria.Action,
+            SpName = criteria.SpName,
+            Parameter = criteria.ToJson(),
+            AdminId = criteria.AdminId,
+            IP = criteria.Ip,
+            SystemName = SystemName.Broadcast,
+            StatusId = CommandStatus.Pending
+        };
     }
 
     private static string GenerateMessageLog(PinGoalRequest request)
@@ -68,7 +90,7 @@ public class PinGoalServiceImp(
 
     private Result ValidateResult(MatchInfo matchInfo, string selectedResources, string action)
     {
-        if (!string.Equals(action, Constants.ActionName.Calculate, StringComparison.CurrentCultureIgnoreCase) || matchInfo.LeagueGroupId != LeagueGroupPingoal)
+        if (!string.Equals(action, ActionName.Calculate, StringComparison.CurrentCultureIgnoreCase) || matchInfo.LeagueGroupId != LeagueGroupPingoal)
         {
             return new Result();
         }
@@ -84,6 +106,7 @@ public class PinGoalServiceImp(
             ? new Result()
             : VerifyHtFTScore(matchInfo, halfTimeResult, finalResult);
     }
+
     private (ResourceItemModel finalResult, ResourceItemModel halfTimeResult) GetResourceResults(string selectedResources)
     {
         var resources = xmlConvertService.Deserialize<ResourcesModel>(selectedResources);
@@ -93,21 +116,11 @@ public class PinGoalServiceImp(
     }
 
     private static bool IsResultNotSettled(ResourceItemModel presentResult, ResourceItemModel missingResult, int? homeScore, int? awayScore)
-        => presentResult != null && missingResult == null && (!homeScore.HasValue || !awayScore.HasValue);
+         => presentResult != null && missingResult == null && (!homeScore.HasValue || !awayScore.HasValue);
 
+    private static Result VerifyHtFTScore(MatchInfo match, ResourceItemModel htResult, ResourceItemModel ftResult)
     {
-        var resources = xmlConvertService.Deserialize<ResourcesModel>(selectedResources);
-        var finalResult = resources.Items.Find(item => item.Id == ResourceId.FullTimeResourceId);
-        var halfTimeResult = resources.Items.Find(item => item.Id == ResourceId.HalfTimeResourceId);
-        return (finalResult, halfTimeResult);
-    }
-
-    private static bool IsResultNotSettled(ResourceItemModel presentResult, ResourceItemModel missingResult, int? homeScore, int? awayScore)
-        => presentResult != null && missingResult == null && (!homeScore.HasValue || !awayScore.HasValue);
-
-        return IsHtScoreGreaterThanFt
-            ? new Result(1, "Cannot calculate due to FT scores are less than HT Score. Please recheck entered values.")
-            : new Result();
+        var ftHome = ParseScore(ftResult?.Home, match.FinalHomeScore);
         var ftAway = ParseScore(ftResult?.Away, match.FinalAwayScore);
         var htHome = ParseScore(htResult?.Home, match.HtHomeScore);
         var htAway = ParseScore(htResult?.Away, match.HtAwayScore);

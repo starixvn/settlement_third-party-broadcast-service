@@ -1,14 +1,11 @@
 ﻿using Fanex.SiteDbConnectionManager.Client.Models;
 using Fanex.SiteDbConnectionManager.Client.Services;
-using Microsoft.Extensions.Options;
 using ThirdPartyBroadcast.Consumer.Criteria;
 
 namespace ThirdPartyBroadcast.Consumer.Services;
 
 public interface CalculateService
 {
-    Task<Result> Execute(CalculateCriteria criteria);
-
     Task<Result> Execute(CalculateCriteria criteria, SiteDbPendingCommand command);
 
     Task<Result> ExecuteValidationMultiServer(BaseCriteria criteria);
@@ -16,27 +13,10 @@ public interface CalculateService
 
 public class CalculateServiceImp(
     IDynamicRepository repository,
-    IOptions<AppSettingsKey> appSettingsKey,
     SiteDbClientService siteDbClientService,
     SiteDbPendingCommandService pendingCommandService)
     : CalculateService
 {
-    public async Task<Result> Execute(CalculateCriteria criteria)
-    {
-        var tasks = appSettingsKey.Value
-            .SiteDbServer
-            .Select(s => CalculateByServer(s, criteria))
-            .ToList();
-        var results = await Task.WhenAll(tasks.ToArray());
-        var resultFailed = results.Where(r => r.ErrorCode > 0).ToList();
-
-        return new Result
-        {
-            ErrorCode = resultFailed.Count,
-            ErrorMessage = string.Join(" | ", resultFailed.Select(r => r.ErrorMessage).ToArray())
-        };
-    }
-
     public async Task<Result> Execute(CalculateCriteria criteria, SiteDbPendingCommand command)
     {
         var siteDbServer = await siteDbClientService.GetAllSiteDbAsync();
@@ -51,18 +31,6 @@ public class CalculateServiceImp(
         {
             ErrorCode = resultFailed.Count,
             ErrorMessage = string.Join(" | ", resultFailed.Select(r => r.ErrorMessage).ToArray())
-        };
-    }
-
-    private async Task<Result> CalculateByServer(string server, CalculateCriteria criteria)
-    {
-        criteria.DbServer = server;
-        await repository.ExecuteAsync(criteria);
-
-        return new Result
-        {
-            ErrorCode = criteria.ErrCode,
-            ErrorMessage = $"{server}: {criteria.ErrCode} - {criteria.ErrMsg}"
         };
     }
 
