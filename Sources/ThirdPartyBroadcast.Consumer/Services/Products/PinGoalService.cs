@@ -84,7 +84,6 @@ public class PinGoalServiceImp(
             ? new Result()
             : VerifyHtFTScore(matchInfo, halfTimeResult, finalResult);
     }
-
     private (ResourceItemModel finalResult, ResourceItemModel halfTimeResult) GetResourceResults(string selectedResources)
     {
         var resources = xmlConvertService.Deserialize<ResourcesModel>(selectedResources);
@@ -96,9 +95,19 @@ public class PinGoalServiceImp(
     private static bool IsResultNotSettled(ResourceItemModel presentResult, ResourceItemModel missingResult, int? homeScore, int? awayScore)
         => presentResult != null && missingResult == null && (!homeScore.HasValue || !awayScore.HasValue);
 
-    private static Result VerifyHtFTScore(MatchInfo match, ResourceItemModel htResult, ResourceItemModel ftResult)
     {
-        var ftHome = ParseScore(ftResult?.Home, match.FinalHomeScore);
+        var resources = xmlConvertService.Deserialize<ResourcesModel>(selectedResources);
+        var finalResult = resources.Items.Find(item => item.Id == ResourceId.FullTimeResourceId);
+        var halfTimeResult = resources.Items.Find(item => item.Id == ResourceId.HalfTimeResourceId);
+        return (finalResult, halfTimeResult);
+    }
+
+    private static bool IsResultNotSettled(ResourceItemModel presentResult, ResourceItemModel missingResult, int? homeScore, int? awayScore)
+        => presentResult != null && missingResult == null && (!homeScore.HasValue || !awayScore.HasValue);
+
+        return IsHtScoreGreaterThanFt
+            ? new Result(1, "Cannot calculate due to FT scores are less than HT Score. Please recheck entered values.")
+            : new Result();
         var ftAway = ParseScore(ftResult?.Away, match.FinalAwayScore);
         var htHome = ParseScore(htResult?.Home, match.HtHomeScore);
         var htAway = ParseScore(htResult?.Away, match.HtAwayScore);
