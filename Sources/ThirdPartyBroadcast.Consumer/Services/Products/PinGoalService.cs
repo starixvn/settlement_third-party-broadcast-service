@@ -73,33 +73,46 @@ public class PinGoalServiceImp(
             return new Result();
         }
 
-        var resources = xmlConvertService.Deserialize<ResourcesModel>(selectedResources);
-        var finalResult = resources.Items.Find(item => item.Id == ResourceId.FullTimeResourceId);
-        var halfTimeResult = resources.Items.Find(item => item.Id == ResourceId.HalfTimeResourceId);
+        var (finalResult, halfTimeResult) = GetResourceResults(selectedResources);
 
-        var IsHtNotSettled = finalResult != null && halfTimeResult == null && (matchInfo.HtHomeScore is null || matchInfo.HtAwayScore is null);
-
-        if (IsHtNotSettled)
+        if (IsResultNotSettled(finalResult, halfTimeResult, matchInfo.HtHomeScore, matchInfo.HtAwayScore))
         {
             return new Result(1, "Failed: HT has not been settled");
         }
 
-        var IsFtNotSettled = halfTimeResult != null && finalResult == null && (matchInfo.FinalHomeScore is null || matchInfo.FinalAwayScore is null);
-
-        return IsFtNotSettled ? new Result() : VerifyHtFTScore(matchInfo, halfTimeResult, finalResult);
+        return IsResultNotSettled(halfTimeResult, finalResult, matchInfo.FinalHomeScore, matchInfo.FinalAwayScore)
+            ? new Result()
+            : VerifyHtFTScore(matchInfo, halfTimeResult, finalResult);
     }
 
-    private static Result VerifyHtFTScore(MatchInfo matchInfo, ResourceItemModel halfTimeResult, ResourceItemModel finalResult)
+    private (ResourceItemModel finalResult, ResourceItemModel halfTimeResult) GetResourceResults(string selectedResources)
     {
-        var ftHomeScore = finalResult != null ? int.Parse(finalResult.Home) : matchInfo.FinalHomeScore ?? 0;
-        var ftAwayScore = finalResult != null ? int.Parse(finalResult.Away) : matchInfo.FinalAwayScore ?? 0;
-        var htHomeScore = halfTimeResult != null ? int.Parse(halfTimeResult.Home) : matchInfo.HtHomeScore ?? 0;
-        var htAwayScore = halfTimeResult != null ? int.Parse(halfTimeResult.Away) : matchInfo.HtAwayScore ?? 0;
-
-        var IsHtScoreGreaterThanFt = htHomeScore > ftHomeScore || htAwayScore > ftAwayScore;
-
-        return IsHtScoreGreaterThanFt ? new Result(1, "Cannot calculate due to FT scores are less than HT Score. Please recheck entered values.") : new Result();
+        var resources = xmlConvertService.Deserialize<ResourcesModel>(selectedResources);
+        var finalResult = resources.Items.Find(item => item.Id == ResourceId.FullTimeResourceId);
+        var halfTimeResult = resources.Items.Find(item => item.Id == ResourceId.HalfTimeResourceId);
+        return (finalResult, halfTimeResult);
     }
+
+    private static bool IsResultNotSettled(ResourceItemModel presentResult, ResourceItemModel missingResult, int? homeScore, int? awayScore)
+        => presentResult != null && missingResult == null && (!homeScore.HasValue || !awayScore.HasValue);
+
+    private static Result VerifyHtFTScore(MatchInfo match, ResourceItemModel htResult, ResourceItemModel ftResult)
+    {
+        var ftHome = ParseScore(ftResult?.Home, match.FinalHomeScore);
+        var ftAway = ParseScore(ftResult?.Away, match.FinalAwayScore);
+        var htHome = ParseScore(htResult?.Home, match.HtHomeScore);
+        var htAway = ParseScore(htResult?.Away, match.HtAwayScore);
+
+        return IsHtScoreGreaterThanFt(htHome, ftHome, htAway, ftAway)
+            ? new Result(1, "Cannot calculate due to FT scores are less than HT Score. Please recheck entered values.")
+            : new Result();
+    }
+
+    private static int ParseScore(string resourceScore, int? matchScore)
+        => int.TryParse(resourceScore, out var value) ? value : matchScore ?? 0;
+
+    private static bool IsHtScoreGreaterThanFt(int htHome, int ftHome, int htAway, int ftAway)
+        => htHome > ftHome || htAway > ftAway;
 
     private async Task UpdateMatchInfo(PinGoalRequest request)
     {
