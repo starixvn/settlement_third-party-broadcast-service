@@ -52,7 +52,7 @@ public class PinGoalServiceTests
         await service.Settle(new PinGoalRequest());
 
         await scaleOutSettleService.Received().UpdateMatchInfo(Arg.Any<UpdateMatchInfoRequest>());
-        await calculateService.Received().Execute(Arg.Any<PinGoalCriteria>());
+        await calculateService.Received().Execute(Arg.Any<PinGoalCriteria>(), Arg.Any<SiteDbPendingCommand>());
     }
 
     [Fact]
@@ -146,7 +146,7 @@ public class PinGoalServiceTests
                 Items = [new ResourceItemModel { Id = "00", Home = "2", Away = "1" }]
             });
         scaleOutSettleService.ValidateEventAndTicket(Arg.Any<EventTicketRequest>()).Returns(new ResultMessage());
-        calculateService.Execute(Arg.Any<PinGoalCriteria>()).Returns(new Result());
+        calculateService.Execute(Arg.Any<PinGoalCriteria>(), Arg.Any<SiteDbPendingCommand>()).Returns(new Result());
 
         // Act
         var result = await service.Settle(request);

@@ -1,6 +1,5 @@
 ﻿using Fanex.SiteDbConnectionManager.Client.Models;
 using Fanex.SiteDbConnectionManager.Client.Services;
-using Microsoft.Extensions.Options;
 using ThirdPartyBroadcast.Consumer.Criteria;
 using ResultMessage = Fanex.SiteDbConnectionManager.Client.Models.ResultMessage;
 
@@ -22,10 +21,7 @@ public class CalculateServiceTests
         siteDbClientService = Substitute.For<SiteDbClientService>();
         pendingCommandService = Substitute.For<SiteDbPendingCommandService>();
 
-        var appSettingsKey = new AppSettingsKey { SiteDbServer = ["01", "02"] };
-        var options = Options.Create(appSettingsKey);
-
-        service = new CalculateServiceImp(repository, options, siteDbClientService, pendingCommandService);
+        service = new CalculateServiceImp(repository, siteDbClientService, pendingCommandService);
     }
 
     [Theory]

@@ -1,4 +1,5 @@
-﻿using ThirdPartyBroadcast.Consumer.Criteria;
+﻿using Fanex.SiteDbConnectionManager.Client.Models;
+using ThirdPartyBroadcast.Consumer.Criteria;
 using ThirdPartyBroadcast.Consumer.Criteria.VirtualSportFive;
 using ThirdPartyBroadcast.Consumer.Services.Products.VirtualSportFive;
 
@@ -71,7 +72,7 @@ public class Product3rdServiceTests
         matchService.GetMatch3rdInfo(Arg.Any<int>()).Returns(matchInfo);
 
         ticketService.GetTicketsByAction(matchInfo.MatchId, matchInfo.SportType, request.Action).Returns([]);
-        calculateService.Execute(Arg.Any<VirtualSportFiveSettleCriteria>()).Returns(new Result());
+        calculateService.Execute(Arg.Any<VirtualSportFiveSettleCriteria>(), Arg.Any<SiteDbPendingCommand>()).Returns(new Result());
 
         // Act
         var result = await service.Settle(request);
@@ -98,7 +99,7 @@ public class Product3rdServiceTests
         matchService.GetMatch3rdInfo(Arg.Any<int>()).Returns(matchInfo);
 
         ticketService.GetTicketsByAction(matchInfo.MatchId, matchInfo.SportType, request.Action).Returns([]);
-        calculateService.Execute(Arg.Any<VirtualSportFiveSettleCriteria>()).Returns(new Result());
+        calculateService.Execute(Arg.Any<VirtualSportFiveSettleCriteria>(), Arg.Any<SiteDbPendingCommand>()).Returns(new Result());
 
         // Act
         var result = await service.Settle(request);
@@ -125,7 +126,7 @@ public class Product3rdServiceTests
         matchService.GetMatch3rdInfo(Arg.Any<int>()).Returns(matchInfo);
 
         ticketService.GetTicketsByAction(matchInfo.MatchId, matchInfo.SportType, request.Action).Returns([]);
-        calculateService.Execute(Arg.Any<VirtualSportFiveSettleCriteria>()).Returns(new Result());
+        calculateService.Execute(Arg.Any<VirtualSportFiveSettleCriteria>(), Arg.Any<SiteDbPendingCommand>()).Returns(new Result());
 
         // Act
         var result = await service.Settle(request);

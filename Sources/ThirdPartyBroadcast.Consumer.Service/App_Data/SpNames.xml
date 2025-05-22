@@ -118,12 +118,10 @@
 			<Setting Key="NAP_Admin_Settlement_s175_DBSITE03" SpName="NAP_Admin_Settlement_s175" DbName="DBSITE03.bodb02.wsv_nap" />
 		</Function>
 		<Function Name="Pin Goal">
-			<Function Name="NAP_Admin_Settlement_Profile_Push">
-				<Setting Key="NAP_Admin_Settlement_Profile_Push_DBTXN" SpName="NAP_Admin_Settlement_Profile_Push" DbName="DBTXN.bodb02.wsv_nap" />
-				<Setting Key="NAP_Admin_Settlement_Profile_Push_DBSITE01" SpName="NAP_Admin_Settlement_Profile_Push" DbName="DBSITE01.bodb02.wsv_nap" />
-				<Setting Key="NAP_Admin_Settlement_Profile_Push_DBSITE02" SpName="NAP_Admin_Settlement_Profile_Push" DbName="DBSITE02.bodb02.wsv_nap" />
-				<Setting Key="NAP_Admin_Settlement_Profile_Push_DBSITE03" SpName="NAP_Admin_Settlement_Profile_Push" DbName="DBSITE03.bodb02.wsv_nap" />
-			</Function>
+			<Setting Key="NAP_Admin_Settlement_Profile_Push_DBTXN" SpName="NAP_Admin_Settlement_Profile_Push" DbName="DBTXN.bodb02.wsv_nap" />
+			<Setting Key="NAP_Admin_Settlement_Profile_Push_DBSITE01" SpName="NAP_Admin_Settlement_Profile_Push" DbName="DBSITE01.bodb02.wsv_nap" />
+			<Setting Key="NAP_Admin_Settlement_Profile_Push_DBSITE02" SpName="NAP_Admin_Settlement_Profile_Push" DbName="DBSITE02.bodb02.wsv_nap" />
+			<Setting Key="NAP_Admin_Settlement_Profile_Push_DBSITE03" SpName="NAP_Admin_Settlement_Profile_Push" DbName="DBSITE03.bodb02.wsv_nap" />
 		</Function>
 		<Function Name="VR BetRadar">
 			<Function Name="NAP_Admin_Settlement_VS_BetRadar_Push">
