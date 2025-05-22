@@ -1,9 +1,10 @@
-﻿using Fanex.Settlement.ScaleOut.Constants;
+﻿using Fanex.Settlement.Converter.Services;
+using Fanex.Settlement.ScaleOut.Constants;
 
 namespace ThirdPartyBroadcast.Consumer.Services.Products;
 
 using Criteria;
-using ThirdPartyBroadcast.Consumer.Models;
+using Models;
 
 public interface PinGoalService
 {
@@ -16,10 +17,11 @@ public class PinGoalServiceImp(
     CalculateService calculateService,
     LogDirectlyService logDirectlyService,
     MatchService matchService,
-    Fanex.Settlement.Converter.Services.XmlConvertService xmlConvertService)
+    XmlConvertService xmlConvertService)
     : PinGoalService
 {
     private const int LeagueGroupPingoal = 252;
+
     public async Task<Result> Settle(PinGoalRequest request)
     {
         var criteria = mapper.Map<PinGoalRequest, PinGoalCriteria>(request);
@@ -72,8 +74,8 @@ public class PinGoalServiceImp(
         }
 
         var resources = xmlConvertService.Deserialize<ResourcesModel>(selectedResources);
-        var finalResult = resources.Items.FirstOrDefault(item => item.Id == ResourceId.FullTimeResourceId);
-        var halfTimeResult = resources.Items.FirstOrDefault(item => item.Id == ResourceId.HalfTimeResourceId);
+        var finalResult = resources.Items.Find(item => item.Id == ResourceId.FullTimeResourceId);
+        var halfTimeResult = resources.Items.Find(item => item.Id == ResourceId.HalfTimeResourceId);
 
         var IsHtNotSettled = finalResult != null && halfTimeResult == null && (matchInfo.HtHomeScore is null || matchInfo.HtAwayScore is null);
 
@@ -87,7 +89,7 @@ public class PinGoalServiceImp(
         return IsFtNotSettled ? new Result() : VerifyHtFTScore(matchInfo, halfTimeResult, finalResult);
     }
 
-    private Result VerifyHtFTScore(MatchInfo matchInfo, ResourceItemModel halfTimeResult, ResourceItemModel finalResult)
+    private static Result VerifyHtFTScore(MatchInfo matchInfo, ResourceItemModel halfTimeResult, ResourceItemModel finalResult)
     {
         var ftHomeScore = finalResult != null ? int.Parse(finalResult.Home) : matchInfo.FinalHomeScore ?? 0;
         var ftAwayScore = finalResult != null ? int.Parse(finalResult.Away) : matchInfo.FinalAwayScore ?? 0;
