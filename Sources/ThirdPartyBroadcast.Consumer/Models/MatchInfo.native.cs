@@ -61,6 +61,8 @@ public class MatchInfo
 
     public int? FinalAwayScore { get; set; }
 
+    public bool isHalftimeCal { get; set; }
+
     private string GetTeamName(string languageCode)
     {
         if (IsRacing(SportType))
