@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Fanex.SiteDbConnectionManager.Client.Services;
 using BusinessModels = Settlement.Business.Core.Models;
 
 namespace ThirdPartyBroadcast.Consumer.Services.Products.HappyFive;
@@ -9,18 +9,16 @@ public interface SettleSitesService
 }
 
 public class SettleSitesServiceImp(
-    IOptions<AppSettingsKey> appSettingsKey,
-    ProcessService processService) : SettleSitesService
+    SiteDbClientService siteDbClientService,
+    SettleSiteHandler settleSiteHandler) : SettleSitesService
 {
     public async Task<Result> Settle(HappyFiveRequest request, List<BusinessModels.Resources> resources)
     {
-        var tasks = appSettingsKey.Value
-            .SiteDbServer
-            .Select(site => processService.Settle(request, site, resources)).ToList();
-
-        var results = await Task.WhenAll(tasks.ToArray());
+        var siteDbServer = await siteDbClientService.GetAllSiteDbAsync();
+        var tasks = siteDbServer
+            .Select(site => settleSiteHandler.SettleByServer(request, resources, site)).ToList();
+        var results = await Task.WhenAll(tasks);
         var resultFailed = results.Where(r => r.ErrCode > 0).ToList();
-
         return new Result
         {
             ErrorCode = resultFailed.Count,

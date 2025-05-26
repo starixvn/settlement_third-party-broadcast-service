@@ -17,7 +17,7 @@
     <PackageReference Include="Fanex.Logging.Extensions" Version="2.0.2.1" />
     <PackageReference Include="Fanex.MailDeliver.MailClient" Version="2.1.0" />
     <PackageReference Include="Fanex.RemotingRef" Version="1.5.5.1" />
-    <PackageReference Include="Fanex.Settlement.Business" Version="1.0.26" />
+    <PackageReference Include="Fanex.Settlement.Business" Version="1.0.27-alpha01" />
     <PackageReference Include="Fanex.Settlement.Converter" Version="1.0.0.1" />
     <PackageReference Include="Fanex.Settlement.ScaleOut" Version="1.4.7-anpha05" />
     <PackageReference Include="Fanex.SimpleMailDelivery" Version="1.0.1" />

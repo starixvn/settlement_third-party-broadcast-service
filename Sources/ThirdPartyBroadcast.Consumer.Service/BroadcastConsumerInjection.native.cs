@@ -78,6 +78,7 @@ public static class BroadcastConsumerInjection
         services.AddTransient<HappyFiveService, HappyFiveServiceImp>();
         services.AddTransient<Services.Products.HappyFive.ProcessService, Services.Products.HappyFive.ProcessServiceImp>();
         services.AddTransient<Services.Products.HappyFive.SettleSitesService, Services.Products.HappyFive.SettleSitesServiceImp>();
+        services.AddTransient<SettleSiteHandler, SettleSiteHandlerImp>();
 
         services.AddTransient<VirtualRacingService, VirtualRacingServiceImp>();
         services.AddTransient<RacersValidatorService, RacersValidatorServiceImp>();
