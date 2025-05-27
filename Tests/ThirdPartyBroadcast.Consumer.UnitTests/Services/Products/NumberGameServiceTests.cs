@@ -1,4 +1,5 @@
 ﻿using Fanex.Settlement.ScaleOut.Request;
+using Fanex.SiteDbConnectionManager.Client.Models;
 using ThirdPartyBroadcast.Consumer.Criteria;
 
 namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products;
@@ -9,14 +10,14 @@ public class NumberGameServiceTests
 
     private readonly ScaleOutSettleThirdPartyService scaleOutSettleThirdPartyService;
 
-    private readonly NumberGameService service;
+    private readonly NumberGameServiceImp service;
 
     private readonly LogDirectlyService logDirectlyService;
 
     public NumberGameServiceTests()
     {
         calculateService = Substitute.For<CalculateService>();
-        calculateService.Execute(Arg.Any<NumberGameCriteria>()).Returns(new Result());
+        calculateService.Execute(Arg.Any<NumberGameCriteria>(), Arg.Any<SiteDbPendingCommand>()).Returns(new Result());
 
         scaleOutSettleThirdPartyService = Substitute.For<ScaleOutSettleThirdPartyService>();
         logDirectlyService = Substitute.For<LogDirectlyService>();
@@ -40,7 +41,7 @@ public class NumberGameServiceTests
         {
             scaleOutSettleThirdPartyService.DidNotReceive().UpdateMatchInfo3rd(Arg.Any<UpdateMatchInfo3RdRequest>());
             logDirectlyService.WriteLog(Arg.Any<int>(), Arg.Any<string>());
-            calculateService.Received().Execute(Arg.Any<NumberGameCriteria>());
+            calculateService.Received().Execute(Arg.Any<NumberGameCriteria>(), Arg.Any<SiteDbPendingCommand>());
         });
     }
 
@@ -54,7 +55,7 @@ public class NumberGameServiceTests
         Received.InOrder(() =>
         {
             logDirectlyService.WriteLog(Arg.Any<int>(), Arg.Any<string>());
-            calculateService.Received().Execute(Arg.Any<NumberGameCriteria>());
+            calculateService.Received().Execute(Arg.Any<NumberGameCriteria>(), Arg.Any<SiteDbPendingCommand>());
         });
     }
 }

@@ -4,13 +4,14 @@ using AutoMapper;
 using Criteria.VirtualBetRadar;
 using Fanex.Data.Repository;
 using Fanex.RemotingRef;
+using Fanex.SiteDbConnectionManager.Client.Models;
 using ThirdPartyBroadcast.Consumer.Services;
 
 public class VirtualBetRadarServiceTests
 {
     private readonly CalculateService calculateService;
 
-    private readonly VirtualBetRadarService service;
+    private readonly VirtualBetRadarServiceImp service;
 
     private readonly MatchService matchService;
 
@@ -55,7 +56,7 @@ public class VirtualBetRadarServiceTests
 
         matchService.GetMatchInfo(Arg.Any<int>()).Returns(matchInfo);
         calculateService.ExecuteValidationMultiServer(Arg.Any<BetRadarValidationCriteria>()).Returns(new Result());
-        calculateService.Execute(Arg.Any<VirtualBetRadarCriteria>()).Returns(new Result());
+        calculateService.Execute(Arg.Any<VirtualBetRadarCriteria>(), Arg.Any<SiteDbPendingCommand>()).Returns(new Result());
         await service.Settle(new VirtualBetRadarRequest
         {
             Action = "CAL",
@@ -72,7 +73,7 @@ public class VirtualBetRadarServiceTests
             ticketInfoService.GetTicketsByAction(Arg.Any<int>(), Arg.Any<short>(), Arg.Any<string>());
             matchService.UpdateMatchInfoBetRadar(Arg.Any<VirtualBetRadarRequest>());
             matchService.WriteLogBetRadar(Arg.Any<VirtualBetRadarRequest>());
-            calculateService.Execute(Arg.Any<VirtualBetRadarCriteria>());
+            calculateService.Execute(Arg.Any<VirtualBetRadarCriteria>(), Arg.Any<SiteDbPendingCommand>());
             announcementService.SendAnnounceRefund(Arg.Any<List<TicketSettleInfo>>(), Arg.Any<MatchInfo>(), Arg.Any<int>());
         });
     }

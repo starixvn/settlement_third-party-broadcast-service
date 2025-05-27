@@ -128,6 +128,8 @@ public static class SportType
     public const int VirtualBetbyBasketball = 134;
 
     public const int HappyFive = 164;
+
+    public const int NumberGame = 161;
 }
 
 public static class ErrorCode

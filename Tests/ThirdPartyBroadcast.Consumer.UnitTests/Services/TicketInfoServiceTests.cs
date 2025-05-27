@@ -1,11 +1,12 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Fanex.SiteDbConnectionManager.Client.Models;
+using Fanex.SiteDbConnectionManager.Client.Services;
 using ThirdPartyBroadcast.Consumer.Criteria;
 
 namespace ThirdPartyBroadcast.Consumer.UnitTests.Services;
 
 public class TicketInfoServiceTests
 {
-    private readonly IOptions<AppSettingsKey> appSettingsKey;
+    private readonly SiteDbClientService siteDbClientService;
 
     private readonly IDynamicRepository repository;
 
@@ -17,9 +18,9 @@ public class TicketInfoServiceTests
 
     public TicketInfoServiceTests()
     {
-        appSettingsKey = Substitute.For<IOptions<AppSettingsKey>>();
+        siteDbClientService = Substitute.For<SiteDbClientService>();
         repository = Substitute.For<IDynamicRepository>();
-        ticketInfoService = new TicketInfoServiceImp(appSettingsKey, repository);
+        ticketInfoService = new TicketInfoServiceImp(repository, siteDbClientService);
     }
 
     [Fact]
@@ -42,7 +43,13 @@ public class TicketInfoServiceTests
         const string action = ActionName.Refund;
         var tickets = new List<TicketSettleInfo> { new() };
         repository.FetchAsync<TicketSettleInfo>(Arg.Any<TicketSettleCriteria>()).Returns(tickets);
-        appSettingsKey.Value.Returns(new AppSettingsKey { SiteDbServer = ["Server1"] });
+
+        var sites = new List<SiteDb>
+        {
+            new SiteDb { SiteDbGroupId = 1, SiteName = "Site1" },
+        };
+
+        siteDbClientService.GetActiveSiteDbAsync().Returns(sites);
 
         // Act
         var result = await ticketInfoService.GetTicketsByAction(MatchId, SportType, action);
@@ -72,7 +79,12 @@ public class TicketInfoServiceTests
         var tickets = new List<TicketSettleInfo> { new() { TransId = 123 } };
         var expectedTickets = new List<TicketSettleInfo> { new() };
         repository.FetchAsync<TicketSettleInfo>(Arg.Any<TicketSettleCriteria>()).Returns(expectedTickets);
-        appSettingsKey.Value.Returns(new AppSettingsKey { SiteDbServer = ["Server1"] });
+        var sites = new List<SiteDb>
+        {
+            new SiteDb { SiteDbGroupId = 1, SiteName = "Site1" },
+        };
+
+        siteDbClientService.GetActiveSiteDbAsync().Returns(sites);
 
         // Act
         var result = await ticketInfoService.GetTicketsByTransIds(MatchId, SportType, tickets);
@@ -88,9 +100,16 @@ public class TicketInfoServiceTests
         const string action = ActionName.Refund;
         var ticketsFromSite1 = new List<TicketSettleInfo> { new() { TransId = 123 } };
         var ticketsFromSite2 = new List<TicketSettleInfo> { new() { TransId = 456 } };
-        repository.FetchAsync<TicketSettleInfo>(Arg.Is<TicketSettleCriteria>(c => c.DbServer == "Server1")).Returns(ticketsFromSite1);
-        repository.FetchAsync<TicketSettleInfo>(Arg.Is<TicketSettleCriteria>(c => c.DbServer == "Server2")).Returns(ticketsFromSite2);
-        appSettingsKey.Value.Returns(new AppSettingsKey { SiteDbServer = ["Server1", "Server2"] });
+        var sites = new List<SiteDb>
+        {
+            new SiteDb { SiteDbGroupId = 1, SiteName = "Site1" },
+            new SiteDb { SiteDbGroupId = 2, SiteName = "Site2" }
+        };
+
+        siteDbClientService.GetActiveSiteDbAsync().Returns(sites);
+
+        repository.FetchAsync<TicketSettleInfo>(Arg.Is<TicketSettleCriteria>(c => c.DbServer == "Site1")).Returns(ticketsFromSite1);
+        repository.FetchAsync<TicketSettleInfo>(Arg.Is<TicketSettleCriteria>(c => c.DbServer == "Site2")).Returns(ticketsFromSite2);
 
         // Act
         var result = await ticketInfoService.GetTicketsByAction(MatchId, SportType, action);

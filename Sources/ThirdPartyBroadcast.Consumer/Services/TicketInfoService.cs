@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Fanex.SiteDbConnectionManager.Client.Services;
 using ThirdPartyBroadcast.Consumer.Criteria;
 
 namespace ThirdPartyBroadcast.Consumer.Services;
@@ -12,7 +12,9 @@ public interface TicketInfoService
     Task<List<TicketSettleInfo>> GetTicketsByTransIds(int matchId, short sportType, List<TicketSettleInfo> tickets);
 }
 
-public class TicketInfoServiceImp(IOptions<AppSettingsKey> appSettingsKey, IDynamicRepository repository)
+public class TicketInfoServiceImp(
+    IDynamicRepository repository,
+    SiteDbClientService siteDbClientService)
     : TicketInfoService
 {
     public async Task<List<TicketSettleInfo>> GetTicketsByAction(int matchId, short sportType, string action)
@@ -49,7 +51,8 @@ public class TicketInfoServiceImp(IOptions<AppSettingsKey> appSettingsKey, IDyna
 
     private async Task<List<TicketSettleInfo>> GetTicketsAllSites(TicketSettleCriteria criteria)
     {
-        var tasks = appSettingsKey.Value.SiteDbServer.Select(s => GetTicketsOnSite(s, criteria));
+        var siteDbServer = await siteDbClientService.GetActiveSiteDbAsync();
+        var tasks = siteDbServer.Select(s => GetTicketsOnSite(s.SiteName, criteria));
 
         var result = await Task.WhenAll(tasks);
 
