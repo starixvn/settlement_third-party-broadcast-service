@@ -3,7 +3,7 @@ using ThirdPartyBroadcast.Consumer.Criteria;
 using ThirdPartyBroadcast.Consumer.Criteria.BetBuilder;
 using ThirdPartyBroadcast.Consumer.Services.Products.BetBuilder;
 
-namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products.Products.BetBuilder;
+namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products.BetBuilder;
 
 public class BetBuilderGenerateServiceTests
 {

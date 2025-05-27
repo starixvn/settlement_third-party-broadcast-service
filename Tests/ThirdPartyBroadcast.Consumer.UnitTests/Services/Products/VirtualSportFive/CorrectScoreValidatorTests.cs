@@ -1,6 +1,6 @@
 ﻿using ThirdPartyBroadcast.Consumer.Services.Products.VirtualSportFive;
 
-namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products.Products.VirtualSportFive;
+namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products.VirtualSportFive;
 
 public class CorrectScoreValidatorTests
 {

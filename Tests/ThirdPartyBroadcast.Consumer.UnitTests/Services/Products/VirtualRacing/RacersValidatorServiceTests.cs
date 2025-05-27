@@ -2,7 +2,7 @@
 using ThirdPartyBroadcast.Consumer.Services.Products.VirtualRacing;
 using SportTypes = Settlement.Business.Core.Constants.SportType;
 
-namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products.Products.VirtualRacing;
+namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products.VirtualRacing;
 
 public class RacersValidatorServiceTests
 {

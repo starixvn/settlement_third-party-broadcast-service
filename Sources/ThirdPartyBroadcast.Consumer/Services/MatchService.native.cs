@@ -1,7 +1,8 @@
-﻿using Fanex.SiteDbConnectionManager.Client.Services;
-using Fanex.Settlement.MessageBridge.ResultAmendment;
+﻿using Fanex.Settlement.MessageBridge.ResultAmendment;
+using Fanex.SiteDbConnectionManager.Client.Services;
 using Settlement.Business.Core.Models;
 using ThirdPartyBroadcast.Consumer.Criteria;
+using ThirdPartyBroadcast.Consumer.Criteria.FastMarket;
 using ThirdPartyBroadcast.Consumer.Criteria.VirtualBetRadar;
 using ThirdPartyBroadcast.Consumer.Criteria.VirtualRacing;
 using ThirdPartyBroadcast.Consumer.Criteria.VirtualSportFive;

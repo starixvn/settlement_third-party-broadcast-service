@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace ThirdPartyBroadcast.Consumer.Criteria.FastMarket;
 
-namespace ThirdPartyBroadcast.Consumer.Criteria;
 public class GetFastMarketMatchDetailCriteria : CriteriaBase
 {
     public int MatchId { get; set; }

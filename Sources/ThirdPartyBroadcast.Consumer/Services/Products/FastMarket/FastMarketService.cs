@@ -1,10 +1,7 @@
 ﻿using Fanex.Settlement.ScaleOut.Constants;
+using ThirdPartyBroadcast.Consumer.Criteria;
 
-namespace ThirdPartyBroadcast.Consumer.Services.Products;
-
-using Criteria;
-using Requests;
-using ThirdPartyBroadcast.Consumer.Services.Products.FastMarket;
+namespace ThirdPartyBroadcast.Consumer.Services.Products.FastMarket;
 
 public interface FastMarketService
 {
@@ -19,7 +16,6 @@ public class FastMarketServiceImp(
     FMResultAmendmentService fmResultAmendmentService)
     : FastMarketService
 {
-
     public async Task<Result> Settle(FastMarketRequest request)
     {
         var criteria = mapper.Map<FastMarketRequest, FastMarketCriteria>(request);
@@ -47,9 +43,7 @@ public class FastMarketServiceImp(
         }
 
         return result;
-
     }
-
 
     private static string GenerateLogMessage(FastMarketCriteria criteria)
         => $"NAP: Fast Market {criteria.Action} for matchId: {criteria.MatchId}";

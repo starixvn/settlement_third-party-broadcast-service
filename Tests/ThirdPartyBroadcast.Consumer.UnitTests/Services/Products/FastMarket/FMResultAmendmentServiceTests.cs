@@ -6,7 +6,7 @@ using ThirdPartyBroadcast.Consumer.Criteria;
 using ThirdPartyBroadcast.Consumer.Models.FM;
 using ThirdPartyBroadcast.Consumer.Services.Products.FastMarket;
 
-namespace ThirdPartyBroadcast.Consumer.Tests.Services.Products.FastMarket;
+namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products.FastMarket;
 
 public class FMResultAmendmentServiceTests
 {
@@ -47,11 +47,6 @@ public class FMResultAmendmentServiceTests
             Action = "UPDATE",
             AdminId = 456,
             MatchId = 123
-        };
-
-        var resources = new List<ResourceItem>
-        {
-            new() { ResourceId = "1", OtherInfo = "1", HomeValue = "2", AwayValue = "" }
         };
 
         var resultChanged = new List<ResultChanged>
@@ -121,7 +116,7 @@ public class FMResultAmendmentServiceTests
         _matchService.GetFastMarketResult(request.MatchId)
             .Returns(new List<FastMarketResult>
             {
-                new() { BetType = 229, Position = 1, Result = "15" }
+                new() { BetType = 229, Position = 1, Result = 15 }
             });
 
         _xmlConvertService.Serialize(Arg.Any<Resources>())
