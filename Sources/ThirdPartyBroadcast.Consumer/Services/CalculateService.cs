@@ -1,7 +1,7 @@
 ﻿using Fanex.SiteDbConnectionManager.Client.Models;
 using Fanex.SiteDbConnectionManager.Client.Services;
 using Microsoft.Extensions.Options;
-using System.Collections.Concurrent;
+using System.Text.Json;
 using ThirdPartyBroadcast.Consumer.Criteria;
 
 namespace ThirdPartyBroadcast.Consumer.Services;
@@ -22,13 +22,6 @@ public class CalculateServiceImp(
     SiteDbPendingCommandService pendingCommandService)
     : CalculateService
 {
-    private static readonly ConcurrentDictionary<int, SemaphoreSlim> _siteLocks = new();
-
-    private static SemaphoreSlim GetOrCreateLock(int siteDbGroupId)
-    {
-        return _siteLocks.GetOrAdd(siteDbGroupId, _ => new SemaphoreSlim(1, 1));
-    }
-
     public async Task<Result> Execute(CalculateCriteria criteria)
     {
         var tasks = appSettingsKey.Value
@@ -48,9 +41,9 @@ public class CalculateServiceImp(
     public async Task<Result> Execute(CalculateCriteria criteria, SiteDbPendingCommand command)
     {
         var siteDbServer = await siteDbClientService.GetAllSiteDbAsync();
-
+        Console.WriteLine($"Site DB Server: {JsonSerializer.Serialize(siteDbServer)}");
         var tasks = siteDbServer
-            .Select(async site => await CalculateByServer(site, criteria, command))
+            .Select(async site => await CalculateByServer(site.SiteName, site.SiteDbGroupId, criteria, command))
             .ToList();
 
         var results = await Task.WhenAll(tasks);
@@ -74,37 +67,29 @@ public class CalculateServiceImp(
         };
     }
 
-    private async Task<Result> CalculateByServer(SiteDb site, CalculateCriteria criteria, SiteDbPendingCommand command)
+    private async Task<Result> CalculateByServer(string siteName, int siteDbGroupId, CalculateCriteria criteria, SiteDbPendingCommand command)
     {
-        var semaphore = GetOrCreateLock(site.SiteDbGroupId);
-        try
-        {
-            await semaphore.WaitAsync();
-            var isActive = await siteDbClientService.IsSiteDbActiveAsync(site.SiteDbGroupId);
-            var pendingCommand = await pendingCommandService.CheckingPendingCommand(command.MatchId, site.SiteDbGroupId);
+        Console.WriteLine($"Process: {siteDbGroupId} - {siteName}");
+        var isActive = await siteDbClientService.IsSiteDbActiveAsync(siteDbGroupId);
+        var pendingCommand = await pendingCommandService.CheckingPendingCommand(command.MatchId, siteDbGroupId);
 
-            if (isActive && pendingCommand.ErrorCode == 0)
-            {
-                return await ProcessActiveSite(site, criteria);
-            }
-
-            return await ProcessInactiveSite(site.SiteDbGroupId, command);
-        }
-        finally
+        if (isActive && pendingCommand.ErrorCode == 0)
         {
-            semaphore.Release();
+            return await ProcessActiveSite(siteName, criteria);
         }
+
+        return await ProcessInactiveSite(siteDbGroupId, command);
     }
 
-    private async Task<Result> ProcessActiveSite(SiteDb site, CalculateCriteria criteria)
+    private async Task<Result> ProcessActiveSite(string siteName, CalculateCriteria criteria)
     {
-        criteria.DbServer = site.SiteName;
+        criteria.DbServer = siteName;
         await repository.ExecuteAsync(criteria);
 
         return new Result
         {
             ErrorCode = criteria.ErrCode,
-            ErrorMessage = $"{site.SiteName}: {criteria.ErrCode} - {criteria.ErrMsg}"
+            ErrorMessage = $"{siteName}: {criteria.ErrCode} - {criteria.ErrMsg}"
         };
     }
 
