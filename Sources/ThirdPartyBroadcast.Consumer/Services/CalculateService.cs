@@ -42,10 +42,10 @@ public class CalculateServiceImp(
         var siteDbServer = await siteDbClientService.GetAllSiteDbAsync();
 
         var tasks = siteDbServer
-            .Select(site => CalculateByServer(site, criteria, command))
+            .Select(async site => await CalculateByServer(site, criteria, command))
             .ToList();
 
-        var results = await Task.WhenAll(tasks.ToArray());
+        var results = await Task.WhenAll(tasks);
         var resultFailed = results.Where(r => r.ErrorCode > 0).ToList();
         return new Result
         {
