@@ -25,7 +25,7 @@
     <PackageReference Include="Fanex.Settlement.Business" Version="1.0.26" />
     <PackageReference Include="Fanex.Settlement.Converter" Version="1.0.0.1" />
     <PackageReference Include="Fanex.Settlement.ScaleOut" Version="1.4.7-anpha05" />
-    <PackageReference Include="Fanex.Settlement.MessageBridge" Version="1.0.4-alpha06" />
+    <PackageReference Include="Fanex.Settlement.MessageBridge" Version="1.0.8" />
     <PackageReference Include="Fanex.SimpleMailDelivery" Version="1.0.1" />
     <PackageReference Include="MassTransit.RabbitMQ" Version="8.4.0" />
     <PackageReference Include="MediatR" Version="12.5.0" />
