@@ -42,11 +42,15 @@ public class CalculateServiceImp(
     {
         var siteDbServer = await siteDbClientService.GetAllSiteDbAsync();
         Console.WriteLine($"Site DB Server: {JsonSerializer.Serialize(siteDbServer)}");
-        var tasks = siteDbServer
-            .Select(async site => await CalculateByServer(site.SiteName, site.SiteDbGroupId, criteria, command))
-            .ToList();
 
-        var results = await Task.WhenAll(tasks);
+        var results = new List<Result>();
+        foreach (var site in siteDbServer)
+        {
+            criteria.DbServer = site.SiteName;
+            var result = await CalculateByServer(site, criteria, command);
+            results.Add(result);
+        }
+
         var resultFailed = results.Where(r => r.ErrorCode > 0).ToList();
         return new Result
         {
@@ -67,29 +71,29 @@ public class CalculateServiceImp(
         };
     }
 
-    private async Task<Result> CalculateByServer(string siteName, int siteDbGroupId, CalculateCriteria criteria, SiteDbPendingCommand command)
+    private async Task<Result> CalculateByServer(SiteDb site, CalculateCriteria criteria, SiteDbPendingCommand command)
     {
-        Console.WriteLine($"Process: {siteDbGroupId} - {siteName}");
-        var isActive = await siteDbClientService.IsSiteDbActiveAsync(siteDbGroupId);
-        var pendingCommand = await pendingCommandService.CheckingPendingCommand(command.MatchId, siteDbGroupId);
+        var isActive = await siteDbClientService.IsSiteDbActiveAsync(site.SiteDbGroupId);
+        var pendingCommand = await pendingCommandService.CheckingPendingCommand(command.MatchId, site.SiteDbGroupId);
 
         if (isActive && pendingCommand.ErrorCode == 0)
         {
-            return await ProcessActiveSite(siteName, criteria);
+            Console.WriteLine($"Process: {site.SiteDbGroupId} - site:{site.SiteName} - criteria:{criteria.DbServer}");
+
+            return await ProcessActiveSite(criteria);
         }
 
-        return await ProcessInactiveSite(siteDbGroupId, command);
+        return await ProcessInactiveSite(site.SiteDbGroupId, command);
     }
 
-    private async Task<Result> ProcessActiveSite(string siteName, CalculateCriteria criteria)
+    private async Task<Result> ProcessActiveSite(CalculateCriteria criteria)
     {
-        criteria.DbServer = siteName;
         await repository.ExecuteAsync(criteria);
 
         return new Result
         {
             ErrorCode = criteria.ErrCode,
-            ErrorMessage = $"{siteName}: {criteria.ErrCode} - {criteria.ErrMsg}"
+            ErrorMessage = $"{criteria.DbServer}: {criteria.ErrCode} - {criteria.ErrMsg}"
         };
     }
 
