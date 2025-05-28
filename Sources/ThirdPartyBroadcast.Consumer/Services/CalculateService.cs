@@ -1,6 +1,7 @@
 ﻿using Fanex.SiteDbConnectionManager.Client.Models;
 using Fanex.SiteDbConnectionManager.Client.Services;
 using Microsoft.Extensions.Options;
+using System.Collections.Concurrent;
 using ThirdPartyBroadcast.Consumer.Criteria;
 
 namespace ThirdPartyBroadcast.Consumer.Services;
@@ -21,6 +22,13 @@ public class CalculateServiceImp(
     SiteDbPendingCommandService pendingCommandService)
     : CalculateService
 {
+    private static readonly ConcurrentDictionary<int, SemaphoreSlim> _siteLocks = new();
+
+    private static SemaphoreSlim GetOrCreateLock(int siteDbGroupId)
+    {
+        return _siteLocks.GetOrAdd(siteDbGroupId, _ => new SemaphoreSlim(1, 1));
+    }
+
     public async Task<Result> Execute(CalculateCriteria criteria)
     {
         var tasks = appSettingsKey.Value
@@ -68,15 +76,24 @@ public class CalculateServiceImp(
 
     private async Task<Result> CalculateByServer(SiteDb site, CalculateCriteria criteria, SiteDbPendingCommand command)
     {
-        var isActive = await siteDbClientService.IsSiteDbActiveAsync(site.SiteDbGroupId);
-        var pendingCommand = await pendingCommandService.CheckingPendingCommand(command.MatchId, site.SiteDbGroupId);
-
-        if (isActive && pendingCommand.ErrorCode == 0)
+        var semaphore = GetOrCreateLock(site.SiteDbGroupId);
+        try
         {
-            return await ProcessActiveSite(site, criteria);
-        }
+            await semaphore.WaitAsync();
+            var isActive = await siteDbClientService.IsSiteDbActiveAsync(site.SiteDbGroupId);
+            var pendingCommand = await pendingCommandService.CheckingPendingCommand(command.MatchId, site.SiteDbGroupId);
 
-        return await ProcessInactiveSite(site.SiteDbGroupId, command);
+            if (isActive && pendingCommand.ErrorCode == 0)
+            {
+                return await ProcessActiveSite(site, criteria);
+            }
+
+            return await ProcessInactiveSite(site.SiteDbGroupId, command);
+        }
+        finally
+        {
+            semaphore.Release();
+        }
     }
 
     private async Task<Result> ProcessActiveSite(SiteDb site, CalculateCriteria criteria)
