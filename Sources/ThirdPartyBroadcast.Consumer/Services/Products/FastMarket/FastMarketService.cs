@@ -5,6 +5,7 @@ namespace ThirdPartyBroadcast.Consumer.Services.Products.FastMarket;
 
 using Fanex.SiteDbConnectionManager.Client.Constants;
 using Fanex.SiteDbConnectionManager.Client.Models;
+
 public interface FastMarketService
 {
     Task<Result> Settle(FastMarketRequest request);
@@ -15,7 +16,7 @@ public class FastMarketServiceImp(
     IMapper mapper,
     CalculateService calculateService,
     LogDirectlyService logDirectlyService,
-    FastMarketResultAmendmentService fmResultAmendmentService)
+    FastMarketResultAmendmentService fastMarketResultAmendmentService)
     : FastMarketService
 {
     public async Task<Result> Settle(FastMarketRequest request)
@@ -38,10 +39,11 @@ public class FastMarketServiceImp(
         var message = GenerateLogMessage(criteria);
         await logDirectlyService.WriteLog(criteria.MatchId, message);
 
-        var result = await calculateService.Execute(criteria);
+        var pendingCommand = CreateSiteDbPendingCommand(criteria);
+        var result = await calculateService.Execute(criteria, pendingCommand);
         if (result.IsSuccessful)
         {
-            await fmResultAmendmentService.PushResultAmendment(request, criteria);
+            await fastMarketResultAmendmentService.PushResultAmendment(request, criteria);
         }
 
         return result;
