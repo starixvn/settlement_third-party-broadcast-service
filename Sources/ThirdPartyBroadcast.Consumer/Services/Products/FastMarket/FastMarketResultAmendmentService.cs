@@ -7,21 +7,20 @@ using ThirdPartyBroadcast.Consumer.Models.FM;
 
 namespace ThirdPartyBroadcast.Consumer.Services.Products.FastMarket;
 
-public interface FMResultAmendmentService
+public interface FastMarketResultAmendmentService
 {
     Task PushResultAmendment(FastMarketRequest request, FastMarketCriteria criteria);
 }
-public class FMResultAmendmentServiceImp(
+
+public class FastMarketResultAmendmentServiceImp(
     LogDirectlyService logDirectlyService,
     MatchService matchService,
     XmlConvertService xmlConvertService,
-    IPublishEndpoint publishEndpoint) : FMResultAmendmentService
+    IPublishEndpoint publishEndpoint) : FastMarketResultAmendmentService
 {
-
     private const int TimeMachineHdp = 229;
 
     private const short TimeMachineHandicapScoreRange = 10;
-
 
     public async Task PushResultAmendment(
         FastMarketRequest request,
@@ -44,8 +43,8 @@ public class FMResultAmendmentServiceImp(
             Mode = Mode.FastMarket
         });
 
-        var resultchanged = await matchService.GetResultChanged(request.MatchId, request.Action, resourcesXmlString);
-        if (!resultchanged.Any())
+        var resultChanged = await matchService.GetResultChanged(request.MatchId, request.Action, resourcesXmlString);
+        if (!resultChanged.Any())
         {
             return;
         }
@@ -56,7 +55,7 @@ public class FMResultAmendmentServiceImp(
                 1,
                 request.Action,
                 resources.ToList(),
-                resultchanged.ToList(),
+                resultChanged.ToList(),
                 ResultAmendmentType.FastMarket
             ),
             new CancellationTokenSource(TimeSpan.FromSeconds(3)).Token);
@@ -69,37 +68,39 @@ public class FMResultAmendmentServiceImp(
     private async Task<IEnumerable<ResourceItem>> GetSelectedResource(FastMarketRequest request)
     {
         var results = xmlConvertService.Deserialize<BetTypeXML>(request.Results);
+        var betTypes = await matchService.GetFastMarketResult(request.MatchId);
 
-        var bettypes = await matchService.GetFastMarketResult(request.MatchId);
+        return results.BetType.SelectMany(betType =>
+            betType.Items.Select(item => CreateResourceItem(betType, item, betTypes)));
+    }
 
-        var resources = results.BetType.SelectMany(b =>
+    private static ResourceItem CreateResourceItem(
+        BetTypeElement betType,
+        ItemElement item,
+        IEnumerable<FastMarketResult> betTypes)
+    {
+        var matchingBetType = betTypes.FirstOrDefault(x => x.BetType == betType.Id && x.Position == item.Position);
+
+        if (matchingBetType is null)
         {
-            return b.Items.Select(i =>
+            return new ResourceItem
             {
-                var value = bettypes.FirstOrDefault(x => x.BetType == b.Id && x.Position == i.Position);
-                if (value is null)
-                {
-                    return new ResourceItem
-                    {
-                        ResourceId = b.Id.ToString(),
-                        OtherInfo = i.Position.ToString()
-                    };
-                }
-                return new ResourceItem
-                {
-                    ResourceId = b.Id.ToString(),
-                    OtherInfo = i.Position.ToString(),
-                    HomeValue = b.Id == TimeMachineHdp
-                        ? (Convert.ToInt32(value.Result) % TimeMachineHandicapScoreRange).ToString()
-                        : value.Result.ToString(),
-                    AwayValue = b.Id == TimeMachineHdp
-                        ? (Convert.ToInt32(value.Result) % TimeMachineHandicapScoreRange).ToString()
-                        : string.Empty
+                ResourceId = betType.Id.ToString(),
+                OtherInfo = item.Position.ToString()
+            };
+        }
 
-                };
-            });
-        });
+        var isTimeMachineHdp = betType.Id == TimeMachineHdp;
+        var homeValue = isTimeMachineHdp
+            ? (Convert.ToInt32(matchingBetType.Result) % TimeMachineHandicapScoreRange).ToString()
+            : matchingBetType.Result.ToString();
 
-        return resources;
+        return new ResourceItem
+        {
+            ResourceId = betType.Id.ToString(),
+            OtherInfo = item.Position.ToString(),
+            HomeValue = homeValue,
+            AwayValue = isTimeMachineHdp ? homeValue : string.Empty
+        };
     }
 }

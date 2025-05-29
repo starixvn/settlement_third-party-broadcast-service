@@ -59,7 +59,7 @@ public static class BroadcastConsumerInjection
         services.AddTransient<GenerateMatchInfoService, GenerateMatchInfoServiceImp>();
         services.AddTransient<ScoreService, ScoreServiceImp>();
         services.AddTransient<ResultDetailService, ResultDetailServiceImp>();
-        services.AddTransient<FMResultAmendmentService, FMResultAmendmentServiceImp>();
+        services.AddTransient<FastMarketResultAmendmentService, FastMarketResultAmendmentServiceImp>();
 
         services.AddTransient<AnnouncementService, AnnouncementServiceImp>();
         services.AddTransient<MessageAnnouncementService, MessageAnnouncementServiceImp>();

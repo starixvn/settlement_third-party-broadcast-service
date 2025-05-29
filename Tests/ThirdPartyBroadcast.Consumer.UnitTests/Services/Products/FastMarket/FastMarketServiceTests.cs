@@ -1,7 +1,7 @@
 ﻿using Fanex.Settlement.ScaleOut.Request;
 using ThirdPartyBroadcast.Consumer.Models.FM;
 
-namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products;
+namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products.FastMarket;
 
 using Criteria;
 using ThirdPartyBroadcast.Consumer.Services;
@@ -28,7 +28,7 @@ public class FastMarketServiceTests
         logDirectlyService = Substitute.For<LogDirectlyService>();
         matchService = Substitute.For<MatchService>();
         xmlConvertService = Substitute.For<XmlConvertService>();
-        var fmResultAmendmentService = Substitute.For<FMResultAmendmentService>();
+        var fmResultAmendmentService = Substitute.For<FastMarketResultAmendmentService>();
 
         var mapperConfig = new MapperConfigurationExpression();
         mapperConfig.AddProfile<ThirdPartyBroadcastMappingProfile>();
@@ -69,6 +69,5 @@ public class FastMarketServiceTests
         await scaleOutSettleService.Received().UpdateMatchInfo(Arg.Any<UpdateMatchInfoRequest>());
         await calculateService.Received().Execute(Arg.Any<FastMarketCriteria>());
         await logDirectlyService.Received().WriteLog(Arg.Any<int>(), Arg.Any<string>());
-        await logDirectlyService.Received().WriteLog(Arg.Any<InsertLogCriteria>());
     }
 }

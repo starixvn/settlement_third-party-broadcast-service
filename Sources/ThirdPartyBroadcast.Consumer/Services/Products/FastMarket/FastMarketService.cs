@@ -13,7 +13,7 @@ public class FastMarketServiceImp(
     IMapper mapper,
     CalculateService calculateService,
     LogDirectlyService logDirectlyService,
-    FMResultAmendmentService fmResultAmendmentService)
+    FastMarketResultAmendmentService fmResultAmendmentService)
     : FastMarketService
 {
     public async Task<Result> Settle(FastMarketRequest request)
