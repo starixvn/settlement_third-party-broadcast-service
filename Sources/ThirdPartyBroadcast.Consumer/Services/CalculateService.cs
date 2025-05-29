@@ -1,7 +1,6 @@
 ﻿using Fanex.SiteDbConnectionManager.Client.Models;
 using Fanex.SiteDbConnectionManager.Client.Services;
 using Microsoft.Extensions.Options;
-using System.Text.Json;
 using ThirdPartyBroadcast.Consumer.Criteria;
 
 namespace ThirdPartyBroadcast.Consumer.Services;
@@ -41,9 +40,8 @@ public class CalculateServiceImp(
     public async Task<Result> Execute(CalculateCriteria criteria, SiteDbPendingCommand command)
     {
         var siteDbServer = await siteDbClientService.GetAllSiteDbAsync();
-        Console.WriteLine($"Site DB Server: {JsonSerializer.Serialize(siteDbServer)}");
-
         var results = new List<Result>();
+
         foreach (var site in siteDbServer)
         {
             criteria.DbServer = site.SiteName;
@@ -52,6 +50,7 @@ public class CalculateServiceImp(
         }
 
         var resultFailed = results.Where(r => r.ErrorCode > 0).ToList();
+
         return new Result
         {
             ErrorCode = resultFailed.Count,
@@ -78,8 +77,6 @@ public class CalculateServiceImp(
 
         if (isActive && pendingCommand.ErrorCode == 0)
         {
-            Console.WriteLine($"Process: {site.SiteDbGroupId} - site:{site.SiteName} - criteria:{criteria.DbServer}");
-
             return await ProcessActiveSite(criteria);
         }
 

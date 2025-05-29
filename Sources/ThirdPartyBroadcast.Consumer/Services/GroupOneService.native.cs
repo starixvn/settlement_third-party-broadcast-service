@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using ThirdPartyBroadcast.Consumer.Services.Products.FastMarket;
 
 namespace ThirdPartyBroadcast.Consumer.Services;
 

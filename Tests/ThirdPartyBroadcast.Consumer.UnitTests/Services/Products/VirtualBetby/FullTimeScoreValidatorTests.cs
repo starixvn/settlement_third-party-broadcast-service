@@ -1,7 +1,7 @@
 ﻿using ThirdPartyBroadcast.Consumer.Extensions;
 using ThirdPartyBroadcast.Consumer.Services.Products.VirtualBetby;
 
-namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products.Products.VirtualBetby;
+namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products.VirtualBetby;
 
 public class FullTimeScoreValidatorTests
 {

@@ -1,8 +1,11 @@
 ﻿using Fanex.Settlement.ScaleOut.Request;
+using ThirdPartyBroadcast.Consumer.Models.FM;
 
-namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products;
+namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products.FastMarket;
 
 using Criteria;
+using ThirdPartyBroadcast.Consumer.Services;
+using ThirdPartyBroadcast.Consumer.Services.Products.FastMarket;
 
 public class FastMarketServiceTests
 {
@@ -10,21 +13,28 @@ public class FastMarketServiceTests
 
     private readonly CalculateService calculateService;
 
-    private readonly FastMarketService service;
+    private readonly FastMarketServiceImp service;
 
     private readonly LogDirectlyService logDirectlyService;
+
+    private readonly MatchService matchService;
+
+    private readonly XmlConvertService xmlConvertService;
 
     public FastMarketServiceTests()
     {
         scaleOutSettleService = Substitute.For<ScaleOutSettleService>();
         calculateService = Substitute.For<CalculateService>();
         logDirectlyService = Substitute.For<LogDirectlyService>();
+        matchService = Substitute.For<MatchService>();
+        xmlConvertService = Substitute.For<XmlConvertService>();
+        var fmResultAmendmentService = Substitute.For<FastMarketResultAmendmentService>();
 
         var mapperConfig = new MapperConfigurationExpression();
         mapperConfig.AddProfile<ThirdPartyBroadcastMappingProfile>();
         var config = new MapperConfiguration(mapperConfig);
         var mapper = new Mapper(config);
-        service = new FastMarketServiceImp(scaleOutSettleService, mapper, calculateService, logDirectlyService);
+        service = new FastMarketServiceImp(scaleOutSettleService, mapper, calculateService, logDirectlyService, fmResultAmendmentService);
     }
 
     [Fact]
@@ -46,12 +56,18 @@ public class FastMarketServiceTests
     [Fact]
     public async Task Settle_ValidatePassed_DoSettle()
     {
+        var betTypes = new BetTypeXML
+        {
+            BetType = []
+        };
         scaleOutSettleService.ValidateEventAndTicketFastMarket(Arg.Any<EventTicketFastMarketRequest>()).Returns(new ResultMessage());
-
+        calculateService.Execute(Arg.Any<CalculateCriteria>()).Returns(new Result());
+        matchService.GetFastMarketResult(Arg.Any<int>()).Returns(new List<FastMarketResult>());
+        xmlConvertService.Deserialize<BetTypeXML>(Arg.Any<string>()).Returns(betTypes);
         await service.Settle(new FastMarketRequest());
 
         await scaleOutSettleService.Received().UpdateMatchInfo(Arg.Any<UpdateMatchInfoRequest>());
         await calculateService.Received().Execute(Arg.Any<FastMarketCriteria>());
-        await logDirectlyService.WriteLog(Arg.Any<int>(), Arg.Any<string>());
+        await logDirectlyService.Received().WriteLog(Arg.Any<int>(), Arg.Any<string>());
     }
 }

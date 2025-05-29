@@ -2,7 +2,7 @@
 using Settlement.Business.Core.Requests;
 using ThirdPartyBroadcast.Consumer.Services.Products.HappyFive;
 
-namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products.Products.HappyFive;
+namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products.HappyFive;
 
 using BusinessModels = Settlement.Business.Core.Models;
 using BusinessServices = Settlement.Business.Data.Services;
