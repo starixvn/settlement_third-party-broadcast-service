@@ -1,10 +1,12 @@
 ﻿namespace ThirdPartyBroadcast.Consumer.Services.Products.BetBuilder;
 
+using Fanex.Settlement.Converter.Services;
 using Fanex.Settlement.ThirdPartyBroadcast.Shared;
 using Fanex.SiteDbConnectionManager.Client.Constants;
 using Fanex.SiteDbConnectionManager.Client.Models;
 using Models;
 using Requests;
+using ThirdPartyBroadcast.Consumer.Criteria;
 using ThirdPartyBroadcast.Consumer.Criteria.BetBuilder;
 
 public interface BetBuilderService
@@ -13,10 +15,12 @@ public interface BetBuilderService
 }
 
 public class BetBuilderServiceImp(
-
     CalculateService calculateService,
     IMapper mapper,
-    BetBuilderGenerateService betBuilderGenerateService)
+    BetBuilderGenerateService betBuilderGenerateService,
+    XmlConvertService xmlConvertService,
+      LogDirectlyService logDirectlyService
+    )
     : BetBuilderService
 {
     public async Task<Result> Settle(BetBuilderRequest request)
@@ -73,5 +77,41 @@ public class BetBuilderServiceImp(
             request.Resources = betBuilderGenerateService.RemoveSelectionWarning(request.Resources, reasonErrors);
             await betBuilderGenerateService.WriteLogReason(request, reasonErrors);
         }
+    }
+
+    private async Task WriteSettlementLog(BetBuilderRequest request, string message)
+    {
+        var selection = xmlConvertService.Deserialize<Models.BetBuilder.Resources>(request.Resources);
+        var logResources = GetResourcesSelection(selection.ResourceItem);
+
+        await logDirectlyService.WriteLog(new InsertLogCriteria
+        {
+            Action = request.Action,
+            AdminId = request.AdminId,
+            MatchId = request.MatchId,
+            SelectedResources = logResources,
+            Mode = "BB"
+        });
+
+    }
+
+    private string GetResourcesSelection(List<Models.BetBuilder.ResourceItem> resources)
+    {
+        var items = resources
+            .Select(resource => new Fanex.Settlement.MessageBridge.ResultAmendment.ResourceItem
+            {
+                ResourceId = $"{resource.Id}",
+                HomeValue = resource.Result,
+            })
+            .ToList();
+
+        var resourceRoot = new Models.FM.Resources
+        {
+            ResourceItems = items
+        };
+
+        var selectedResources = xmlConvertService.Serialize(resourceRoot);
+
+        return selectedResources;
     }
 }
