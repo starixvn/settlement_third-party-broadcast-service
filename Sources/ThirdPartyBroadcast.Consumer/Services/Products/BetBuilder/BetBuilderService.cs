@@ -8,6 +8,7 @@ using Models;
 using Requests;
 using ThirdPartyBroadcast.Consumer.Criteria;
 using ThirdPartyBroadcast.Consumer.Criteria.BetBuilder;
+using ResourceItem = Fanex.Settlement.MessageBridge.ResultAmendment.ResourceItem;
 
 public interface BetBuilderService
 {
@@ -19,7 +20,8 @@ public class BetBuilderServiceImp(
     IMapper mapper,
     BetBuilderGenerateService betBuilderGenerateService,
     XmlConvertService xmlConvertService,
-      LogDirectlyService logDirectlyService
+    LogDirectlyService logDirectlyService,
+    IBetBuilderResultAmendmentService betBuilderResultAmendmentService
     )
     : BetBuilderService
 {
@@ -50,8 +52,22 @@ public class BetBuilderServiceImp(
         criteria.SelectedMarket = selectedMarket;
         criteria.SelectedSelection = request.Resources;
 
+          var resourceItems = GetResourceItems(request);
+
+        await WriteSettlementLog(request, resourceItems);
+
+        var hasResultAmend = await betBuilderResultAmendmentService.PushResultAmendment(request, resourceItems, criteria);
+
         var pendingCommand = CreateSiteDbPendingCommand(criteria);
-        return await calculateService.Execute(criteria, pendingCommand);
+        var settleResult = await calculateService.Execute(criteria);
+
+        if (hasResultAmend && settleResult.ErrorCode == 0)
+        {
+            await betBuilderResultAmendmentService.PushUpdateStatusResult(request.MatchId, criteria.BroadcastSessionId, criteria.IsOrg);
+        }
+
+        return settleResult;
+
     }
 
     private static SiteDbPendingCommand CreateSiteDbPendingCommand(BetBuilderCriteria criteria)
@@ -79,31 +95,23 @@ public class BetBuilderServiceImp(
         }
     }
 
-    private async Task WriteSettlementLog(BetBuilderRequest request, string message)
+    private async Task WriteSettlementLog(BetBuilderRequest request, List<ResourceItem> items)
     {
-        var selection = xmlConvertService.Deserialize<Models.BetBuilder.Resources>(request.Resources);
-        var logResources = GetResourcesSelection(selection.ResourceItem);
+        var selectionResource = GetResourcesSelectionXML(items);
 
         await logDirectlyService.WriteLog(new InsertLogCriteria
         {
             Action = request.Action,
             AdminId = request.AdminId,
             MatchId = request.MatchId,
-            SelectedResources = logResources,
+            SelectedResources = selectionResource,
             Mode = "BB"
         });
 
     }
 
-    private string GetResourcesSelection(List<Models.BetBuilder.ResourceItem> resources)
+    private string GetResourcesSelectionXML(List<ResourceItem> items)
     {
-        var items = resources
-            .Select(resource => new Fanex.Settlement.MessageBridge.ResultAmendment.ResourceItem
-            {
-                ResourceId = $"{resource.Id}",
-                HomeValue = resource.Result,
-            })
-            .ToList();
 
         var resourceRoot = new Models.FM.Resources
         {
@@ -113,5 +121,19 @@ public class BetBuilderServiceImp(
         var selectedResources = xmlConvertService.Serialize(resourceRoot);
 
         return selectedResources;
+    }
+
+    private List<ResourceItem> GetResourceItems(BetBuilderRequest request)
+    {
+        var selection = xmlConvertService.Deserialize<Models.BetBuilder.Resources>(request.Resources);
+        var items = selection.ResourceItem
+            .Select(resource => new ResourceItem
+            {
+                ResourceId = $"{resource.Id}",
+                HomeValue = resource.Result,
+            })
+            .ToList();
+
+        return items;
     }
 }

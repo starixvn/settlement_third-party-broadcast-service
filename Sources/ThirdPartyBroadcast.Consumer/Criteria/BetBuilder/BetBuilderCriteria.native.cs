@@ -17,6 +17,8 @@ public class BetBuilderCriteria : CalculateCriteria
 
     public string BroadcastSessionId { get; } = Guid.NewGuid().ToString();
 
+    public bool IsOrg { get; set; } = true;
+
     [JsonIgnore, SpParam(Ignored = true)]
     public string SpName { get; set; } = "NAP_Admin_Settlement_BetBuilder_Push";
 
