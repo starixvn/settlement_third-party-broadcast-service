@@ -8,6 +8,7 @@ using Models;
 using Requests;
 using ThirdPartyBroadcast.Consumer.Criteria;
 using ThirdPartyBroadcast.Consumer.Criteria.BetBuilder;
+using MatchService = Services.MatchService;
 using ResourceItem = Fanex.Settlement.MessageBridge.ResultAmendment.ResourceItem;
 
 public interface BetBuilderService
@@ -21,7 +22,8 @@ public class BetBuilderServiceImp(
     BetBuilderGenerateService betBuilderGenerateService,
     XmlConvertService xmlConvertService,
     LogDirectlyService logDirectlyService,
-    IBetBuilderResultAmendmentService betBuilderResultAmendmentService
+    IBetBuilderResultAmendmentService betBuilderResultAmendmentService,
+    MatchService matchService
     )
     : BetBuilderService
 {
@@ -47,24 +49,25 @@ public class BetBuilderServiceImp(
         {
             return new Result();
         }
+        var matchInfo = await matchService.GetMatchInfo(request.MatchId);
 
         var criteria = mapper.Map<BetBuilderCriteria>(request);
         criteria.SelectedMarket = selectedMarket;
         criteria.SelectedSelection = request.Resources;
 
-          var resourceItems = GetResourceItems(request);
+        var resourceItems = GetResourceItems(request);
 
-        await WriteSettlementLog(request, resourceItems);
+        await WriteSettlementLog(request, resourceItems, matchInfo);
 
-        //var hasResultAmend = await betBuilderResultAmendmentService.PushResultAmendment(request, resourceItems, criteria);
+        var hasResultAmend = await betBuilderResultAmendmentService.PushResultAmendment(request, resourceItems, criteria);
 
         var pendingCommand = CreateSiteDbPendingCommand(criteria);
-        var settleResult = await calculateService.Execute(criteria);
+        var settleResult = await calculateService.Execute(criteria, pendingCommand);
 
-        //if (hasResultAmend && settleResult.ErrorCode == 0)
-        //{
-        //    await betBuilderResultAmendmentService.PushUpdateStatusResult(request.MatchId, criteria.BroadcastSessionId, criteria.IsOrg);
-        //}
+        if (hasResultAmend && settleResult.ErrorCode == 0)
+        {
+            await betBuilderResultAmendmentService.PushUpdateStatusResult(request.MatchId, criteria.BroadcastSessionId, criteria.IsOrg);
+        }
 
         return settleResult;
 
@@ -95,7 +98,7 @@ public class BetBuilderServiceImp(
         }
     }
 
-    private async Task WriteSettlementLog(BetBuilderRequest request, List<ResourceItem> items)
+    private async Task WriteSettlementLog(BetBuilderRequest request, List<ResourceItem> items, MatchInfo matchInfo)
     {
         var selectionResource = GetResourcesSelectionXML(items);
 
@@ -104,6 +107,7 @@ public class BetBuilderServiceImp(
             Action = request.Action,
             AdminId = request.AdminId,
             MatchId = request.MatchId,
+            SportType = matchInfo.SportType,
             SelectedResources = selectionResource,
             Mode = "BB"
         });
