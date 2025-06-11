@@ -56,15 +56,15 @@ public class BetBuilderServiceImp(
 
         await WriteSettlementLog(request, resourceItems);
 
-        var hasResultAmend = await betBuilderResultAmendmentService.PushResultAmendment(request, resourceItems, criteria);
+        //var hasResultAmend = await betBuilderResultAmendmentService.PushResultAmendment(request, resourceItems, criteria);
 
         var pendingCommand = CreateSiteDbPendingCommand(criteria);
         var settleResult = await calculateService.Execute(criteria);
 
-        if (hasResultAmend && settleResult.ErrorCode == 0)
-        {
-            await betBuilderResultAmendmentService.PushUpdateStatusResult(request.MatchId, criteria.BroadcastSessionId, criteria.IsOrg);
-        }
+        //if (hasResultAmend && settleResult.ErrorCode == 0)
+        //{
+        //    await betBuilderResultAmendmentService.PushUpdateStatusResult(request.MatchId, criteria.BroadcastSessionId, criteria.IsOrg);
+        //}
 
         return settleResult;
 

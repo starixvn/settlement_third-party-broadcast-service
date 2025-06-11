@@ -39,7 +39,9 @@ public class BetBuilderGenerateServiceImp(
             IsAuto = request.IsAuto,
             SelectedSelection = request.Resources
         };
-        return await repository.FetchMultipleAsync<Result, ReasonModel>(criteria);
+
+        var result = await repository.FetchMultipleAsync<Result, ReasonModel>(criteria);
+        return result;
     }
 
     public async Task WriteLogReason(BetBuilderRequest request, IEnumerable<ReasonModel> reasonError)
