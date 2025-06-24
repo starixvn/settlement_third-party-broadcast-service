@@ -1,4 +1,5 @@
-﻿using ONEbook.UM.Services;
+﻿using Fanex.Caching;
+using ONEbook.UM.Services;
 using StackExchange.Redis;
 using System.Data;
 
@@ -7,7 +8,8 @@ namespace ThirdPartyBroadcast.Consumer.Services.Consumer;
 public class ProcessingConsumerService(
     GenerateConsumerService service,
     IMaintenanceService maintenanceService,
-    IConnectionMultiplexer connectionMultiplexer)
+    IConnectionMultiplexer connectionMultiplexer,
+    ICache cache)
     : IConsumer<IBroadcastApiProcessing>
 {
     private const string SpecifiedWord = ":space:";
@@ -18,7 +20,8 @@ public class ProcessingConsumerService(
     {
         var message = context.Message;
         var isMaintenance = await maintenanceService.IsUnderMaintenanceAsync();
-        if (isMaintenance)
+        var isFlagUnderMaintenance = await GetStatusOnCache(CacheKeys.BroadcastSettleUnderMaintenanceCacheKey);
+        if (isMaintenance && !isFlagUnderMaintenance)
         {
             await RedisDatabase.ListRightPushAsync(CacheKeys.BroadcastServiceProductWaitingCacheKey,
                   $"{message.ProductType}{SpecifiedWord}{message.Data}");
@@ -26,6 +29,25 @@ public class ProcessingConsumerService(
         else
         {
             await service.SettleByProduct(message.ProductType, message.Data);
+        }
+    }
+
+    private async Task<bool> GetStatusOnCache(string key)
+    {
+        try
+        {
+            var isExistedKey = await cache.ContainAsync(key);
+            if (isExistedKey)
+            {
+                var (_, value) = await cache.TryGetAsync<bool>(key);
+                return value;
+            }
+
+            return false;
+        }
+        catch
+        {
+            return false;
         }
     }
 }

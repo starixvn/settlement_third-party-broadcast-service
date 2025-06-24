@@ -25,8 +25,11 @@ public class NumberGameServiceTests
 
         var mapperConfig = new MapperConfigurationExpression();
         mapperConfig.AddProfile<ThirdPartyBroadcastMappingProfile>();
-        var config = new MapperConfiguration(mapperConfig);
-        var mapper = new Mapper(config);
+        var mapper = Substitute.For<IMapper>();
+        
+        // Setup mock mapper to return proper mapped objects
+        mapper.Map<NumberGameCriteria>(Arg.Any<NumberGameRequest>()).Returns(new NumberGameCriteria());
+        
         service = new NumberGameServiceImp(mapper, scaleOutSettleThirdPartyService, calculateService, logDirectlyService, repository);
     }
 

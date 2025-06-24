@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
@@ -39,19 +39,18 @@
     <PackageReference Include="AutoMapper" Version="14.0.0" />
     <PackageReference Include="Fanex.Caching" Version="2.2.8" />
     <PackageReference Include="Fanex.Caching.Redis" Version="2.2.8" />
-    <PackageReference Include="Fanex.Data.SqlServer" Version="4.3.4" />
-    <PackageReference Include="Fanex.Logging.Extensions.AspNetCore" Version="1.1.0" />
+    <PackageReference Include="Fanex.Data.SqlServer" Version="4.3.4.3" />
     <PackageReference Include="Fanex.Logging.Extensions.Database" Version="2.0.2.1" />
     <PackageReference Include="Fanex.Logging.Sentry.RavenClient" Version="2.0.2" />
     <PackageReference Include="Fanex.RemotingRef" Version="1.5.5.1" />
     <PackageReference Include="Fanex.Settlement.Business" Version="1.0.26" />
     <PackageReference Include="Fanex.Settlement.Converter" Version="1.0.0.1" />
-    <PackageReference Include="MassTransit.RabbitMQ" Version="8.4.1" />
-    <PackageReference Include="MediatR" Version="12.5.0" />
+    <PackageReference Include="MassTransit.RabbitMQ" Version="8.5.1" />
+    <PackageReference Include="MediatR" Version="13.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="ONEbook.UM" Version="3.2.4" />
-    <PackageReference Include="Polly" Version="8.5.2" />
-    <PackageReference Include="System.Text.Json" Version="9.0.5" />
+    <PackageReference Include="ONEbook.UM" Version="3.2.6" />
+    <PackageReference Include="Polly" Version="8.6.2" />
+    <PackageReference Include="System.Text.Json" Version="9.0.7" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ThirdPartyBroadcast.Consumer\ThirdPartyBroadcast.Consumer.csproj" />

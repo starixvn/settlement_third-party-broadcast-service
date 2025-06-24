@@ -39,7 +39,7 @@ public class BetBuilderServiceImp(
             return new Result();
         }
 
-        var criteria = mapper.Map<BetBuilderRequest, BetBuilderCriteria>(request);
+        var criteria = mapper.Map<BetBuilderCriteria>(request);
         criteria.SelectedMarket = selectedMarket;
         criteria.SelectedSelection = request.Resources;
 

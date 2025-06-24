@@ -46,7 +46,7 @@ public class LeapGamingServiceImp(
 
     private async Task<Result> HandleSettle(List<TicketSettleInfo> currentTickets, MatchInfo matchInfo, LeapGamingRequest request, string productType)
     {
-        var criteria = mapper.Map<LeapGamingRequest, LeapGamingCriteria>(request);
+        var criteria = mapper.Map<LeapGamingCriteria>(request);
         var pendingCommand = CreateSiteDbPendingCommand(criteria, matchInfo, productType);
         var settleResult = await calculateService.Execute(criteria, pendingCommand);
 

@@ -26,7 +26,7 @@ public class VirtualBetRadarServiceImp(
 {
     public async Task<Result> Settle(VirtualBetRadarRequest request)
     {
-        var betRadarValidationCriteria = mapper.Map<VirtualBetRadarRequest, BetRadarValidationCriteria>(request);
+        var betRadarValidationCriteria = mapper.Map<BetRadarValidationCriteria>(request);
         var resultValidation = await calculateService.ExecuteValidationMultiServer(betRadarValidationCriteria);
 
         if (!resultValidation.IsSuccessful)
@@ -46,7 +46,7 @@ public class VirtualBetRadarServiceImp(
 
     private async Task<Result> HandleSettle(List<TicketSettleInfo> currentTickets, MatchInfo matchInfo, VirtualBetRadarRequest request)
     {
-        var criteria = mapper.Map<VirtualBetRadarRequest, VirtualBetRadarCriteria>(request);
+        var criteria = mapper.Map<VirtualBetRadarCriteria>(request);
         var pendingCommand = CreateSiteDbPendingCommand(criteria, matchInfo);
         var settleResult = await calculateService.Execute(criteria, pendingCommand);
 

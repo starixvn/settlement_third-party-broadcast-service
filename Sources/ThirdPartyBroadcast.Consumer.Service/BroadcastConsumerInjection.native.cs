@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Fanex.Caching;
+﻿using Fanex.Caching;
 using Fanex.Caching.Redis;
 using Fanex.Data.Repository;
 using Fanex.RemotingRef;
@@ -87,16 +86,13 @@ public static class BroadcastConsumerInjection
         services.AddTransient<Services.Products.VirtualRacing.SettleSitesService, Services.Products.VirtualRacing.SettleSitesServiceImp>();
     }
 
-    public static void AddAutoMapperProfile(this IServiceCollection service)
+    public static void AddAutoMapperProfile(this IServiceCollection services)
     {
-        var mapperConfig = new MapperConfiguration(mc =>
+        services.AddAutoMapper(cfg =>
         {
-            mc.AddProfile(typeof(ScaleOutMappingProfile));
-            mc.AddProfile(typeof(ThirdPartyBroadcastMappingProfile));
+            cfg.AddProfile<ScaleOutMappingProfile>();
+            cfg.AddProfile<ThirdPartyBroadcastMappingProfile>();
         });
-
-        var mapper = mapperConfig.CreateMapper();
-        service.AddSingleton(mapper);
     }
 
     public static void AddRedisCacheConfig(this IServiceCollection services, IConfiguration configuration)

@@ -32,8 +32,12 @@ public class FastMarketServiceTests
 
         var mapperConfig = new MapperConfigurationExpression();
         mapperConfig.AddProfile<ThirdPartyBroadcastMappingProfile>();
-        var config = new MapperConfiguration(mapperConfig);
-        var mapper = new Mapper(config);
+        var mapper = Substitute.For<IMapper>();
+        
+        // Setup mock mapper to return proper mapped objects
+        mapper.Map<FastMarketRequest, FastMarketCriteria>(Arg.Any<FastMarketRequest>()).Returns(new FastMarketCriteria());
+        mapper.Map<FastMarketCriteria, EventTicketFastMarketRequest>(Arg.Any<FastMarketCriteria>()).Returns(new EventTicketFastMarketRequest());
+        
         service = new FastMarketServiceImp(scaleOutSettleService, mapper, calculateService, logDirectlyService, fmResultAmendmentService);
     }
 

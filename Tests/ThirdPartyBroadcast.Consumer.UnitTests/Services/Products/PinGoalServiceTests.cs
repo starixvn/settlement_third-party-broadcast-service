@@ -21,8 +21,7 @@ public class PinGoalServiceTests
 
         var mapperConfig = new MapperConfigurationExpression();
         mapperConfig.AddProfile<ThirdPartyBroadcastMappingProfile>();
-        var config = new MapperConfiguration(mapperConfig);
-        var mapper = new Mapper(config);
+        var mapper = Substitute.For<IMapper>();
         service = new PinGoalServiceImp(scaleOutSettleService, mapper, calculateService, logDirectlyService, matchService, xmlConvertService);
     }
 

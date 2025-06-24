@@ -95,8 +95,8 @@ public class MatchServiceImp(
 
     public async Task UpdateMatchInfoVirtualSports(VirtualSoccerRequest request)
     {
-        var updateInfoRequest = mapper.Map<VirtualSoccerRequest, UpdateMatchInfo3RdRequest>(request);
-        var criteria = mapper.Map<VirtualSoccerRequest, VirtualSportsUpdateMatchCriteria>(request);
+        var updateInfoRequest = mapper.Map<UpdateMatchInfo3RdRequest>(request);
+        var criteria = mapper.Map<VirtualSportsUpdateMatchCriteria>(request);
 
         if (string.Equals(request.Action, ActionName.Calculate, StringComparison.OrdinalIgnoreCase))
         {

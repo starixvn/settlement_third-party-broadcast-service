@@ -1,5 +1,6 @@
 ﻿namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products;
 
+using AutoMapper;
 using Criteria;
 using Criteria.BitCoin;
 using Fanex.Data.Repository;
@@ -12,6 +13,8 @@ public class BitCoinServiceTests
 
     private readonly LogDirectlyService logDirectlyService;
 
+    private readonly IMapper mapper;
+
     private readonly BitCoinServiceImp service;
 
     public BitCoinServiceTests()
@@ -22,8 +25,7 @@ public class BitCoinServiceTests
 
         var mapperConfig = new MapperConfigurationExpression();
         mapperConfig.AddProfile<ThirdPartyBroadcastMappingProfile>();
-        var config = new MapperConfiguration(mapperConfig);
-        var mapper = new Mapper(config);
+        mapper = Substitute.For<IMapper>();
         service = new BitCoinServiceImp(repository, mapper, calculateService, logDirectlyService);
     }
 
@@ -44,6 +46,7 @@ public class BitCoinServiceTests
     {
         calculateService.Execute(Arg.Any<BitCoinCriteria>()).Returns(new Result());
         repository.GetAsync<MatchInfo>(Arg.Any<Match3rdSelCriteria>()).Returns(new MatchInfo());
+        mapper.Map<BitCoinCriteria>(Arg.Any<BitCoinRequest>()).Returns(new BitCoinCriteria());
 
         var result = await service.Settle(new BitCoinRequest());
 
@@ -51,7 +54,7 @@ public class BitCoinServiceTests
         await repository.Received().ExecuteAsync(Arg.Any<ResultDetail3rdUpdateCriteria>());
         await repository.Received().ExecuteAsync(Arg.Any<UpdateEventStatusCriteria>());
         await calculateService.Received().Execute(Arg.Any<BitCoinCriteria>());
-        await repository.DidNotReceive().ExecuteAsync(Arg.Any<NotifyCriteria>());
+        await repository.DidNotReceive().ExecuteAsync(new NotifyCriteria());
     }
 
     [Theory]

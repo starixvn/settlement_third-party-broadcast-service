@@ -17,8 +17,12 @@ public class BetBuilderServiceTests
         calculateService = Substitute.For<CalculateService>();
         var mapperConfig = new MapperConfigurationExpression();
         mapperConfig.AddProfile<ThirdPartyBroadcastMappingProfile>();
-        var config = new MapperConfiguration(mapperConfig);
-        var mapper = new Mapper(config);
+
+        var mapper = Substitute.For<IMapper>();
+        
+        // Setup mock mapper to return proper mapped objects
+        mapper.Map<BetBuilderCriteria>(Arg.Any<BetBuilderRequest>()).Returns(new BetBuilderCriteria());
+        
         service = new BetBuilderServiceImp(calculateService, mapper, betBuilderGenerateService);
     }
 
