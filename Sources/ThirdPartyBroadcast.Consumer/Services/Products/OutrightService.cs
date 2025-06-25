@@ -1,6 +1,10 @@
 ﻿namespace ThirdPartyBroadcast.Consumer.Services.Products;
 
 using Criteria;
+using Fanex.Settlement.ThirdPartyBroadcast.Shared;
+using Fanex.SiteDbConnectionManager.Client.Constants;
+using Fanex.SiteDbConnectionManager.Client.Models;
+using Models;
 
 public interface OutrightService
 {
@@ -23,7 +27,8 @@ public class OutrightServiceImp(
         }
 
         var criteria = mapper.Map<OutrightCriteria>(request);
-        return await calculateService.Execute(criteria);
+        var pendingCommand = CreateSiteDbPendingCommand(criteria, request.Action);
+        return await calculateService.Execute(criteria, pendingCommand);
     }
 
     private async Task<Result> ValidateBeforeSettle(OutrightRequest request)
@@ -34,6 +39,22 @@ public class OutrightServiceImp(
         {
             ErrorCode = result.ErrorCode,
             ErrorMessage = result.ErrorMessage
+        };
+    }
+
+    private static SiteDbPendingCommand CreateSiteDbPendingCommand(OutrightCriteria criteria, string action)
+    {
+        return new SiteDbPendingCommand
+        {
+            MatchId = criteria.MatchId,
+            ProductType = ProductType.Outright,
+            Action = action,
+            SpName = criteria.SpName,
+            Parameter = criteria.ToJson(),
+            AdminId = criteria.AdminId,
+            IP = criteria.Ip,
+            SystemName = SystemName.Broadcast,
+            StatusId = CommandStatus.Pending
         };
     }
 }
