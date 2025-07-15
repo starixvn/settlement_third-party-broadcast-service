@@ -3,6 +3,8 @@
 public static class CacheKeys
 {
     public const string BroadcastServiceProductWaitingCacheKey = "Broadcast-Service-Product-Waiting";
+
+    public const string BroadcastSettleUnderMaintenanceCacheKey = "Settlement-Broadcast-Settle-UnderMaintenance";
 }
 
 public static class QueueName

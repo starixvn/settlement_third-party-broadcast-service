@@ -24,7 +24,7 @@ public class BitCoinServiceImp(
 
         await WriteLog(request.MatchId);
 
-        var criteria = mapper.Map<BitCoinRequest, BitCoinCriteria>(request);
+        var criteria = mapper.Map<BitCoinCriteria>(request);
         var result = await calculateService.Execute(criteria);
 
         if (result.IsSuccessful && !string.IsNullOrWhiteSpace(eventStatus))
@@ -65,7 +65,7 @@ public class BitCoinServiceImp(
 
     private async Task UpdateMatchInfo(BitCoinRequest request)
     {
-        var criteria = mapper.Map<BitCoinRequest, ResultDetail3rdUpdateCriteria>(request);
+        var criteria = mapper.Map<ResultDetail3rdUpdateCriteria>(request);
         await repository.ExecuteAsync(criteria);
 
         var updateEventStatus = new UpdateEventStatusCriteria

@@ -24,8 +24,10 @@ public class VirtualSportsServiceTests
         var recipientMessageService = Substitute.For<RecipientMessageService>();
         var mapperConfig = new MapperConfigurationExpression();
         mapperConfig.AddProfile<ThirdPartyBroadcastMappingProfile>();
-        var config = new MapperConfiguration(mapperConfig);
-        var mapper = new Mapper(config);
+        var mapper = Substitute.For<IMapper>();
+
+        // Setup mock mapper to return proper mapped objects
+        mapper.Map<VirtualSoccerRequest, VirtualSportsCriteria>(Arg.Any<VirtualSoccerRequest>()).Returns(new VirtualSportsCriteria());
 
         service = new VirtualSportsServiceImp(matchService, mapper, calculateService, announcementService, recipientMessageService, ticketInfoService);
     }

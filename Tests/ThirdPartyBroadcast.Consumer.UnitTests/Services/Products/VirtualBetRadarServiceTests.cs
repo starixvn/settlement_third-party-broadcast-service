@@ -11,12 +11,15 @@ public class VirtualBetRadarServiceTests
 {
     private readonly CalculateService calculateService;
 
-    private readonly VirtualBetRadarServiceImp service;
-
     private readonly MatchService matchService;
 
     private readonly AnnouncementService announcementService;
+
     private readonly TicketInfoService ticketInfoService;
+
+    private readonly IMapper mapper;
+
+    private readonly VirtualBetRadarServiceImp service;
 
     public VirtualBetRadarServiceTests()
     {
@@ -26,11 +29,7 @@ public class VirtualBetRadarServiceTests
         announcementService = Substitute.For<AnnouncementService>();
         var recipientMessageService = Substitute.For<RecipientMessageService>();
         ticketInfoService = Substitute.For<TicketInfoService>();
-
-        var mapperConfig = new MapperConfigurationExpression();
-        mapperConfig.AddProfile<ThirdPartyBroadcastMappingProfile>();
-        var config = new MapperConfiguration(mapperConfig);
-        var mapper = new Mapper(config);
+        mapper = Substitute.For<IMapper>();
 
         service = new VirtualBetRadarServiceImp(repository, mapper, calculateService, matchService, announcementService, recipientMessageService, ticketInfoService);
     }
@@ -53,11 +52,7 @@ public class VirtualBetRadarServiceTests
             MatchId = 1,
             RefDataService = new RefDataServiceImp(new RemotingRefService())
         };
-
-        matchService.GetMatchInfo(Arg.Any<int>()).Returns(matchInfo);
-        calculateService.ExecuteValidationMultiServer(Arg.Any<BetRadarValidationCriteria>()).Returns(new Result());
-        calculateService.Execute(Arg.Any<VirtualBetRadarCriteria>(), Arg.Any<SiteDbPendingCommand>()).Returns(new Result());
-        await service.Settle(new VirtualBetRadarRequest
+        var request = new VirtualBetRadarRequest
         {
             Action = "CAL",
             MatchId = 1,
@@ -65,7 +60,15 @@ public class VirtualBetRadarServiceTests
             Fth = 1,
             Hta = 1,
             Hth = 1
-        });
+        };
+
+        mapper.Map<BetRadarValidationCriteria>(request).Returns(new BetRadarValidationCriteria());
+        mapper.Map<VirtualBetRadarCriteria>(request).Returns(new VirtualBetRadarCriteria());
+
+        matchService.GetMatchInfo(Arg.Any<int>()).Returns(matchInfo);
+        calculateService.ExecuteValidationMultiServer(Arg.Any<BetRadarValidationCriteria>()).Returns(new Result());
+        calculateService.Execute(Arg.Any<VirtualBetRadarCriteria>(), Arg.Any<SiteDbPendingCommand>()).Returns(new Result());
+        await service.Settle(request);
 
         Received.InOrder(() =>
         {

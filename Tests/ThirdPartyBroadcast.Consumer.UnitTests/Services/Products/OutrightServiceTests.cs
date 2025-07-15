@@ -16,8 +16,7 @@ public class OutrightServiceTests
         scaleOutSettleThirdPartyService = Substitute.For<ScaleOutSettleThirdPartyService>();
         var mapperConfig = new MapperConfigurationExpression();
         mapperConfig.AddProfile<ThirdPartyBroadcastMappingProfile>();
-        var config = new MapperConfiguration(mapperConfig);
-        var mapper = new Mapper(config);
+        var mapper = Substitute.For<IMapper>();
         service = new OutrightServiceImp(mapper, calculateService, scaleOutSettleThirdPartyService);
     }
 

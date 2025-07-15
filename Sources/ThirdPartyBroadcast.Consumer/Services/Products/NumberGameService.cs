@@ -26,7 +26,7 @@ public class NumberGameServiceImp(
 
         await WriteLog(request);
 
-        var criteria = mapper.Map<NumberGameRequest, NumberGameCriteria>(request);
+        var criteria = mapper.Map<NumberGameCriteria>(request);
 
         var startSettle = DateTimeOffset.Now;
         var pendingCommand = CreateSiteDbPendingCommand(criteria);

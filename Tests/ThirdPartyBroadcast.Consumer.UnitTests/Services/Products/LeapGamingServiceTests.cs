@@ -11,11 +11,13 @@ public class LeapGamingServiceTests
 
     private readonly MatchService matchService;
 
-    private readonly LeapGamingServiceImp service;
-
     private readonly AnnouncementService announcementService;
 
     private readonly TicketInfoService ticketInfoService;
+
+    private readonly IMapper mapper;
+
+    private readonly LeapGamingServiceImp service;
 
     public LeapGamingServiceTests()
     {
@@ -27,8 +29,7 @@ public class LeapGamingServiceTests
         ticketInfoService = Substitute.For<TicketInfoService>();
         var mapperConfig = new MapperConfigurationExpression();
         mapperConfig.AddProfile<ThirdPartyBroadcastMappingProfile>();
-        var config = new MapperConfiguration(mapperConfig);
-        var mapper = new Mapper(config);
+        mapper = Substitute.For<IMapper>();
 
         service = new LeapGamingServiceImp(mapper, calculateService, repository, matchService, ticketInfoService, recipientMessageService, announcementService);
     }
@@ -52,6 +53,7 @@ public class LeapGamingServiceTests
         };
         matchService.GetMatchInfo(Arg.Any<int>()).Returns(matchInfo);
         calculateService.Execute(Arg.Any<LeapGamingCriteria>(), Arg.Any<SiteDbPendingCommand>()).Returns(new Result());
+        mapper.Map<LeapGamingCriteria>(Arg.Any<LeapGamingRequest>()).Returns(new LeapGamingCriteria());
 
         await service.Settle(new LeapGamingRequest
         {

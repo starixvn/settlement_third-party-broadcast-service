@@ -3,7 +3,6 @@ using Fanex.Logging.Sentry.RavenClient;
 using Fanex.SimpleMailDelivery;
 using Fanex.SiteDbConnectionManager.Services;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using ONEbook.UM.DependencyInjection;
 using Settlement.Business;
@@ -33,12 +32,9 @@ services.AddControllers().AddJsonOptions(options =>
 });
 
 services.Configure<AppSettingsKey>(configuration);
+services.AddHealthChecks();
 
 var app = builder.Build();
-
-app.Run(async context =>
-{
-    await context.Response.WriteAsync("OK");
-});
+app.MapHealthChecks("/healthz");
 
 await app.RunAsync();

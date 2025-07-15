@@ -22,7 +22,7 @@ public class OutrightServiceImp(
             return validation;
         }
 
-        var criteria = mapper.Map<OutrightRequest, OutrightCriteria>(request);
+        var criteria = mapper.Map<OutrightCriteria>(request);
         return await calculateService.Execute(criteria);
     }
 
