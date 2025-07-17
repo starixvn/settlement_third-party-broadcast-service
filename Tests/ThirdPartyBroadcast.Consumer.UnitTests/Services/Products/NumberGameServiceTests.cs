@@ -10,9 +10,11 @@ public class NumberGameServiceTests
 
     private readonly ScaleOutSettleThirdPartyService scaleOutSettleThirdPartyService;
 
-    private readonly NumberGameServiceImp service;
-
     private readonly LogDirectlyService logDirectlyService;
+
+    private readonly IMapper mapper;
+
+    private readonly NumberGameServiceImp service;
 
     public NumberGameServiceTests()
     {
@@ -25,11 +27,8 @@ public class NumberGameServiceTests
 
         var mapperConfig = new MapperConfigurationExpression();
         mapperConfig.AddProfile<ThirdPartyBroadcastMappingProfile>();
-        var mapper = Substitute.For<IMapper>();
-        
-        // Setup mock mapper to return proper mapped objects
-        mapper.Map<NumberGameCriteria>(Arg.Any<NumberGameRequest>()).Returns(new NumberGameCriteria());
-        
+        mapper = Substitute.For<IMapper>();
+
         service = new NumberGameServiceImp(mapper, scaleOutSettleThirdPartyService, calculateService, logDirectlyService, repository);
     }
 
@@ -38,6 +37,11 @@ public class NumberGameServiceTests
     [InlineData("Refund")]
     public async Task Settle_MatchIsNotLive_CallAllInOrderMethod(string action)
     {
+        mapper.Map<NumberGameCriteria>(Arg.Any<NumberGameRequest>()).Returns(new NumberGameCriteria
+        {
+            Action = action
+        });
+
         await service.Settle(new NumberGameRequest { IsLive = false, Action = action });
 
         Received.InOrder(() =>
@@ -51,6 +55,11 @@ public class NumberGameServiceTests
     [Fact]
     public async Task Settle_MatchIsLive_WithoutCallUpdateMatch()
     {
+        mapper.Map<NumberGameCriteria>(Arg.Any<NumberGameRequest>()).Returns(new NumberGameCriteria
+        {
+            Action = ActionName.Calculate
+        });
+
         await service.Settle(new NumberGameRequest { IsLive = true });
 
         await scaleOutSettleThirdPartyService.DidNotReceive().UpdateMatchInfo3rd(Arg.Any<UpdateMatchInfo3RdRequest>());
