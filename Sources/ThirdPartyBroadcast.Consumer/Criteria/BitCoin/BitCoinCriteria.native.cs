@@ -1,4 +1,7 @@
-﻿namespace ThirdPartyBroadcast.Consumer.Criteria.BitCoin;
+﻿using Fanex.Data;
+using System.Text.Json.Serialization;
+
+namespace ThirdPartyBroadcast.Consumer.Criteria.BitCoin;
 
 public class BitCoinCriteria : CalculateCriteria
 {
@@ -10,5 +13,8 @@ public class BitCoinCriteria : CalculateCriteria
 
     public string Action { get; set; }
 
-    public override string GetSettingKey() => $"NAP_Admin_Settlement_s175_{DbServer}";
+    [JsonIgnore, SpParam(Ignored = true)]
+    public string SpName { get; set; } = "NAP_Admin_Settlement_s175";
+
+    public override string GetSettingKey() => $"{SpName}_{DbServer}";
 }

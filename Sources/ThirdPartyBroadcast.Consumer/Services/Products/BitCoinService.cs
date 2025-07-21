@@ -2,7 +2,10 @@
 
 using Criteria;
 using Criteria.BitCoin;
+using Fanex.SiteDbConnectionManager.Client.Constants;
+using Fanex.SiteDbConnectionManager.Client.Models;
 using System;
+using ThirdPartyBroadcast.Consumer.Models;
 
 public interface BitCoinService
 {
@@ -25,7 +28,8 @@ public class BitCoinServiceImp(
         await WriteLog(request.MatchId);
 
         var criteria = mapper.Map<BitCoinCriteria>(request);
-        var result = await calculateService.Execute(criteria);
+        var pendingCommand = CreateSiteDbPendingCommand(criteria);
+        var result = await calculateService.Execute(criteria, pendingCommand);
 
         if (result.IsSuccessful && !string.IsNullOrWhiteSpace(eventStatus))
         {
@@ -33,6 +37,22 @@ public class BitCoinServiceImp(
         }
 
         return result;
+    }
+
+    private static SiteDbPendingCommand CreateSiteDbPendingCommand(BitCoinCriteria criteria)
+    {
+        return new SiteDbPendingCommand
+        {
+            MatchId = criteria.MatchId,
+            ProductType = ProductType.BitCoin,
+            Action = criteria.Action,
+            SpName = criteria.SpName,
+            Parameter = criteria.ToJson(),
+            AdminId = criteria.AdminId,
+            IP = criteria.Ip,
+            SystemName = SystemName.Broadcast,
+            StatusId = CommandStatus.Pending
+        };
     }
 
     private async Task WriteLog(int matchId)
