@@ -1,5 +1,7 @@
 ﻿using Fanex.Settlement.ScaleOut.Request;
+using Fanex.SiteDbConnectionManager.Client.Models;
 using ThirdPartyBroadcast.Consumer.Criteria;
+using ResultMessage = Fanex.Settlement.ScaleOut.Models.ResultMessage;
 
 namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products;
 
@@ -9,6 +11,7 @@ public class PinGoalServiceTests
     private readonly ScaleOutSettleService scaleOutSettleService;
     private readonly MatchService matchService;
     private readonly XmlConvertService xmlConvertService;
+    private readonly IMapper mapper;
     private readonly PinGoalServiceImp service;
 
     public PinGoalServiceTests()
@@ -21,7 +24,9 @@ public class PinGoalServiceTests
 
         var mapperConfig = new MapperConfigurationExpression();
         mapperConfig.AddProfile<ThirdPartyBroadcastMappingProfile>();
-        var mapper = Substitute.For<IMapper>();
+        mapper = Substitute.For<IMapper>();
+        mapper.Map<PinGoalCriteria>(Arg.Any<PinGoalRequest>()).Returns(new PinGoalCriteria());
+
         service = new PinGoalServiceImp(scaleOutSettleService, mapper, calculateService, logDirectlyService, matchService, xmlConvertService);
     }
 
@@ -46,10 +51,12 @@ public class PinGoalServiceTests
     {
         scaleOutSettleService.ValidateEventAndTicket(Arg.Any<EventTicketRequest>()).Returns(new ResultMessage());
         matchService.GetMatchInfo(Arg.Any<int>()).Returns(new MatchInfo());
+        mapper.Map<PinGoalCriteria>(Arg.Any<PinGoalRequest>()).Returns(new PinGoalCriteria());
+
         await service.Settle(new PinGoalRequest());
 
         await scaleOutSettleService.Received().UpdateMatchInfo(Arg.Any<UpdateMatchInfoRequest>());
-        await calculateService.Received().Execute(Arg.Any<PinGoalCriteria>());
+        await calculateService.Received().Execute(Arg.Any<PinGoalCriteria>(), Arg.Any<SiteDbPendingCommand>());
     }
 
     [Fact]
@@ -143,7 +150,7 @@ public class PinGoalServiceTests
                 Items = [new ResourceItemModel { Id = "00", Home = "2", Away = "1" }]
             });
         scaleOutSettleService.ValidateEventAndTicket(Arg.Any<EventTicketRequest>()).Returns(new ResultMessage());
-        calculateService.Execute(Arg.Any<PinGoalCriteria>()).Returns(new Result());
+        calculateService.Execute(Arg.Any<PinGoalCriteria>(), Arg.Any<SiteDbPendingCommand>()).Returns(new Result());
 
         // Act
         var result = await service.Settle(request);
@@ -151,6 +158,6 @@ public class PinGoalServiceTests
         // Assert
         Assert.Equal(0, result.ErrorCode);
         await scaleOutSettleService.Received().UpdateMatchInfo(Arg.Any<UpdateMatchInfoRequest>());
-        await calculateService.Received().Execute(Arg.Any<PinGoalCriteria>());
+        await calculateService.Received().Execute(Arg.Any<PinGoalCriteria>(), Arg.Any<SiteDbPendingCommand>());
     }
 }

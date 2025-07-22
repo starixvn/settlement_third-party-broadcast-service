@@ -1,5 +1,7 @@
 ﻿using Fanex.Settlement.ScaleOut.Request;
+using Fanex.SiteDbConnectionManager.Client.Models;
 using ThirdPartyBroadcast.Consumer.Models.FM;
+using ResultMessage = Fanex.Settlement.ScaleOut.Models.ResultMessage;
 
 namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products.FastMarket;
 
@@ -33,11 +35,11 @@ public class FastMarketServiceTests
         var mapperConfig = new MapperConfigurationExpression();
         mapperConfig.AddProfile<ThirdPartyBroadcastMappingProfile>();
         var mapper = Substitute.For<IMapper>();
-        
+
         // Setup mock mapper to return proper mapped objects
         mapper.Map<FastMarketRequest, FastMarketCriteria>(Arg.Any<FastMarketRequest>()).Returns(new FastMarketCriteria());
         mapper.Map<FastMarketCriteria, EventTicketFastMarketRequest>(Arg.Any<FastMarketCriteria>()).Returns(new EventTicketFastMarketRequest());
-        
+
         service = new FastMarketServiceImp(scaleOutSettleService, mapper, calculateService, logDirectlyService, fmResultAmendmentService);
     }
 
@@ -65,13 +67,13 @@ public class FastMarketServiceTests
             BetType = []
         };
         scaleOutSettleService.ValidateEventAndTicketFastMarket(Arg.Any<EventTicketFastMarketRequest>()).Returns(new ResultMessage());
-        calculateService.Execute(Arg.Any<CalculateCriteria>()).Returns(new Result());
+        calculateService.Execute(Arg.Any<CalculateCriteria>(), Arg.Any<SiteDbPendingCommand>()).Returns(new Result());
         matchService.GetFastMarketResult(Arg.Any<int>()).Returns(new List<FastMarketResult>());
         xmlConvertService.Deserialize<BetTypeXML>(Arg.Any<string>()).Returns(betTypes);
         await service.Settle(new FastMarketRequest());
 
         await scaleOutSettleService.Received().UpdateMatchInfo(Arg.Any<UpdateMatchInfoRequest>());
-        await calculateService.Received().Execute(Arg.Any<FastMarketCriteria>());
+        await calculateService.Received().Execute(Arg.Any<FastMarketCriteria>(), Arg.Any<SiteDbPendingCommand>());
         await logDirectlyService.Received().WriteLog(Arg.Any<int>(), Arg.Any<string>());
     }
 }

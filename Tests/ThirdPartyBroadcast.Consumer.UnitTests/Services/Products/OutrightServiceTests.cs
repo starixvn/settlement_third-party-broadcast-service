@@ -3,6 +3,7 @@ using ResultMessage = Fanex.Settlement.ScaleOut.Models.ResultMessage;
 
 namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products;
 
+using AutoMapper;
 using Criteria;
 
 public class OutrightServiceTests
@@ -10,6 +11,8 @@ public class OutrightServiceTests
     private readonly CalculateService calculateService;
 
     private readonly ScaleOutSettleThirdPartyService scaleOutSettleThirdPartyService;
+
+    private readonly IMapper mapper;
 
     private readonly OutrightServiceImp service;
 
@@ -19,7 +22,7 @@ public class OutrightServiceTests
         scaleOutSettleThirdPartyService = Substitute.For<ScaleOutSettleThirdPartyService>();
         var mapperConfig = new MapperConfigurationExpression();
         mapperConfig.AddProfile<ThirdPartyBroadcastMappingProfile>();
-        var mapper = Substitute.For<IMapper>();
+        mapper = Substitute.For<IMapper>();
         service = new OutrightServiceImp(mapper, calculateService, scaleOutSettleThirdPartyService);
     }
 
@@ -37,6 +40,8 @@ public class OutrightServiceTests
     [Fact]
     public async Task Settle_ValidateMoveBetDayIsPassed_DoSettle()
     {
+        mapper.Map<OutrightCriteria>(Arg.Any<OutrightRequest>()).Returns(new OutrightCriteria());
+
         scaleOutSettleThirdPartyService.ValidateMoveBetDay(Arg.Any<string>(), Arg.Any<string>()).Returns(new ResultMessage());
         calculateService.Execute(Arg.Any<OutrightCriteria>(), Arg.Any<SiteDbPendingCommand>()).Returns(new Result());
         var result = await service.Settle(new OutrightRequest());
