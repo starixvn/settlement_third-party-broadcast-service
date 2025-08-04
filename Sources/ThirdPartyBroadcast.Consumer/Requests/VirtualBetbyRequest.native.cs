@@ -6,6 +6,8 @@ public class VirtualBetbyRequest
 
     public short SportType { get; set; } = Constants.SportType.VirtualBetbyBasketball;
 
+    public int GameSession { get; set; } = 0;
+
     public int AdminId { get; set; }
 
     public string SelectedResources { get; set; }

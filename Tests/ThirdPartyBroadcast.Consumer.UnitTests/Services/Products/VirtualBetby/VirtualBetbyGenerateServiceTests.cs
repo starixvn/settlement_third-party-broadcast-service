@@ -39,6 +39,30 @@ public class VirtualBetbyGenerateServiceTests
     }
 
     [Fact]
+    public void ValidateResources_GameSessionNotZeroAndOne_ReturnErrorMessage()
+    {
+        var request = new VirtualBetbyRequest
+        {
+            GameSession = 2,
+            SelectedResources = "<Resources></Resources>"
+        };
+
+        var resources = new List<ResourceItemModel>
+        {
+            new()
+            {
+                Id = "Q1",
+                Home = "4",
+                Away = "5"
+            }
+        };
+
+        var result = service.ValidateResources(request, resources);
+
+        Assert.Equal(ErrorMessage.NotExistedGameSession, result.ErrorMessage);
+    }
+
+    [Fact]
     public void ValidateResources_CorrectScoreValidatorAndActionIsCalc_ReturnErrorMessage()
     {
         var request = new VirtualBetbyRequest

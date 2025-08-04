@@ -141,6 +141,9 @@ public static class ErrorCode
 
 public static class ErrorMessage
 {
-    public const string NotExistValue = "The input score values are not valid!";
+    public const string NotExistValue = "The input score values are not valid";
+
     public const string Inconsistent = "HT({0}) is inconsistent with FT({1})";
+
+    public const string NotExistedGameSession = "The input GameSession values are not valid";
 }

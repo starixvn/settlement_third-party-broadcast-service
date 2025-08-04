@@ -63,6 +63,49 @@ public class FullTimeScoreValidatorTests
     }
 
     [Fact]
+    public void Validate_NotEnoughQuarterAndSetGameSession_ReturnErrorMessageIsNull()
+    {
+        var request = new VirtualBetbyRequest
+        {
+            GameSession = 1,
+            SelectedResources = "<Resources><Resource Id=\"00\" Home=\"12\" Away=\"2\" /><Resource Id=\"Q1\" Home=\"12\" Away=\"2\" /><Resource Id=\"Q4\" Home=\"4\" Away=\"3\" /></Resources>"
+        };
+        request.Resources = request.SelectedResources.ToResources().Items;
+
+        var resources = new List<ResourceItemModel>
+        {
+            new()
+            {
+                Id = "Q1",
+                Home = "1",
+                Away = "1"
+            },
+            new()
+            {
+                Id = "Q2",
+                Home = "1",
+                Away = "0"
+            },
+            new()
+            {
+                Id = "Q3",
+                Home = "1",
+                Away = "2"
+            },
+            new()
+            {
+                Id = "Q4",
+                Home = "4",
+                Away = "5"
+            }
+        };
+
+        var result = service.Validate(request, resources);
+
+        Assert.Null(result.ErrorMessage);
+    }
+
+    [Fact]
     public void Validate_FullTimeNotEqualQuarter_ReturnErrorMessage()
     {
         var request = new VirtualBetbyRequest

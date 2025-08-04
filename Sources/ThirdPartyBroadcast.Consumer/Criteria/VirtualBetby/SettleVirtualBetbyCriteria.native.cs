@@ -6,6 +6,8 @@ public class SettleVirtualBetbyCriteria : CalculateCriteria
 
     public int ActionId { get; set; }
 
+    public int GameSession { get; set; }
+
     public string Action { get; set; }
 
     public string SelectedResources { get; set; }

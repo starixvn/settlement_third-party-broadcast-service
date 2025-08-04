@@ -18,9 +18,11 @@ public class Result
         ErrorMessage = message;
     }
 
-    public static Result ErrorRequest() => new()
+    public static Result ErrorRequest(bool isGameSession = false) => new()
     {
         ErrorCode = Constants.ErrorCode.NotExistValue,
-        ErrorMessage = Constants.ErrorMessage.NotExistValue
+        ErrorMessage = isGameSession
+            ? Constants.ErrorMessage.NotExistedGameSession
+            : Constants.ErrorMessage.NotExistValue
     };
 }
