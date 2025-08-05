@@ -14,7 +14,7 @@ public class FullTimeScoreValidator(ScoreService scoreService) : IValidator
     {
         var ftResult = request.Resources.Exists(r => r.Id == ResourceId.FullTimeResourceId);
 
-        if (ftResult)
+        if (ftResult && request.GameSession == 0)
         {
             return ValidateFtConsistency(request, currentResources);
         }

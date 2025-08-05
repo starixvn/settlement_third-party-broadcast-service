@@ -24,23 +24,38 @@ public class VirtualBetbyGenerateServiceImp(
 {
     public Result ValidateResources(VirtualBetbyRequest request, IEnumerable<ResourceItemModel> currentResources)
     {
+        if (!IsValidGameSession(request.GameSession))
+        {
+            return Result.ErrorRequest(true);
+        }
+
         if (!TryGetSources(request, out var resources))
         {
             return Result.ErrorRequest();
         }
 
-        request.Resources = GetMarkedList(resources, currentResources);
+        request.Resources = CreateMarkedResourceList(resources, currentResources);
 
-        if (!string.Equals(request.Action, ActionName.Calculate, StringComparison.OrdinalIgnoreCase))
-        {
-            return new Result();
-        }
+        return !IsCalculateAction(request.Action) ? new Result() : ValidateWithChain(request, currentResources);
+    }
 
+    private static bool IsValidGameSession(int gameSession)
+    {
+        return gameSession is 0 or 1;
+    }
+
+    private static bool IsCalculateAction(string action)
+    {
+        return string.Equals(action, ActionName.Calculate, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static Result ValidateWithChain(VirtualBetbyRequest request, IEnumerable<ResourceItemModel> currentResources)
+    {
         var validator = ValidatorFactory.CreateValidatorChain();
         return validator.Validate(request, currentResources);
     }
 
-    private static List<ResourceItemModel> GetMarkedList(IEnumerable<ResourceItemModel> newResources, IEnumerable<ResourceItemModel> currentResources)
+    private static List<ResourceItemModel> CreateMarkedResourceList(IEnumerable<ResourceItemModel> newResources, IEnumerable<ResourceItemModel> currentResources)
     {
         var resources = new HashSet<string>(currentResources.Select(p => p.Id));
         return newResources.Select(item => new ResourceItemModel

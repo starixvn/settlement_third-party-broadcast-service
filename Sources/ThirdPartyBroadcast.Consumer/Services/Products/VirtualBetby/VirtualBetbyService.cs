@@ -54,7 +54,8 @@ public class VirtualBetbyServiceImp(
             SelectedResources = request.SelectedResources,
             IsReSettledTickets = request.IsReSettledTickets,
             AdminId = request.AdminId,
-            Ip = request.Ip
+            Ip = request.Ip,
+            GameSession = request.GameSession
         };
         var watch = Stopwatch.StartNew();
         var settleResult = await calculateService.Execute(criteria);
