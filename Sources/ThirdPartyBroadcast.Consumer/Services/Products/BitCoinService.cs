@@ -4,8 +4,8 @@ using Criteria;
 using Criteria.BitCoin;
 using Fanex.SiteDbConnectionManager.Client.Constants;
 using Fanex.SiteDbConnectionManager.Client.Models;
+using Models;
 using System;
-using ThirdPartyBroadcast.Consumer.Models;
 
 public interface BitCoinService
 {

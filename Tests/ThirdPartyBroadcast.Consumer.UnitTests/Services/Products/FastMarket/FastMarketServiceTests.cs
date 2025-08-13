@@ -1,5 +1,4 @@
 ﻿using Fanex.Settlement.ScaleOut.Request;
-using Fanex.SiteDbConnectionManager.Client.Models;
 using ThirdPartyBroadcast.Consumer.Models.FM;
 using ResultMessage = Fanex.Settlement.ScaleOut.Models.ResultMessage;
 
@@ -67,13 +66,13 @@ public class FastMarketServiceTests
             BetType = []
         };
         scaleOutSettleService.ValidateEventAndTicketFastMarket(Arg.Any<EventTicketFastMarketRequest>()).Returns(new ResultMessage());
-        calculateService.Execute(Arg.Any<CalculateCriteria>(), Arg.Any<SiteDbPendingCommand>()).Returns(new Result());
+        calculateService.Execute(Arg.Any<CalculateCriteria>()).Returns(new Result());
         matchService.GetFastMarketResult(Arg.Any<int>()).Returns(new List<FastMarketResult>());
         xmlConvertService.Deserialize<BetTypeXML>(Arg.Any<string>()).Returns(betTypes);
         await service.Settle(new FastMarketRequest());
 
         await scaleOutSettleService.Received().UpdateMatchInfo(Arg.Any<UpdateMatchInfoRequest>());
-        await calculateService.Received().Execute(Arg.Any<FastMarketCriteria>(), Arg.Any<SiteDbPendingCommand>());
+        await calculateService.Received().Execute(Arg.Any<FastMarketCriteria>());
         await logDirectlyService.Received().WriteLog(Arg.Any<int>(), Arg.Any<string>());
     }
 }

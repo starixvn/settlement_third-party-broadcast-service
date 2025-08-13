@@ -66,6 +66,8 @@ public static class BroadcastConsumerInjection
         services.AddTransient<TicketInfoService, TicketInfoServiceImp>();
         services.AddTransient<MatchService, MatchServiceImp>();
 
+        services.AddTransient<VirtualRacingDependencies>();
+
         var remotingRefUrl = configuration.GetValue("Fanex.RemotingRef.Service.Url", string.Empty);
         RefDataTypeContainer
             .ConnectTo(new Uri(remotingRefUrl))
