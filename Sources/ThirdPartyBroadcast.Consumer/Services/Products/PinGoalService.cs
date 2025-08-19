@@ -4,6 +4,8 @@ using Fanex.Settlement.ScaleOut.Constants;
 namespace ThirdPartyBroadcast.Consumer.Services.Products;
 
 using Criteria;
+using Fanex.SiteDbConnectionManager.Client.Constants;
+using Fanex.SiteDbConnectionManager.Client.Models;
 using Models;
 
 public interface PinGoalService
@@ -24,7 +26,6 @@ public class PinGoalServiceImp(
 
     public async Task<Result> Settle(PinGoalRequest request)
     {
-        var criteria = mapper.Map<PinGoalRequest, PinGoalCriteria>(request);
         var matchInfo = await matchService.GetMatchInfo(request.MatchId);
         var validateResult = ValidateResult(matchInfo, request.SelectedResources, request.Action);
         var validateBeforePush = await ValidateBeforePush(request);
@@ -39,7 +40,25 @@ public class PinGoalServiceImp(
         var message = GenerateMessageLog(request);
         await logDirectlyService.WriteLog(request.MatchId, message);
 
-        return await calculateService.Execute(criteria);
+        var criteria = mapper.Map<PinGoalCriteria>(request);
+        var pendingCommand = CreateSiteDbPendingCommand(criteria);
+        return await calculateService.Execute(criteria, pendingCommand);
+    }
+
+    private static SiteDbPendingCommand CreateSiteDbPendingCommand(PinGoalCriteria criteria)
+    {
+        return new SiteDbPendingCommand
+        {
+            MatchId = criteria.MatchId,
+            ProductType = ProductType.PinGoal,
+            Action = criteria.Action,
+            SpName = criteria.SpName,
+            Parameter = criteria.ToJson(),
+            AdminId = criteria.AdminId,
+            IP = criteria.Ip,
+            SystemName = SystemName.Broadcast,
+            StatusId = CommandStatus.Pending
+        };
     }
 
     private static string GenerateMessageLog(PinGoalRequest request)

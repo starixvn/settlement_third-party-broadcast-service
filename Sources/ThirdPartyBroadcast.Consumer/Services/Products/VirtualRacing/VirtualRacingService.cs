@@ -14,16 +14,21 @@ public interface VirtualRacingService
 }
 
 public class VirtualRacingServiceImp(
-    RacersValidatorService racersValidatorService,
-    SettleSitesService settleSitesService,
     IDynamicRepository repository,
     MatchService broadcastMatchService,
-    Settlement.Business.Data.Services.MatchService matchService,
     AnnouncementService announcementService,
     RecipientMessageService recipientMessageService,
     TicketInfoService ticketService,
-    OutrightResultService outrightResultService) : VirtualRacingService
+    VirtualRacingDependencies dependencies) : VirtualRacingService
 {
+    private readonly RacersValidatorService racersValidatorService = dependencies.RacersValidatorService;
+
+    private readonly Settlement.Business.Data.Services.MatchService matchService = dependencies.MatchService;
+
+    private readonly SettleSitesService settleSitesService = dependencies.SettleSitesService;
+
+    private readonly OutrightResultService outrightResultService = dependencies.OutrightResultService;
+
     private List<TicketSettleInfo> CurrentTickets { get; set; }
 
     public async Task<Result> Settle(VirtualRacingRequest request)
@@ -91,4 +96,16 @@ public class VirtualRacingServiceImp(
             Remark = remark
         };
     }
+}
+
+public class VirtualRacingDependencies(
+    RacersValidatorService racersValidatorService,
+    SettleSitesService settleSitesService,
+    Settlement.Business.Data.Services.MatchService matchService,
+    OutrightResultService outrightResultService)
+{
+    public RacersValidatorService RacersValidatorService { get; } = racersValidatorService;
+    public SettleSitesService SettleSitesService { get; } = settleSitesService;
+    public Settlement.Business.Data.Services.MatchService MatchService { get; } = matchService;
+    public OutrightResultService OutrightResultService { get; } = outrightResultService;
 }

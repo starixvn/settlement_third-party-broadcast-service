@@ -1,5 +1,6 @@
 ﻿using Fanex.Settlement.ScaleOut.Request;
 using ThirdPartyBroadcast.Consumer.Models.FM;
+using ResultMessage = Fanex.Settlement.ScaleOut.Models.ResultMessage;
 
 namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products.FastMarket;
 
@@ -33,11 +34,11 @@ public class FastMarketServiceTests
         var mapperConfig = new MapperConfigurationExpression();
         mapperConfig.AddProfile<ThirdPartyBroadcastMappingProfile>();
         var mapper = Substitute.For<IMapper>();
-        
+
         // Setup mock mapper to return proper mapped objects
         mapper.Map<FastMarketRequest, FastMarketCriteria>(Arg.Any<FastMarketRequest>()).Returns(new FastMarketCriteria());
         mapper.Map<FastMarketCriteria, EventTicketFastMarketRequest>(Arg.Any<FastMarketCriteria>()).Returns(new EventTicketFastMarketRequest());
-        
+
         service = new FastMarketServiceImp(scaleOutSettleService, mapper, calculateService, logDirectlyService, fmResultAmendmentService);
     }
 
