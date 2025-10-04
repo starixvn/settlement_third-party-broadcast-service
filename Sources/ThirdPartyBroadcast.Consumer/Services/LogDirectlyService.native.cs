@@ -56,7 +56,7 @@ public class LogDirectlyServiceImp(
 
     public async Task HandleLog(Result result, string productType, string data)
     {
-        if (!result.IsSuccessful)
+        if (!result.IsSuccessful && productType != ProductType.FastMarket)
         {
             var info = new Dictionary<string, object>
             {

@@ -54,7 +54,7 @@ public class ProcessingConsumerService(
 
 public class MyConsumerDefinition : ConsumerDefinition<ProcessingConsumerService>
 {
-    private const int RetryInterval = 1000;
+    private const int Interval = 500;
 
     private const int RetryCount = 1;
 
@@ -83,7 +83,7 @@ public class MyConsumerDefinition : ConsumerDefinition<ProcessingConsumerService
             {
                 retryConfig.Ignore<ArgumentNullException>();
                 retryConfig.Ignore<DataException>(x => x.Message.Contains(IgnoreMessage));
-                retryConfig.Interval(RetryCount, TimeSpan.FromMilliseconds(RetryInterval));
+                retryConfig.Interval(RetryCount, TimeSpan.FromMilliseconds(Interval));
             }
         );
     }
