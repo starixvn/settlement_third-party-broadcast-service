@@ -20,14 +20,9 @@
     <None Remove="Templates\deposit-template.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\..\Sources\ThirdPartyBroadcast.Consumer.Service\appsettings.Development.json" Link="appsettings.Development.json" />
-    <Content Include="..\..\Sources\ThirdPartyBroadcast.Consumer.Service\appsettings.json" Link="appsettings.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\..\Sources\ThirdPartyBroadcast.Consumer.Service\appsettings.LOCAL.json" Link="appsettings.LOCAL.json" />
-    <Content Include="..\..\Sources\ThirdPartyBroadcast.Consumer.Service\appsettings.PROD.json" Link="appsettings.PROD.json" />
-    <Content Include="..\..\Sources\ThirdPartyBroadcast.Consumer.Service\appsettings.SIT.json" Link="appsettings.SIT.json" />
-    <Content Include="..\..\Sources\ThirdPartyBroadcast.Consumer.Service\appsettings.UAT.json" Link="appsettings.UAT.json" />
+	  <Content Include="..\..\Sources\ThirdPartyBroadcast.Consumer.Service\appsettings.json" Link="appsettings.json">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
     <Content Include="Templates\credit-template.cshtml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

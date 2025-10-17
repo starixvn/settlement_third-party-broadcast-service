@@ -55,11 +55,7 @@ public class BetBuilderServiceImp(
         criteria.SelectedMarket = selectedMarket;
         criteria.SelectedSelection = request.Resources;
 
-        var resourceItems = GetResourceItems(request);
-
-        await WriteSettlementLog(request, resourceItems, matchInfo);
-
-        var hasResultAmend = await betBuilderResultAmendmentService.PushResultAmendment(request, resourceItems, criteria);
+        var hasResultAmend = await HandlePushResultAmendment(request, matchInfo, criteria);
 
         var pendingCommand = CreateSiteDbPendingCommand(criteria);
         var settleResult = await calculateService.Execute(criteria, pendingCommand);
@@ -70,7 +66,17 @@ public class BetBuilderServiceImp(
         }
 
         return settleResult;
+    }
 
+    private async Task<bool> HandlePushResultAmendment(BetBuilderRequest request, MatchInfo matchInfo, BetBuilderCriteria betBuilderCriteria)
+    {
+        var resourceItems = GetResourceItems(request);
+
+        await WriteSettlementLog(request, resourceItems, matchInfo);
+
+        var hasResultAmend = await betBuilderResultAmendmentService.PushResultAmendment(request, resourceItems, betBuilderCriteria);
+
+        return hasResultAmend;
     }
 
     private static SiteDbPendingCommand CreateSiteDbPendingCommand(BetBuilderCriteria criteria)
