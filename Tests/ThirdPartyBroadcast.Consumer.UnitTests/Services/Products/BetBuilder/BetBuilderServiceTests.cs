@@ -1,4 +1,7 @@
-﻿using ThirdPartyBroadcast.Consumer.Criteria.BetBuilder;
+﻿using Fanex.SiteDbConnectionManager.Client.Models;
+using ThirdPartyBroadcast.Consumer.Criteria;
+using ThirdPartyBroadcast.Consumer.Criteria.BetBuilder;
+using ThirdPartyBroadcast.Consumer.Models.BetBuilder;
 using ThirdPartyBroadcast.Consumer.Services.Products.BetBuilder;
 
 namespace ThirdPartyBroadcast.Consumer.UnitTests.Services.Products.BetBuilder;
@@ -31,6 +34,14 @@ public class BetBuilderServiceTests
 
         // Setup mock mapper to return proper mapped objects
         mapper.Map<BetBuilderCriteria>(Arg.Any<BetBuilderRequest>()).Returns(new BetBuilderCriteria());
+
+        //    mapper.Map<BetBuilderCriteria>(Arg.Any<Requests.BetBuilderRequest>())
+        //.Returns(callInfo =>
+        //{
+        //    var reqArg = callInfo.Arg<Requests.BetBuilderRequest>();
+        //    Assert.Equal("<filtered/>", reqArg.Resources);
+        //    return mappedCriteria;
+        //});
 
         service = new BetBuilderServiceImp(calculateService, mapper, betBuilderGenerateService, xmlConvertService, logDirectlyService, betBuilderResultAmendmentService, matchService);
     }
@@ -133,4 +144,110 @@ public class BetBuilderServiceTests
 
     //    Assert.Equal(0, result.ErrorCode);
     //}
+
+
+    [Fact]
+    public async Task Settle_WhenReasonsExist_RemovesSelectionAndLogsReason_BeforeProceeding()
+    {
+        // Arrange
+        var request = new Requests.BetBuilderRequest
+        {
+            MatchId = 5,
+            Action = "SETTLE",
+            AdminId = 50,
+            Ip = "5.5.5.5",
+            Resources = "<resources/>",
+        };
+
+        var reasons = new[] { new ReasonModel { SelectionType = 1, Reason = "Blocked" } };
+
+        betBuilderGenerateService.ValidationBeforeSettle(request)
+            .Returns((new[] { new Result() }.AsEnumerable(), reasons));
+
+        betBuilderGenerateService.RemoveSelectionWarning(request.Resources, reasons)
+            .Returns("<filtered/>");
+
+        betBuilderGenerateService.GetInfoMarket(Arg.Any<Requests.BetBuilderRequest>())
+            .Returns("MKT-3");
+        betBuilderGenerateService.UpdateMatchInfo(Arg.Any<Requests.BetBuilderRequest>(), "MKT-3").Returns(Task.CompletedTask);
+        betBuilderGenerateService.WriteLog(Arg.Any<Requests.BetBuilderRequest>()).Returns(Task.CompletedTask);
+
+        matchService.GetMatchInfo(request.MatchId)
+            .Returns(Task.FromResult(new MatchInfo { SportType = 3 }));
+
+        xmlConvertService.Deserialize<Resources>("<filtered/>")
+            .Returns(new Resources { ResourceItem = new List<ThirdPartyBroadcast.Consumer.Models.BetBuilder.ResourceItem>() });
+        xmlConvertService.Serialize(Arg.Any<Models.FM.Resources>()).Returns("<sel/>");
+
+        // Capture that mapping sees the filtered Resources
+        BetBuilderCriteria mappedCriteria = new() { MatchId = request.MatchId, Action = request.Action };
+
+
+        betBuilderResultAmendmentService.PushResultAmendment(Arg.Any<Requests.BetBuilderRequest>(),
+            Arg.Any<List<Fanex.Settlement.MessageBridge.ResultAmendment.ResourceItem>>(),
+            Arg.Any<BetBuilderCriteria>()).Returns(Task.FromResult(false));
+
+        calculateService.Execute(Arg.Any<CalculateCriteria>(), Arg.Any<SiteDbPendingCommand>())
+            .Returns(Task.FromResult(new Result { ErrorCode = 0 }));
+
+        // Act
+        var result = await service.Settle(request);
+
+        // Assert
+        Assert.Equal(0, result.ErrorCode);
+
+        // Verify reason handling occurred
+        betBuilderGenerateService.Received(1).RemoveSelectionWarning("<resources/>", reasons);
+        await betBuilderGenerateService.Received(1).WriteLogReason(Arg.Any<Requests.BetBuilderRequest>(), reasons);
+    }
+
+    [Fact]
+    public async Task Settle_WhenResultAmendFalse_DoesNotPushUpdateStatus()
+    {
+        // Arrange
+        var request = new Requests.BetBuilderRequest
+        {
+            MatchId = 4,
+            Action = "SETTLE",
+            AdminId = 40,
+            Ip = "4.4.4.4",
+            Resources = "<resources/>",
+        };
+
+        betBuilderGenerateService.ValidationBeforeSettle(request)
+            .Returns((new[] { new Result() }.AsEnumerable(), Enumerable.Empty<ReasonModel>()));
+
+        betBuilderGenerateService.GetInfoMarket(request).Returns("MKT-2");
+        betBuilderGenerateService.UpdateMatchInfo(request, "MKT-2").Returns(Task.CompletedTask);
+        betBuilderGenerateService.WriteLog(request).Returns(Task.CompletedTask);
+
+        matchService.GetMatchInfo(request.MatchId)
+            .Returns(Task.FromResult(new MatchInfo { SportType = 1 }));
+
+        xmlConvertService.Deserialize<Resources>(request.Resources)
+            .Returns(new Resources { ResourceItem = new List<ThirdPartyBroadcast.Consumer.Models.BetBuilder.ResourceItem>() });
+        xmlConvertService.Serialize(Arg.Any<Models.FM.Resources>()).Returns("<sel/>");
+
+        var mappedCriteria = new BetBuilderCriteria
+        {
+            MatchId = request.MatchId,
+            Action = request.Action
+        };
+        //mapper.Map<BetBuilderCriteria>(request).Returns(mappedCriteria);
+
+        betBuilderResultAmendmentService.PushResultAmendment(request,
+            Arg.Any<List<Fanex.Settlement.MessageBridge.ResultAmendment.ResourceItem>>(),
+            Arg.Any<BetBuilderCriteria>()).Returns(Task.FromResult(false));
+
+        calculateService.Execute(Arg.Any<CalculateCriteria>(), Arg.Any<SiteDbPendingCommand>())
+            .Returns(Task.FromResult(new Result { ErrorCode = 0 }));
+
+        // Act
+        var result = await service.Settle(request);
+
+        // Assert
+        Assert.Equal(0, result.ErrorCode);
+        await betBuilderResultAmendmentService.DidNotReceive()
+            .PushUpdateStatusResult(Arg.Any<int>(), Arg.Any<string>(), Arg.Any<bool>());
+    }
 }
